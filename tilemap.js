@@ -259,7 +259,7 @@
             const y = Math.floor(tile / gridWidth);
             let tileData = getTileData(x,y);
             if(!tileData?.tileSymbol){
-                setTileData(x,y, {x,y,tilesetIdx, tileSymbol: randomLetters[symbolStartIdx + tile] || ""});
+                setTileData(x,y, {x,y,tilesetIdx, tileSymbol: randomLetters[symbolStartIdx + tile] || tile});
             }
             tileData = getTileData(x,y);
 
@@ -534,6 +534,19 @@
         return exportData;
     }
 
+    const setActiveMap =(id) =>{
+        ACTIVE_MAP = id;
+        layers = maps[ACTIVE_MAP].layers;
+        setCropSize(maps[ACTIVE_MAP].tileSize);
+        updateLayers();
+        updateTilesetGridContainer();
+        draw();
+    }
+    const setCropSize = (newSize) =>{
+        maps[ACTIVE_MAP].tileSize = newSize;
+        SIZE_OF_CROP = newSize;
+        cropSize.value = SIZE_OF_CROP;
+    }
     const updateTilesets = () =>{
         TILESET_ELEMENTS = [];
         tilesetDataSel.innerHTML = "";
@@ -652,13 +665,7 @@
         // Maps DATA callbacks
         mapsDataSel = document.getElementById("mapsDataSel");
         mapsDataSel.addEventListener("change", e=>{
-            ACTIVE_MAP = e.target.value;
-            layers = maps[ACTIVE_MAP].layers;
-            console.log("Changed to" , ACTIVE_MAP, maps[ACTIVE_MAP])
-            SIZE_OF_CROP = maps[ACTIVE_MAP].tileSize;
-            updateLayers();
-            updateTilesetGridContainer();
-            draw();
+            setActiveMap(e.target.value);
         })
         document.getElementById("addMapBtn").addEventListener("click",()=>{
             const suggestMapName = `Map ${Object.keys(maps).length + 1}`;
@@ -676,6 +683,7 @@
         })
         document.getElementById("removeMapBtn").addEventListener("click",()=>{
             delete maps[ACTIVE_MAP];
+            setActiveMap(Object.keys(maps)[0])
             updateMaps();
             updateLayers();
             draw();
@@ -820,10 +828,8 @@
             updateTilesetGridContainer();
         });
 
-
         cropSize.addEventListener('change', e=>{
-            maps[ACTIVE_MAP].tileSize = Number(e.target.value);
-            SIZE_OF_CROP = Number(e.target.value);
+            setCropSize(Number(e.target.value));
             draw();
             updateSelection();
             updateTilesetGridContainer();
