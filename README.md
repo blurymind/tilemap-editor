@@ -34,6 +34,7 @@ Planned:
 - Undo/redo system
 - Paint tool modes (line, square, circle,etc)
 - Bucket tool
+- tiled i/o
 
 <p align="center">
   <img src="screenshots/desktop.png" />
