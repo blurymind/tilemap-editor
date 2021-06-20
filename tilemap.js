@@ -534,10 +534,30 @@
         return exportData;
     }
 
+    const updateMapSize = ({mapWidth, mapHeight, updateField} ) =>{
+        if(mapWidth && mapWidth > 1){
+            mapTileWidth = mapWidth;
+            WIDTH = mapTileWidth * SIZE_OF_CROP;
+            maps[ACTIVE_MAP].mapWidth = mapTileWidth;
+            document.querySelector(".canvas_resizer[resizerdir='x']").style=`left:${WIDTH}px`;
+            if(updateField) document.querySelector(".canvas_resizer[resizerdir='x'] input").value = String(mapHeight);
+        }
+        if(mapHeight && mapHeight > 1){
+            mapTileHeight = mapHeight;
+            HEIGHT = mapTileHeight * SIZE_OF_CROP;
+            maps[ACTIVE_MAP].mapHeight = mapTileHeight;
+            document.querySelector(".canvas_resizer[resizerdir='y']").style=`top:${HEIGHT}px`;
+            if(updateField) document.querySelector(".canvas_resizer[resizerdir='y'] input").value = String(mapWidth);
+        }
+        draw();
+        updateTilesetGridContainer();
+    }
+
     const setActiveMap =(id) =>{
         ACTIVE_MAP = id;
         layers = maps[ACTIVE_MAP].layers;
         setCropSize(maps[ACTIVE_MAP].tileSize);
+        updateMapSize({mapWidth: maps[ACTIVE_MAP].mapWidth, mapHeight: maps[ACTIVE_MAP].mapHeight, updateField:true})
         updateLayers();
         updateTilesetGridContainer();
         draw();
@@ -557,7 +577,6 @@
             tilesetDataSel.appendChild(newOpt);
             tiles.push({});
             const tilesetImgElement = document.createElement("img");
-            // tilesetImgElement.crossOrigin = "Anonymous";
             tilesetImgElement.src = tsImage;
             TILESET_ELEMENTS.push(tilesetImgElement);
         })
@@ -685,8 +704,6 @@
             delete maps[ACTIVE_MAP];
             setActiveMap(Object.keys(maps)[0])
             updateMaps();
-            updateLayers();
-            draw();
         })
         // Tileset DATA Callbacks //tileDataSel
         tileDataSel = document.getElementById("tileDataSel");
@@ -769,37 +786,19 @@
             resizingCanvas = e.target.parentNode;
         })
         document.querySelector(".canvas_resizer[resizerdir='y'] input").addEventListener("change", e=>{
-            mapTileHeight = Number(e.target.value)
-            HEIGHT = mapTileHeight * SIZE_OF_CROP;
-            document.querySelector(".canvas_resizer[resizerdir='y']").style=`top:${HEIGHT}px`
-            draw();
-            updateTilesetGridContainer();
+            updateMapSize({mapHeight: Number(e.target.value) })
         })
         document.querySelector(".canvas_resizer[resizerdir='x'] input").addEventListener("change", e=>{
-            mapTileWidth = Number(e.target.value)
-            WIDTH = mapTileWidth * SIZE_OF_CROP;
-            document.querySelector(".canvas_resizer[resizerdir='x']").style=`left:${WIDTH}px`
-            draw();
-            updateTilesetGridContainer();
+            updateMapSize({mapWidth: Number(e.target.value) })
         })
         document.addEventListener("pointermove", e=>{
             if(resizingCanvas){
                 const isVertical = resizingCanvas.getAttribute("resizerdir") === "y";
                 const snappedPos = getSnappedPos(isVertical? (e.y - 40): (e.x - tilesetImage.width));
                 if(isVertical){
-                    mapTileHeight = snappedPos / SIZE_OF_CROP;
-                    if(mapTileHeight > 1){
-                        HEIGHT = snappedPos;
-                        mapTileHeight = snappedPos / SIZE_OF_CROP;
-                        document.querySelector(".canvas_resizer[resizerdir='y'] input").value = mapTileHeight;
-                    }
+                    updateMapSize({mapHeight: snappedPos / SIZE_OF_CROP})
                 } else {
-                    mapTileWidth = snappedPos / SIZE_OF_CROP;
-                    if(mapTileWidth > 1){
-                        WIDTH = snappedPos;
-                        resizingCanvas.style = `left:${snappedPos}px;`
-                        document.querySelector(".canvas_resizer[resizerdir='x'] input").value = mapTileWidth;
-                    }
+                    updateMapSize({mapWidth: snappedPos / SIZE_OF_CROP})
                 }
                 draw();
                 updateTilesetGridContainer();
@@ -822,8 +821,7 @@
             updateLayers();
             updateTilesetGridContainer();
             document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
-            const data = getTileData(0, 0);
-            selection[0] = data;
+            selection[0] = getTileData(0, 0);
             updateSelection();
             updateTilesetGridContainer();
         });
@@ -846,4 +844,3 @@
 
     };
 });
-//npx http-server .
