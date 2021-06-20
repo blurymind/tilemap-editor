@@ -1,0 +1,28 @@
+{
+  "name": "tilemap-editor",
+  "version": "0.2.0",
+  "description": "A fat-free tilemap editor with zero dependencies and a scalable, mobile-friendly interface!",
+  "main": "tilemap.js",
+  "scripts": {
+    "start": "serve",
+    "test": "npm http-server ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blurymind/tilemap-editor.git"
+  },
+  "keywords": [
+    "tilemap",
+    "editor",
+    "kaboomjs"
+  ],
+  "author": "Todor Imreorov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/blurymind/tilemap-editor/issues"
+  },
+  "homepage": "https://github.com/blurymind/tilemap-editor#readme",
+  "devDependencies": {
+    "serve": "^12.0.0"
+  }
+}

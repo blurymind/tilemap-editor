@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="Create your tile map with this online Tile Map Editor" />
+
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        width: 100%;
+        height: 100%;
+      }
+
+      body {
+        overflow: hidden;
+        height: 100%;
+        overscroll-behavior-y: none;
+        margin: 0;
+      }
+    </style>
+    <script src="tilemap.js"></script>
+
+    <title>TilemapJs</title>
+  </head>
+  <body>
+  <div id="tileMe"></div>
+  <script>
+    console.log(window)
+    const tilesetImageImgr = "https://i.imgur.com/ztwPZOI.png";
+    const tilesetImageLocal = "./free.png";
+    
+    const Tilemap = TilemapJs.init("tileMe",{tileSize:32, mapWidth: 20, tileSetImages: [tilesetImageImgr, tilesetImageLocal], applyButtonText: "OK", onApply:console.log})
+  </script>
+  </body>
+</html>

@@ -1,0 +1,282 @@
+.card {
+  height: 100%;
+}
+
+.card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 3px;
+  padding: 3px;
+}
+
+.card header h1 {
+  margin: 0;
+}
+
+.card header .button-as-link {
+  margin-right: 1em;
+}
+
+.card aside {
+  flex: 1;
+}
+
+.card_body {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  padding-top: 6px;
+}
+
+.card_right-column {
+  flex: 3;
+  overflow: auto;
+  padding-right: 16px;
+  padding-bottom: 50px;
+}
+.card_right-column.layers {
+  flex: 1;
+  position: absolute;
+  right: 0;
+  background: #ffffffb0;
+  height: 50vh;
+  border-radius: 3px;
+  user-select: none;
+}
+#mapCanvas {
+  border:1px solid cyan;
+  border-radius: 3px;
+  touch-action: none;
+}
+#tileset-source {
+  pointer-events: none;
+}
+.canvas_resizer{
+  user-select: none;
+  cursor: row-resize;
+  touch-action: none;
+  background: #ffffff42;
+  color: white;
+  padding: 3px;
+  border-radius: 3px;
+  width: 50px;
+}
+.canvas_resizer input {
+  max-width: 45px;
+}
+.canvas_resizer.vertical{
+  position: absolute;
+  transform-origin: left;
+  cursor: col-resize;
+  bottom: 0;
+}
+.canvas_wrapper{
+  position: relative;
+  top:0;
+  display: table;
+}
+
+.tileset-container {
+position: relative;
+display: table;
+margin-left: 1px;
+user-select: none;
+}
+
+.tileset-container-selection {
+position: absolute;
+pointer-events: none;
+outline: 1px solid cyan;
+left: 0;
+top: 0;
+width: 32px;
+height: 32px;
+color: white;
+text-shadow: 1px 1px #0a0101;
+background-color: rgba(66, 255, 222, 0.29);
+text-align: center;
+}
+
+.tilemapjs_root {
+ font-family: 'Courier New', monospace;
+}
+
+.layers button {
+-webkit-appearance: none;
+-moz-appearance: none;
+appearance: none;
+font-family: inherit;
+outline: 0;
+background: transparent;
+border: 0;
+padding: 2px 0;
+display: block;
+text-align: left;
+cursor: pointer;
+}
+
+.layers button.active {
+  font-weight: bold;
+  color: #0884f1;
+  background-color: rgba(255, 255, 0, 0.05);
+}
+
+.button-as-link {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-decoration: underline;
+  background: transparent;
+  color: #7f808e;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+}
+.active-tool{
+  background-color: yellow;
+  border-radius: 3px;
+}
+
+#toolButtonsWrapper{
+  display: flex;
+}
+.primary-button {
+  border: 0;
+  background: #4e84fa;
+  color: #fff;
+  border-radius: 6px;
+  outline: 0;
+  cursor: pointer;
+}
+
+.tileset_opt_field{
+  display:flex;
+  flex-direction: row;
+  height:30px;
+  gap: 3px;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.tileme_root{
+  height: 100%;
+  overflow: hidden;
+}
+
+.card_left_column{
+  max-width: 280px;
+  overflow: auto;
+  padding-right: 3px;
+  max-height: 95vh;
+  margin: 2px;
+}
+
+.layers {
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.layer {
+  display: flex;
+  gap: 1px;
+  height: 30px;
+  align-items: center;
+  padding: 0 3px;
+  border-bottom: 1px solid #80808045;
+}
+.select_layer{
+  flex:1;
+}
+.layer:hover{
+  background-color: rgba(255, 255, 0, 0.05);
+}
+.add_layer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 3px;
+}
+.add_layer button{
+  /*width: 110px;*/
+  margin-right: 7px;
+}
+@media only screen and (max-width: 600px) {
+  .card_body {
+    padding-top: 1px;
+    flex-direction: column;
+  }
+  .card aside {
+    overflow: hidden;
+  }
+  .card_right-column{
+    border-top: solid grey 1px;
+    padding-right: 0;
+    padding-top: 3px;
+    flex: 3;
+  }
+  .card_right-column.layers{
+    padding-bottom: 25px;
+    position: relative;
+  }
+  .card_left_column{
+    flex: 1;
+    overflow: auto;
+    padding-right: 0;
+    max-width: unset;
+  }
+  .tileset_opt_field {
+    font-size: 0.7em;
+  }
+}
+
+.sticky {
+  background: yellow;
+  color: #0a0101;
+  position: sticky;
+  top: 0;
+}
+.tileset_grid_container {
+  position: absolute;
+  text-align: center;
+  top: 0;
+  left: 0;
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+.tileset_grid_tile{
+  box-shadow: inset 0 0 1px yellow, inset 0 0 1px yellow, inset 0 0 1px yellow;
+  pointer-events: none;
+  opacity: 0.5;
+  color: white;
+  text-shadow: 1px 1px black;
+}
+.select_container select {
+  flex: 1;
+}
+
+/*dark mode*/
+.tilemapjs_root {
+  color: #fbd5ff;
+  background-color: #0a0101;
+  background: linear-gradient(0deg, rgb(0 0 0) 0%, rgb(84 84 84) 100%);
+}
+.card_right-column.layers {
+  background: #ffffff14;
+}
+.layer.select_layer{
+  color: antiquewhite;
+}
+.layers button.active {
+  color: #88c6ff;
+  background-color: rgba(255, 255, 0, 0.05);
+}
+#tilesetSelectContainer{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
