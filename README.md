@@ -5,7 +5,7 @@
 <h3 align="center">
   <a href="#information_source-about">About</a>&nbsp;|
   <a href="#information_source-features">Features</a>&nbsp;|
-  <a href="#interrobang_reason">Reason</a>&nbsp;|
+  <a href="#interrobang-reason">Reason</a>&nbsp;|
   <a href="#link-getting-started">Getting started</a>&nbsp;|
   <a href="#link-how-to-contribute">How to Contribute</a>&nbsp;|
 </h3>
