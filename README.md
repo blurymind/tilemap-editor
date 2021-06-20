@@ -31,6 +31,7 @@ TileMap Editor is a fat-free tile map editor with zero dependencies and a scalab
 - Tiny footprint 
 
 Planned:
+- Export data feature
 - Undo/redo system
 - Paint tool modes (line, square, circle,etc)
 - Bucket tool
