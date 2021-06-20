@@ -98,6 +98,7 @@
         `
     }
     const getEmptyLayer = (name="layer")=> ({tiles:{}, visible: true, name});
+    const emptyLayers = [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")];
     let tilesetImage, canvas, tilesetContainer, tilesetSelection, cropSize,
         clearCanvasBtn, confirmBtn, confirmBtnText, tilesetGridContainer,
         layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,
@@ -110,7 +111,9 @@
     let WIDTH = 0;
     let HEIGHT = 0;
     let ACTIVE_TOOL = 0;
-    let ACTIVE_MAP = 0;
+    let ACTIVE_MAP = "";
+    const getEmptyMap = (name="map",layers=emptyLayers, mapWidth =10, mapHeight=10, tileSize = SIZE_OF_CROP) =>
+        ({layers: layers, name, mapWidth, mapHeight, tileSize, width: mapWidth * SIZE_OF_CROP,height: mapHeight * SIZE_OF_CROP });
 
     const getSnappedPos = (pos) => Math.round(pos / SIZE_OF_CROP) * SIZE_OF_CROP;
     let selection = [{}];
@@ -118,7 +121,7 @@
     let isMouseDown = false;
     let tiles = [];
     let layers = [];
-    let maps = [];
+    let maps = {};
     let stateHistory = [{}, {}, {}];
 
     function getContext() {
@@ -550,30 +553,23 @@
 
     const updateMaps = ()=>{
         mapsDataSel.innerHTML = "";
-        maps.forEach((map, idx)=>{
+        Object.keys(maps).forEach((key, idx)=>{
             const newOpt = document.createElement("option");
-            newOpt.innerText = `map ${idx}`;
-            newOpt.value = idx;
+            newOpt.innerText = maps[key].name//`map ${idx}`;
+            newOpt.value = key;
             mapsDataSel.appendChild(newOpt);
         })
-        document.getElementById("removeMapBtn").disabled = maps.length === 1;
+        document.getElementById("removeMapBtn").disabled = Object.keys(maps).length === 1;
     }
     const initDataAfterLoad = () =>{
         WIDTH = canvas.width;
         HEIGHT = canvas.height;
         selection = [{}];
         tiles = []; // shared between maps?
-
-        layers = [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")];
+        layers = emptyLayers;
         stateHistory = [{}, {}, {}];
-        maps = [{
-            width: WIDTH,
-            height: HEIGHT,
-            tileSize: SIZE_OF_CROP,
-            mapWidth: WIDTH / SIZE_OF_CROP,
-            mapHeight: HEIGHT / SIZE_OF_CROP,
-            layers // layer uses tiles, which link to tilesets
-        }];
+        maps = {"Map_1": getEmptyMap("Map 1")};
+        console.log("MAPS",maps)
         updateTilesets();
         tilesetDataSel.value = "0";
         IMG_SOURCE = IMAGES[0];
@@ -655,14 +651,26 @@
         // Maps DATA callbacks
         mapsDataSel = document.getElementById("mapsDataSel");
         mapsDataSel.addEventListener("change", e=>{
-            ACTIVE_MAP = Number(e.target.value);
+            ACTIVE_MAP = e.target.value;
         })
         document.getElementById("addMapBtn").addEventListener("click",()=>{
-            maps.push([]);
+            const suggestMapName = `Map ${Object.keys(maps).length + 1}`;
+            const result = window.prompt("Enter new map name...", suggestMapName);
+            if(result !== null) {
+
+                const newMapKey = result.trim().replaceAll(" ","_") || suggestMapName;
+                console.log(maps,newMapKey)
+                if (newMapKey in maps){
+                    alert("A map with this name already exists.")
+                    return
+                }
+                maps[newMapKey] = getEmptyMap(result.trim());
+            }
             updateMaps()
         })
         document.getElementById("removeMapBtn").addEventListener("click",()=>{
-            maps.splice(ACTIVE_MAP,1);
+            // maps.splice(ACTIVE_MAP,1);
+            delete maps[ACTIVE_MAP];
             updateMaps();
         })
         // Tileset DATA Callbacks //tileDataSel
