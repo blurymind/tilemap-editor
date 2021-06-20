@@ -4,7 +4,8 @@
   "description": "A fat-free tilemap editor with zero dependencies and a scalable, mobile-friendly interface!",
   "main": "tilemap.js",
   "scripts": {
-    "start": "serve"
+    "start": "serve",
+    "deploy": "gh-pages -d ."
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   },
   "homepage": "https://github.com/blurymind/tilemap-editor#readme",
   "devDependencies": {
+    "gh-pages": "^3.2.2",
     "serve": "^12.0.0"
   }
 }
