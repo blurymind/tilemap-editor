@@ -111,7 +111,7 @@
     let HEIGHT = 0;
     let ACTIVE_TOOL = 0;
     let ACTIVE_MAP = "";
-    const getEmptyMap = (name="map", mapWidth =10, mapHeight=10, tileSize = SIZE_OF_CROP) =>
+    const getEmptyMap = (name="map", mapWidth =10, mapHeight=10, tileSize = 32) =>
         ({layers: [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")], name,
             mapWidth, mapHeight, tileSize, width: mapWidth * SIZE_OF_CROP,height: mapHeight * SIZE_OF_CROP });
 
@@ -239,7 +239,7 @@
         }
     }
 
-    const randomLetters = new Array(1680).fill(1).map((_, i) => String.fromCharCode(165 + i));
+    const randomLetters = new Array(10680).fill(1).map((_, i) => String.fromCharCode(165 + i));
     function updateTilesetGridContainer(){
         const gridWidth = tilesetImage.width / SIZE_OF_CROP;
         const gridHeight = tilesetImage.height / SIZE_OF_CROP;
@@ -259,7 +259,7 @@
             const y = Math.floor(tile / gridWidth);
             let tileData = getTileData(x,y);
             if(!tileData?.tileSymbol){
-                setTileData(x,y, {x,y,tilesetIdx, tileSymbol:randomLetters[symbolStartIdx + tile]});
+                setTileData(x,y, {x,y,tilesetIdx, tileSymbol: randomLetters[symbolStartIdx + tile] || ""});
             }
             tileData = getTileData(x,y);
 
@@ -655,7 +655,9 @@
             ACTIVE_MAP = e.target.value;
             layers = maps[ACTIVE_MAP].layers;
             console.log("Changed to" , ACTIVE_MAP, maps[ACTIVE_MAP])
+            SIZE_OF_CROP = maps[ACTIVE_MAP].tileSize;
             updateLayers();
+            updateTilesetGridContainer();
             draw();
         })
         document.getElementById("addMapBtn").addEventListener("click",()=>{
@@ -820,6 +822,7 @@
 
 
         cropSize.addEventListener('change', e=>{
+            maps[ACTIVE_MAP].tileSize = Number(e.target.value);
             SIZE_OF_CROP = Number(e.target.value);
             draw();
             updateSelection();
