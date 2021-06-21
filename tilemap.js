@@ -382,6 +382,12 @@
 
         if (clicked) {
             selection = [clicked];
+            // TODO switch to different tileset if its from a different one
+            // if(clicked.tilesetIdx !== tilesetDataSel.value) {
+            //     tilesetDataSel.value = clicked.tilesetIdx;
+            //     updateTilesets();
+            //     updateTilesetGridContainer();
+            // }
             updateSelection();
         }
     }
@@ -561,6 +567,8 @@
     const updateTilesets = () =>{
         TILESET_ELEMENTS = [];
         tilesetDataSel.innerHTML = "";
+        // Use to prevent old data from erasure
+        const oldTilesets = {...tileSets};
         tileSets = {};
         let symbolStartIdx = 0;
         // Generate tileset data for each of the loaded images
@@ -580,8 +588,10 @@
                 Array.from({length: tileCount}, (x, i) => i).map(tile=>{
                     const x = tile % gridWidth;
                     const y = Math.floor(tile / gridWidth);
+                    const oldTileData = oldTilesets[idx]?.[`${x}-${y}`]?.tileData;
+                    const tileSymbol = oldTileData?.tileSymbol || randomLetters[Math.floor(symbolStartIdx + tile)] || tile
                     tilesetTileData[`${x}-${y}`] = {
-                        x, y, tilesetIdx: idx, tileSymbol: randomLetters[Math.floor(symbolStartIdx + tile)] || tile
+                        x, y, tilesetIdx: idx, tileSymbol
                     }
                 })
                 tileSets[idx] = {src: tsImage, name: `tileset ${idx}`, gridWidth, gridHeight, tileCount,
