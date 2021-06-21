@@ -211,9 +211,9 @@
         }
         return data;
     }
-    const setTileData = (x,y,newData, key= "") =>{
+    const setTileData = (x = null,y = null,newData, key= "") =>{
         const tilesetTiles = tileSets[tilesetDataSel.value].tileData;
-        if(!x && !y){
+        if(x === null && y === null){
             const {x:sx, y:sy} = selection[0];
             tilesetTiles[`${sx}-${sy}`] = newData;
         }
@@ -601,13 +601,10 @@
         tilesetImage.addEventListener('load', function () {
             draw();
             updateLayers();
-            // tiles[0] = tileSets[0].tileData;
-            selection[0] = getTileData(0, 0);
-            console.log("Set selection", selection[0])
+            selection = [getTileData(0, 0)];
             updateSelection();
             updateTilesetGridContainer();
             document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
-
         });
 
     }
@@ -731,7 +728,8 @@
         })
         // Tileset DATA Callbacks //tileDataSel
         tileDataSel = document.getElementById("tileDataSel");
-        tileDataSel.addEventListener("change",e=>{
+        tileDataSel.addEventListener("change",()=>{
+            console.log("Change tm")
             updateTilesetGridContainer();
         })
         document.getElementById("addTileTagBtn").addEventListener("click",()=>{
@@ -859,8 +857,6 @@
         cropSize.addEventListener('change', e=>{
             setCropSize(Number(e.target.value));
             draw();
-            // updateSelection();
-            // updateTilesetGridContainer();
         })
 
         clearCanvasBtn.addEventListener('click', clearCanvas);
