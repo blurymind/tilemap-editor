@@ -71,15 +71,15 @@ While I am a big fan of Tiled and LdTk, for my case I was looking for something 
 
 ## :link: Api
 
-To use it,you can import it via require or in the index file like so
+To use it, you can import it via require or in the index file like so
 
-   ```bash
+   ```js
    // include the js and css files
    <link rel="stylesheet" href="styles.css" />
    <script src="tilemap.js"></script>
    
    <script>
-   TilemapJs.init("tileMapEditor",{
+   TilemapJs.init("tileMapEditor",{ // The first parameter is the id of the ellement you want to attach it to
       tileSize:32, // initial tile size (opt)
       mapWidth: 20, // initial map width/height (opt)
       mapHeight: 20,
