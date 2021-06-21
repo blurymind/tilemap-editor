@@ -54,6 +54,7 @@
         </div>
 |
          <button class="button-as-link" id="clearCanvasBtn" title="clear map">💥</button>
+         <button class="button-as-link" id="aboutBtn" title="clear map">❓</button>
         <button class="primary-button" id="confirmBtn">${confirmBtnText  || "Export image"}</button>
       </div>
       <div class="card_body">
@@ -889,5 +890,19 @@
 
         initDataAfterLoad();
 
+        document.getElementById("aboutBtn").addEventListener("click", () =>{
+            alert(`
+                Tilemap editor
+                Created by Todor Imreorov (blurymind@gmail.com)
+                https://github.com/blurymind/tilemap-editor
+                
+                right click on map - picks tile
+                mid-click - erases tile
+                left-click adds tile
+                
+                right-click on tileset - lets you change tile symbol or metadata
+                left-click - selects tile
+            `)
+        })
     };
 });
