@@ -71,6 +71,14 @@ While I am a big fan of Tiled and LdTk, for my case I was looking for something 
 
 ## :link: Api
 
+To get it from npm, you can run
+
+```bash
+$ npm i tilemap-editor
+or
+$ yarn add tilemap-editor
+```
+  
 To use it, you can import it via require or in the index file like so
 
    ```js
@@ -83,14 +91,14 @@ To use it, you can import it via require or in the index file like so
       tileSize: 32, // initial tile size (opt)
       mapWidth: 20, // initial map width/height (opt)
       mapHeight: 20,
-      tileSetImages: ["http://someUrlOrBase64String.com/tilemap-image.png"], // image src for tilesets (required at least one)
+      tileSetImages: ["http://someUrlOrBase64String.com/tilemap-image.png"], // image src for tilesets (requires at least one atm)
       applyButtonText: "OK", // custom button title
       // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
       onApply: (exportData, self) => {
         // custom button callback (returns maps and tilesets data to use in other engines/apps)
         console.log(exportData, self);
         
-        // It also returns itself, so you can cloe it like so (still not implemented)
+        // It also returns itself, so you can close it like so (still not implemented)
         self.close();
       }, 
       // You can write your own custom load image function here and use it for the tileset src loading. If you dont, the base64 string will be used instead
