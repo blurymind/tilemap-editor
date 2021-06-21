@@ -80,10 +80,10 @@ To use it, you can import it via require or in the index file like so
    
    <script>
    TilemapJs.init("tileMapEditor",{ // The first parameter is the id of the ellement you want to attach it to
-      tileSize:32, // initial tile size (opt)
+      tileSize: 32, // initial tile size (opt)
       mapWidth: 20, // initial map width/height (opt)
       mapHeight: 20,
-      tileSetImages: [tilesetImageImgr, tilesetImageLocal], // image src for tilesets (required at least one)
+      tileSetImages: ["http://someUrlOrBase64String.com/tilemap-image.png"], // image src for tilesets (required at least one)
       applyButtonText: "OK", // custom button title
       // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
       onApply:console.log, // custom button callback (returns maps and tilesets data to use in other engines/apps)
