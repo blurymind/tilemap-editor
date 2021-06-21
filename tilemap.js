@@ -540,14 +540,16 @@
             WIDTH = mapTileWidth * SIZE_OF_CROP;
             maps[ACTIVE_MAP].mapWidth = mapTileWidth;
             document.querySelector(".canvas_resizer[resizerdir='x']").style=`left:${WIDTH}px`;
-            if(updateField) document.querySelector(".canvas_resizer[resizerdir='x'] input").value = String(mapHeight);
         }
         if(mapHeight && mapHeight > 1){
             mapTileHeight = mapHeight;
             HEIGHT = mapTileHeight * SIZE_OF_CROP;
             maps[ACTIVE_MAP].mapHeight = mapTileHeight;
             document.querySelector(".canvas_resizer[resizerdir='y']").style=`top:${HEIGHT}px`;
-            if(updateField) document.querySelector(".canvas_resizer[resizerdir='y'] input").value = String(mapWidth);
+        }
+        if(updateField) {
+            document.querySelector(".canvas_resizer[resizerdir='x'] input").value = String(mapTileWidth);
+            if(updateField) document.querySelector(".canvas_resizer[resizerdir='y'] input").value = String(mapTileHeight);
         }
         draw();
         updateTilesetGridContainer();
@@ -622,6 +624,7 @@
             tileSetImages,
             applyButtonText,
             onApply,
+            onLoadTileSetImage
         }
     ) => {
         // Attach
@@ -639,8 +642,7 @@
 
         // Attach elements
         attachTo.innerHTML = getHtml(canvasWidth, canvasHeight);
-        attachTo.className = "tileme_root";
-
+        attachTo.className = "tilemap_editor_root";
         tilesetImage = document.getElementById('tileset-source');
         cropSize = document.getElementById('cropSize');
         clearCanvasBtn = document.getElementById("clearCanvasBtn");
@@ -734,8 +736,16 @@
         // replace tileset
         document.getElementById("tilesetReplaceInput").addEventListener("change",e=>{
             toBase64(e.target.files[0]).then(base64Src=>{
-                IMAGES[Number(tilesetDataSel.value)] = base64Src;
-                updateTilesets();
+                if(onLoadTileSetImage){
+                    onLoadTileSetImage(e.target.files[0], base64Src, resultSrc => {
+                        IMAGES[Number(tilesetDataSel.value)] =resultSrc;
+                        updateTilesets()
+                    });
+                } else {
+                    IMAGES[Number(tilesetDataSel.value)] = base64Src;
+                    updateTilesets();
+                }
+
             })
         })
         document.getElementById("replaceTilesetBtn").addEventListener("click",()=>{
@@ -744,8 +754,16 @@
         // add tileset
         document.getElementById("tilesetReadInput").addEventListener("change",e=>{
            toBase64(e.target.files[0]).then(base64Src=>{
-                IMAGES.push(base64Src);
-                updateTilesets();
+               if(onLoadTileSetImage){
+                   onLoadTileSetImage(e.target.files[0], base64Src, resultSrc => {
+                       IMAGES.push(resultSrc);
+                       updateTilesets();
+                   })
+               } else {
+                   IMAGES.push(base64Src);
+                   updateTilesets();
+               }
+
             })
         })
         // remove tileset
@@ -786,7 +804,7 @@
             resizingCanvas = e.target.parentNode;
         })
         document.querySelector(".canvas_resizer[resizerdir='y'] input").addEventListener("change", e=>{
-            updateMapSize({mapHeight: Number(e.target.value) })
+            updateMapSize({mapHeight: Number(e.target.value)})
         })
         document.querySelector(".canvas_resizer[resizerdir='x'] input").addEventListener("change", e=>{
             updateMapSize({mapWidth: Number(e.target.value) })
@@ -804,7 +822,8 @@
                 updateTilesetGridContainer();
             }
         })
-        document.addEventListener("pointerup", e=>{
+        document.addEventListener("pointerup", ()=>{
+            updateMapSize({updateField: true})
             resizingCanvas = false;
         })
 

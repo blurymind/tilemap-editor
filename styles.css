@@ -160,7 +160,7 @@ cursor: pointer;
   padding: 0 2px;
 }
 
-.tileme_root{
+.tilemap_editor_root{
   height: 100%;
   overflow: hidden;
 }

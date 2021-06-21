@@ -29,13 +29,46 @@
     <title>TilemapJs</title>
   </head>
   <body>
-  <div id="tileMe"></div>
+  <div id="tileMapEditor"></div>
   <script>
+    // upload to imgur, then return the src
+    const uploadImageToImgur = (blob) => {
+      const formData = new FormData();
+      formData.append('type', 'file');
+      formData.append('image', blob);
+      return fetch('https://api.imgur.com/3/upload.json', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Client-ID 1bddacd2afe5039'// imgur specific
+        },
+        body: formData
+      }).then(response =>{
+                if (response.status === 200 || response.status === 0) return Promise.resolve(response);
+                return Promise.reject(new Error("Error loading image"))
+              }).then(response=>response.json())
+    };
+
     console.log(window)
     const tilesetImageImgr = "https://i.imgur.com/ztwPZOI.png";
     const tilesetImageLocal = "./free.png";
-    
-    const Tilemap = TilemapJs.init("tileMe",{tileSize:32, mapWidth: 20, tileSetImages: [tilesetImageImgr, tilesetImageLocal], applyButtonText: "OK", onApply:console.log})
+
+    const Tilemap = TilemapJs.init("tileMapEditor",{
+      tileSize:32,
+      mapWidth: 20,
+      tileSetImages: [tilesetImageImgr, tilesetImageLocal],
+      applyButtonText: "OK",
+      // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
+      onApply:console.log,
+      // You can write your own custom load image function here and use it for the tilemap src. If you dont, the base64 string will be used instead
+      onLoadTileSetImage: (file, base64, setSrc) => {
+        uploadImageToImgur(file).then(result=>{
+          console.log(file, base64);
+          console.log("Uploaded to imgur", result);
+          setSrc(result.data.link);
+        });
+      }
+    })
   </script>
   </body>
 </html>
