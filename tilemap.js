@@ -103,7 +103,7 @@
         layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,
         tilesetDataSel, mapsDataSel;
 
-    let IMG_SOURCE = '';
+    // let IMG_SOURCE = '';
     let TILESET_ELEMENTS = [];
     let IMAGES = [''];
     let SIZE_OF_CROP = 32;
@@ -122,6 +122,7 @@
     let tiles = [];
     let layers = [];
     let maps = {};
+    let tileSets = {};
     let stateHistory = [{}, {}, {}];
 
     function getContext() {
@@ -200,15 +201,22 @@
         setLayer(currentLayer);
     }
 
-    const getTileData = (x="",y="") =>{
+    const getTileData = (x= null,y= null) =>{
         const tilesetTiles = tiles[Number(tilesetDataSel.value)];
-        if(!x && !y){
+        let data;
+        if(x === null && y === null){
             const {x: sx, y: sy} = selection[0];
             return tilesetTiles[`${sx}-${sy}`];
+        } else {
+            data = tilesetTiles[`${x}-${y}`]
         }
-        return tilesetTiles[`${x}-${y}`];
+        // if(!data?.tileSymbol) {
+        //     data = {x,y,tilesetIdx:0, tileSymbol: ""}
+        // }
+        return data;
     }
     const setTileData = (x,y,newData, key= "") =>{
+        console.log("GET ",tiles[Number(tilesetDataSel.value)])
         const tilesetTiles = tiles[Number(tilesetDataSel.value)];
         if(!x && !y){
             const {x:sx, y:sy} = selection[0];
@@ -221,7 +229,9 @@
         }
     }
     function updateSelection() {
-        const {x, y} = selection[0];
+        const selected = selection[0];
+        if(!selected) return;
+        const {x, y} = selected;
         const {x: endX, y: endY} = selection[selection.length - 1];
         const selWidth = endX - x + 1;
         const selHeight = endY - y + 1;
@@ -240,30 +250,16 @@
     }
 
     const randomLetters = new Array(10680).fill(1).map((_, i) => String.fromCharCode(165 + i));
-    function updateTilesetGridContainer(){
-        const gridWidth = tilesetImage.width / SIZE_OF_CROP;
-        const gridHeight = tilesetImage.height / SIZE_OF_CROP;
-        const viewMode = tileDataSel.value;
-        const tilesetIdx = Number(tilesetDataSel.value);
-        const tileCount = gridWidth * gridHeight;
 
-        // get all previous array elements lengths
-        let symbolStartIdx = 0;
-        if(tilesetIdx !== 0) {
-            tiles.forEach((tile,idx)=>{
-                if(idx < tilesetIdx) symbolStartIdx += Object.keys(tile).length;
-            })
-        }
+    // TODO move all tileset data set stuff to updateTilesets
+    function updateTilesetGridContainer(){
+        const viewMode = tileDataSel.value;
+        const {tileCount, gridWidth, tileData} = tileSets[tilesetDataSel.value];
+        console.log("Tilesets data", tileSets, tileSets[tilesetDataSel.value], tilesetDataSel.value)
         const newGrid = Array.from({length: tileCount}, (x, i) => i).map(tile=>{
             const x = tile % gridWidth;
             const y = Math.floor(tile / gridWidth);
-            let tileData = getTileData(x,y);
-            if(!tileData?.tileSymbol){
-                setTileData(x,y, {x,y,tilesetIdx, tileSymbol: randomLetters[symbolStartIdx + tile] || tile});
-            }
-            tileData = getTileData(x,y);
-
-            const innerTile = viewMode === "" ? tileData?.tileSymbol : "";
+            const innerTile = viewMode === "" ? tileData[`${x}-${y}`]?.tileSymbol : "";
             return `<div style="width:${SIZE_OF_CROP}px;height:${SIZE_OF_CROP}px" class="tileset_grid_tile">${innerTile}</div>`
         }).join("\n")
         tilesetGridContainer.innerHTML = newGrid;
@@ -529,7 +525,11 @@
         `;
 
         console.log("FLATTENED", flattenedData, kaboomJsCode);
-        const exportData = {asciiMap, kaboomJsCode, flattenedData, maps};
+        // TODO create a sensible tileset data model,
+        //  tilesets must have uids linked to their image, width and height, size of crop,
+        // as well as tiles data (grid), currently embedded in tiles[Number(tilesetDataSel.value)], which goes to the map
+        // TODO tiles are not getting populated for a set,unless you navigate to it
+        const exportData = {asciiMap, kaboomJsCode, flattenedData, maps, tileSets: {IMAGES, tiles} };
         console.log("Exported ", exportData);
         return exportData;
     }
@@ -552,7 +552,6 @@
             if(updateField) document.querySelector(".canvas_resizer[resizerdir='y'] input").value = String(mapTileHeight);
         }
         draw();
-        updateTilesetGridContainer();
     }
 
     const setActiveMap =(id) =>{
@@ -572,6 +571,9 @@
     const updateTilesets = () =>{
         TILESET_ELEMENTS = [];
         tilesetDataSel.innerHTML = "";
+        tileSets = {};
+        let symbolStartIdx = 0;
+        // Generate tileset data for each of the loaded images
         IMAGES.forEach((tsImage, idx)=>{
             const newOpt = document.createElement("option");
             newOpt.innerText = `tileset ${idx}`;
@@ -580,9 +582,42 @@
             tiles.push({});
             const tilesetImgElement = document.createElement("img");
             tilesetImgElement.src = tsImage;
+            // Add tileset data for all tiles
+            tilesetImgElement.addEventListener("load",()=>{
+                const gridWidth = Math.floor(tilesetImgElement.width / SIZE_OF_CROP);
+                const gridHeight = Math.floor(tilesetImgElement.height / SIZE_OF_CROP);
+                const tileCount = gridWidth * gridHeight;
+                const tilesetTileData = {};
+                Array.from({length: tileCount}, (x, i) => i).map(tile=>{
+                    const x = tile % gridWidth;
+                    const y = Math.floor(tile / gridWidth);
+                    tilesetTileData[`${x}-${y}`] = {x,y,tilesetIdx:idx, tileSymbol: randomLetters[symbolStartIdx + tile] || tile}
+                })
+                tileSets[idx] = {src: tsImage, name: `tileset ${idx}`, gridWidth, gridHeight, tileCount,
+                    tileData: tilesetTileData, symbolStartIdx};
+                symbolStartIdx += tileCount;
+                console.log("Tile index",idx)
+            })
             TILESET_ELEMENTS.push(tilesetImgElement);
         })
-        tilesetImage.src = IMAGES[Number(tilesetDataSel.value)];
+        Promise.all(Array.from(TILESET_ELEMENTS).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
+            tilesetImage.src = TILESET_ELEMENTS[0].src;
+            console.info('images finished loading! Set tileset atlas to ', tilesetImage.src);
+            updateSelection();
+            updateTilesetGridContainer();
+        });
+        tilesetImage.addEventListener('load', function () {
+            draw();
+            updateLayers();
+            tiles[0] = tileSets[0].tileData;
+            selection[0] = getTileData(0, 0);
+            console.log("Set selection", selection[0])
+            updateSelection();
+            updateTilesetGridContainer();
+            document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
+
+        });
+
     }
 
     const updateMaps = ()=>{
@@ -604,11 +639,8 @@
         ACTIVE_MAP = "Map_1";
         maps = {[ACTIVE_MAP]: getEmptyMap("Map 1")};
         layers = maps["Map_1"].layers;
-        console.log("MAPS",maps)
         updateTilesets();
         tilesetDataSel.value = "0";
-        IMG_SOURCE = IMAGES[0];
-        tilesetImage.src = IMG_SOURCE;
         cropSize.value = SIZE_OF_CROP;
         updateMaps();
         document.querySelector(".canvas_resizer[resizerdir='y'] input").value = mapTileHeight;
@@ -632,7 +664,6 @@
         if(attachTo === null) return;
 
         IMAGES = tileSetImages;
-        IMG_SOURCE = tileSetImages[0];
         SIZE_OF_CROP = tileSize || 32;
         mapTileWidth = mapWidth || 10;
         mapTileHeight = mapHeight || 10;
@@ -729,8 +760,7 @@
         // Tileset SELECT callbacks
         tilesetDataSel = document.getElementById("tilesetDataSel");
         tilesetDataSel.addEventListener("change",e=>{
-            IMG_SOURCE = IMAGES[e.target.value];
-            tilesetImage.src = IMG_SOURCE;
+            tilesetImage.src = TILESET_ELEMENTS[e.target.value].src;
         })
 
         // replace tileset
@@ -819,7 +849,6 @@
                     updateMapSize({mapWidth: snappedPos / SIZE_OF_CROP})
                 }
                 draw();
-                updateTilesetGridContainer();
             }
         })
         document.addEventListener("pointerup", ()=>{
@@ -835,21 +864,12 @@
             });
             e.target.className = "button-as-link active-tool"
         })
-        tilesetImage.addEventListener('load', function () {
-            draw();
-            updateLayers();
-            updateTilesetGridContainer();
-            document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
-            selection[0] = getTileData(0, 0);
-            updateSelection();
-            updateTilesetGridContainer();
-        });
 
         cropSize.addEventListener('change', e=>{
             setCropSize(Number(e.target.value));
             draw();
-            updateSelection();
-            updateTilesetGridContainer();
+            // updateSelection();
+            // updateTilesetGridContainer();
         })
 
         clearCanvasBtn.addEventListener('click', clearCanvas);
