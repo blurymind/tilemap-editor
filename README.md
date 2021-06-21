@@ -86,8 +86,14 @@ To use it, you can import it via require or in the index file like so
       tileSetImages: ["http://someUrlOrBase64String.com/tilemap-image.png"], // image src for tilesets (required at least one)
       applyButtonText: "OK", // custom button title
       // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
-      onApply:console.log, // custom button callback (returns maps and tilesets data to use in other engines/apps)
-      // You can write your own custom load image function here and use it for the tilemap src. If you dont, the base64 string will be used instead
+      onApply: (exportData, self) => {
+        // custom button callback (returns maps and tilesets data to use in other engines/apps)
+        console.log(exportData, self);
+        
+        // It also returns itself, so you can cloe it like so (still not implemented)
+        self.close();
+      }, 
+      // You can write your own custom load image function here and use it for the tileset src loading. If you dont, the base64 string will be used instead
       onLoadTileSetImage: (file, base64, setSrc) => {
         // every time a tileset is loaded, you can use the file, the base64 and setSrc to write your own method
         // For example here you can put the image data in cache,or upload it or whatever.
