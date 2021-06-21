@@ -91,8 +91,9 @@ To use it, you can import it via require or in the index file like so
       onLoadTileSetImage: (file, base64, setSrc) => {
         // every time a tileset is loaded, you can use the file, the base64 and setSrc to write your own method
         // For example here you can put the image data in cache,or upload it or whatever.
+        
         // Then use setSrc to set the tilemap's src tag
-        setSrc(base64);
+        setSrc(base64);// here you can pass something you made from the file blob instead of the base64
       }
     })
     </script>
