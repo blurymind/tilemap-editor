@@ -119,7 +119,6 @@
     let selection = [{}];
     let currentLayer = 2;
     let isMouseDown = false;
-    let tiles = [];
     let layers = [];
     let maps = {};
     let tileSets = {};
@@ -202,7 +201,7 @@
     }
 
     const getTileData = (x= null,y= null) =>{
-        const tilesetTiles = tiles[Number(tilesetDataSel.value)];
+        const tilesetTiles = tileSets[tilesetDataSel.value].tileData;
         let data;
         if(x === null && y === null){
             const {x: sx, y: sy} = selection[0];
@@ -210,14 +209,10 @@
         } else {
             data = tilesetTiles[`${x}-${y}`]
         }
-        // if(!data?.tileSymbol) {
-        //     data = {x,y,tilesetIdx:0, tileSymbol: ""}
-        // }
         return data;
     }
     const setTileData = (x,y,newData, key= "") =>{
-        console.log("GET ",tiles[Number(tilesetDataSel.value)])
-        const tilesetTiles = tiles[Number(tilesetDataSel.value)];
+        const tilesetTiles = tileSets[tilesetDataSel.value].tileData;
         if(!x && !y){
             const {x:sx, y:sy} = selection[0];
             tilesetTiles[`${sx}-${sy}`] = newData;
@@ -298,7 +293,6 @@
 
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {x, y, tilesetIdx} = layer.tiles[key];
-
                 ctx.drawImage(
                     TILESET_ELEMENTS[tilesetIdx],
                     x * SIZE_OF_CROP,
@@ -424,9 +418,6 @@
     function clearCanvas() {
         const result = window.confirm("This will clear the map...\nAre you sure you want to do this?");
         if (result) {
-            tiles = [{}];
-            // layers = [{}, {}, {}];
-            // stateHistory = [{}, {}, {}];
             initDataAfterLoad();
             draw();
         }
@@ -528,8 +519,7 @@
         // TODO create a sensible tileset data model,
         //  tilesets must have uids linked to their image, width and height, size of crop,
         // as well as tiles data (grid), currently embedded in tiles[Number(tilesetDataSel.value)], which goes to the map
-        // TODO tiles are not getting populated for a set,unless you navigate to it
-        const exportData = {asciiMap, kaboomJsCode, flattenedData, maps, tileSets: {IMAGES, tiles} };
+        const exportData = {asciiMap, kaboomJsCode, flattenedData, maps, tileSets };
         console.log("Exported ", exportData);
         return exportData;
     }
@@ -579,7 +569,8 @@
             newOpt.innerText = `tileset ${idx}`;
             newOpt.value = idx;
             tilesetDataSel.appendChild(newOpt);
-            tiles.push({});
+            // tiles.push({});
+
             const tilesetImgElement = document.createElement("img");
             tilesetImgElement.src = tsImage;
             // Add tileset data for all tiles
@@ -595,9 +586,10 @@
                 })
                 tileSets[idx] = {src: tsImage, name: `tileset ${idx}`, gridWidth, gridHeight, tileCount,
                     tileData: tilesetTileData, symbolStartIdx};
+
                 symbolStartIdx += tileCount;
-                console.log("Tile index",idx)
             })
+
             TILESET_ELEMENTS.push(tilesetImgElement);
         })
         Promise.all(Array.from(TILESET_ELEMENTS).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
@@ -609,7 +601,7 @@
         tilesetImage.addEventListener('load', function () {
             draw();
             updateLayers();
-            tiles[0] = tileSets[0].tileData;
+            // tiles[0] = tileSets[0].tileData;
             selection[0] = getTileData(0, 0);
             console.log("Set selection", selection[0])
             updateSelection();
@@ -634,7 +626,6 @@
         WIDTH = canvas.width;
         HEIGHT = canvas.height;
         selection = [{}];
-        tiles = [];
         stateHistory = [{}, {}, {}];
         ACTIVE_MAP = "Map_1";
         maps = {[ACTIVE_MAP]: getEmptyMap("Map 1")};
