@@ -9,6 +9,7 @@ try it online at https://blurymind.github.io/tilemap-editor/
   <a href="#information_source-features">Features</a>&nbsp;|
   <a href="#interrobang-reason">Reason</a>&nbsp;|
   <a href="#link-getting-started">Getting started</a>&nbsp;|
+  <a href="#link-api">Api use</a>&nbsp;|
   <a href="#link-how-to-contribute">How to Contribute</a>&nbsp;|
 </h3>
 
@@ -67,6 +68,36 @@ While I am a big fan of Tiled and LdTk, for my case I was looking for something 
    $ yarn
    $ yarn start
    ```
+
+## :link: Api
+
+To use it,you can import it via require or in the index file like so
+
+   ```bash
+   // include the js and css files
+   <link rel="stylesheet" href="styles.css" />
+   <script src="tilemap.js"></script>
+   
+   <script>
+   TilemapJs.init("tileMapEditor",{
+      tileSize:32, // initial tile size (opt)
+      mapWidth: 20, // initial map width/height (opt)
+      mapHeight: 20,
+      tileSetImages: [tilesetImageImgr, tilesetImageLocal], // image src for tilesets (required at least one)
+      applyButtonText: "OK", // custom button title
+      // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
+      onApply:console.log, // custom button callback (returns maps and tilesets data to use in other engines/apps)
+      // You can write your own custom load image function here and use it for the tilemap src. If you dont, the base64 string will be used instead
+      onLoadTileSetImage: (file, base64, setSrc) => {
+        // every time a tileset is loaded, you can use the file, the base64 and setSrc to write your own method
+        // For example here you can put the image data in cache,or upload it or whatever.
+        // Then use setSrc to set the tilemap's src tag
+        setSrc(base64);
+      }
+    })
+    </script>
+   ```
+   
 
 ## :link: How to Contribute
 
