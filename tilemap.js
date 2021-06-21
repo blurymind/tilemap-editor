@@ -249,7 +249,10 @@
     // TODO move all tileset data set stuff to updateTilesets
     function updateTilesetGridContainer(){
         const viewMode = tileDataSel.value;
-        const {tileCount, gridWidth, tileData} = tileSets[tilesetDataSel.value];
+        const tilesetData  = tileSets[tilesetDataSel.value];
+        if(!tilesetData) return;
+
+        const {tileCount, gridWidth, tileData} = tilesetData;
         console.log("Tilesets data", tileSets, tileSets[tilesetDataSel.value], tilesetDataSel.value)
         const newGrid = Array.from({length: tileCount}, (x, i) => i).map(tile=>{
             const x = tile % gridWidth;
@@ -553,11 +556,8 @@
         updateTilesetGridContainer();
         draw();
     }
-    const setCropSize = (newSize) =>{
-        maps[ACTIVE_MAP].tileSize = newSize;
-        SIZE_OF_CROP = newSize;
-        cropSize.value = SIZE_OF_CROP;
-    }
+
+    // Note: only call this when tileset images have changed
     const updateTilesets = () =>{
         TILESET_ELEMENTS = [];
         tilesetDataSel.innerHTML = "";
@@ -569,20 +569,20 @@
             newOpt.innerText = `tileset ${idx}`;
             newOpt.value = idx;
             tilesetDataSel.appendChild(newOpt);
-            // tiles.push({});
-
             const tilesetImgElement = document.createElement("img");
             tilesetImgElement.src = tsImage;
             // Add tileset data for all tiles
             tilesetImgElement.addEventListener("load",()=>{
-                const gridWidth = Math.floor(tilesetImgElement.width / SIZE_OF_CROP);
-                const gridHeight = Math.floor(tilesetImgElement.height / SIZE_OF_CROP);
+                const gridWidth = tilesetImgElement.width / SIZE_OF_CROP;
+                const gridHeight = Math.ceil(tilesetImgElement.height / SIZE_OF_CROP);
                 const tileCount = gridWidth * gridHeight;
                 const tilesetTileData = {};
                 Array.from({length: tileCount}, (x, i) => i).map(tile=>{
                     const x = tile % gridWidth;
                     const y = Math.floor(tile / gridWidth);
-                    tilesetTileData[`${x}-${y}`] = {x,y,tilesetIdx:idx, tileSymbol: randomLetters[symbolStartIdx + tile] || tile}
+                    tilesetTileData[`${x}-${y}`] = {
+                        x, y, tilesetIdx: idx, tileSymbol: randomLetters[Math.floor(symbolStartIdx + tile)] || tile
+                    }
                 })
                 tileSets[idx] = {src: tsImage, name: `tileset ${idx}`, gridWidth, gridHeight, tileCount,
                     tileData: tilesetTileData, symbolStartIdx};
@@ -592,12 +592,15 @@
 
             TILESET_ELEMENTS.push(tilesetImgElement);
         })
-        Promise.all(Array.from(TILESET_ELEMENTS).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
-            tilesetImage.src = TILESET_ELEMENTS[0].src;
-            console.info('images finished loading! Set tileset atlas to ', tilesetImage.src);
-            updateSelection();
-            updateTilesetGridContainer();
-        });
+        Promise.all(Array.from(TILESET_ELEMENTS).filter(img => !img.complete)
+            .map(img => new Promise(resolve => { img.onload = img.onerror = resolve; })))
+            .then(() => {
+                tilesetImage.src = TILESET_ELEMENTS[0].src;
+                console.info('images finished loading! Set tileset atlas to ', tilesetImage.src);
+                updateSelection();
+                updateTilesetGridContainer();
+            });
+
         tilesetImage.addEventListener('load', function () {
             draw();
             updateLayers();
@@ -606,7 +609,15 @@
             updateTilesetGridContainer();
             document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
         });
+    }
 
+    const setCropSize = (newSize) =>{
+        maps[ACTIVE_MAP].tileSize = newSize;
+        SIZE_OF_CROP = newSize;
+        cropSize.value = SIZE_OF_CROP;
+        updateTilesets();
+        updateTilesetGridContainer();
+        draw();
     }
 
     const updateMaps = ()=>{
