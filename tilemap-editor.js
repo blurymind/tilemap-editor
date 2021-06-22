@@ -71,7 +71,8 @@
                 <span class="flex">height: </span><input id="canvasHeightInp" value="1" type="number" min="1">
               </div>
               <div class="tileset_opt_field">
-                <button id="clearCanvasBtn" title="clear map">💥 Clear map</button>
+                <button id="renameMapBtn" title="Rename map">🏷️ Rename map</button>
+                <button id="clearCanvasBtn" title="Clear map">💥 Clear map</button>
               </div>
           </div>
 
@@ -756,12 +757,12 @@
         })
         document.getElementById("addMapBtn").addEventListener("click",()=>{
             const suggestMapName = `Map ${Object.keys(maps).length + 1}`;
-            const result = window.prompt("Enter new map name...", suggestMapName);
+            const result = window.prompt("Enter new map key...", suggestMapName);
             if(result !== null) {
 
                 const newMapKey = result.trim().replaceAll(" ","_") || suggestMapName;
                 if (newMapKey in maps){
-                    alert("A map with this name already exists.")
+                    alert("A map with this key already exists.")
                     return
                 }
                 maps[newMapKey] = getEmptyMap(result.trim());
@@ -922,6 +923,18 @@
         } else {
             confirmBtn.addEventListener('click', exportImage);
         }
+
+        document.getElementById("renameMapBtn").addEventListener("click",()=>{
+            const newName = window.prompt("Change map name:", maps[ACTIVE_MAP].name || "Map");
+            if(newName !== null && maps[ACTIVE_MAP].name !== newName){
+                if(Object.values(maps).map(map=>map.name).includes(newName)){
+                    alert(`${newName} already exists`);
+                    return
+                }
+                maps[ACTIVE_MAP].name = newName;
+                updateMaps();
+            }
+        })
 
         initDataAfterLoad();
 
