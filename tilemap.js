@@ -224,7 +224,17 @@
             tilesetTiles[`${x}-${y}`] = newData;
         }
     }
-    function updateSelection() {
+
+    const setActiveTool = (toolIdx) => {
+        ACTIVE_TOOL = Number(toolIdx);
+        document.getElementById("toolButtonsWrapper").childNodes.forEach((child, idx)=>{
+            child.className = "button-as-link"
+        });
+        document.getElementById("toolButtonsWrapper").querySelector(`[value="${toolIdx}"]`)
+            .className = "button-as-link active-tool"
+    }
+
+    const updateSelection = () => {
         const selected = selection[0];
         if(!selected) return;
         const {x, y} = selected;
@@ -243,6 +253,8 @@
             const tileData = getTileData();
             tilesetSelection.innerText = tileData?.tileSymbol || "";
         }
+
+        if(ACTIVE_TOOL === 1) setActiveTool(0);
     }
 
     const randomLetters = new Array(10680).fill(1).map((_, i) => String.fromCharCode(165 + i));
@@ -341,16 +353,15 @@
             if (event.type === 'pointerdown' || event.type === 'pointermove') {
                 applyCtrlZ(key, isArray);
             }
-
             return;
         }
-
         updateStateHistory(key, isArray);
 
         if (event.shiftKey || event.button === 1) {
             removeTile(key);
         } else if (event.ctrlKey || event.button === 2) {
-            getTile(key);
+            const pickedTile = getTile(key);
+            if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1)
         } else {
             if(ACTIVE_TOOL === 0){
                 addTile(key);
@@ -390,6 +401,9 @@
             //     updateTilesetGridContainer();
             // }
             updateSelection();
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -869,11 +883,7 @@
 
         document.getElementById("toolButtonsWrapper").addEventListener("click",e=>{
             if (e.target.nodeName !== 'BUTTON') return;
-            ACTIVE_TOOL = Number(e.target.value);
-            document.getElementById("toolButtonsWrapper").childNodes.forEach((child, idx)=>{
-                child.className = "button-as-link"
-            });
-            e.target.className = "button-as-link active-tool"
+            setActiveTool(e.target.value);
         })
 
         cropSize.addEventListener('change', e=>{
@@ -891,18 +901,22 @@
         initDataAfterLoad();
 
         document.getElementById("aboutBtn").addEventListener("click", () =>{
-            alert(`
+            const ask = window.confirm(`
                 Tilemap editor
                 Created by Todor Imreorov (blurymind@gmail.com)
                 https://github.com/blurymind/tilemap-editor
                 
+                Would you like to donate to the project or visit its page?
+                
+                Instructions:
                 right click on map - picks tile
                 mid-click - erases tile
                 left-click adds tile
                 
                 right-click on tileset - lets you change tile symbol or metadata
-                left-click - selects tile
+                left-click - selects tile      
             `)
+            if(ask) window.open('https://github.com/blurymind/tilemap-editor', '_blank');
         })
     };
 });
