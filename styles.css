@@ -72,7 +72,7 @@
 
 #tilesetDataSel,
 #mapsDataSel {
-  max-width: 60px;
+  max-width: 75px;
 }
 .tileset_opt_field.header{
   padding: 3px;
@@ -182,7 +182,7 @@ cursor: pointer;
   padding: 2px;
 }
 .card_left_column{
-  max-width: 320px;
+  max-width: 330px;
   overflow: auto;
   padding-right: 3px;
   max-height: 95vh;
