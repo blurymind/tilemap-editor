@@ -27,7 +27,7 @@
   display: flex;
   flex: 1;
   height: 100%;
-  padding-top: 6px;
+  /*padding-top: 6px;*/
 }
 
 .card_right-column {
@@ -44,6 +44,7 @@
   height: 50vh;
   border-radius: 3px;
   user-select: none;
+  padding-right: 0;
 }
 #mapCanvas {
   border:1px solid cyan;
@@ -63,8 +64,14 @@
   border-radius: 3px;
   width: 50px;
 }
+
+.tileset_opt_field input,
 .canvas_resizer input {
   max-width: 45px;
+}
+
+.tileset_opt_field.header{
+  padding: 3px;
 }
 .canvas_resizer.vertical{
   position: absolute;
@@ -100,7 +107,7 @@ text-align: center;
 }
 
 .tilemapjs_root {
- font-family: 'Courier New', monospace;
+ font-family: Arial, Helvetica, sans-serif;
 }
 
 .layers button {
@@ -152,6 +159,7 @@ cursor: pointer;
 }
 
 .tileset_opt_field{
+  font-size: 0.9em;
   display:flex;
   flex-direction: row;
   height:30px;
@@ -165,8 +173,12 @@ cursor: pointer;
   overflow: hidden;
 }
 
+.details_container {
+  border: 1px #797979 solid;
+  padding: 2px;
+}
 .card_left_column{
-  max-width: 280px;
+  max-width: 320px;
   overflow: auto;
   padding-right: 3px;
   max-height: 95vh;
@@ -175,6 +187,7 @@ cursor: pointer;
 
 .layers {
   height: 100%;
+  width: 200px;
   overflow: auto;
   display: flex;
   flex-direction: column;
@@ -189,6 +202,10 @@ cursor: pointer;
 }
 .select_layer{
   flex:1;
+  /*max-width: 200px;*/
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .layer:hover{
   background-color: rgba(255, 255, 0, 0.05);
@@ -205,7 +222,7 @@ cursor: pointer;
 }
 @media only screen and (max-width: 600px) {
   .card_body {
-    padding-top: 1px;
+    /*padding-top: 1px;*/
     flex-direction: column;
   }
   .card aside {
@@ -215,14 +232,14 @@ cursor: pointer;
     border-top: solid grey 1px;
     padding-right: 0;
     padding-top: 3px;
-    flex: 3;
+    flex: 4;
   }
   .card_right-column.layers{
     padding-bottom: 25px;
     position: relative;
   }
   .card_left_column{
-    flex: 1;
+    flex: 2;
     overflow: auto;
     padding-right: 0;
     max-width: unset;
@@ -230,10 +247,13 @@ cursor: pointer;
   .tileset_opt_field {
     font-size: 0.7em;
   }
+  .layers{
+    width:100%;
+  }
 }
 
 .sticky {
-  background: yellow;
+  background: #c2daff;
   color: #0a0101;
   position: sticky;
   top: 0;
@@ -255,6 +275,7 @@ cursor: pointer;
   color: white;
   text-shadow: 1px 1px black;
 }
+
 .select_container select {
   flex: 1;
 }

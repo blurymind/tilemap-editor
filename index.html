@@ -24,7 +24,7 @@
         margin: 0;
       }
     </style>
-    <script src="tilemap.js"></script>
+    <script src="tilemap-editor.js"></script>
 
     <title>TilemapJs</title>
   </head>
@@ -53,21 +53,45 @@
     const tilesetImageImgr = "https://i.imgur.com/ztwPZOI.png";
     const tilesetImageLocal = "./free.png";
 
-    const Tilemap = TilemapJs.init("tileMapEditor",{
+    // Example exporter
+    const kaboomJsExporter = {
+      // The export menu entry name
+      name: "kaboomJs boilerplate",
+      // Here you convert the data to the structure you need it to be
+      transformer: (data) => {
+        let kaboomData = data;
+
+        // Then you simply return the result. It can be any type of data
+        return kaboomData
+      },
+      //passTo controls what happens to the exported data
+      // "clipboard" simply copies the result in the user's clipboard
+      // "file" saves it as a file
+      // "apply" passes it to and triggers the onApply callback
+      passTo: "clipboard", // it can be "file" || "apply"
+    }
+    TilemapEditor.init("tileMapEditor",{
       tileSize:32,
       mapWidth: 20,
       tileSetImages: [tilesetImageImgr, tilesetImageLocal],
       applyButtonText: "OK",
+      exporters: {kaboomJsExporter}, // These turn into menu options for exporting data
       // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
       onApply:console.log,
       // You can write your own custom load image function here and use it for the tilemap src. If you dont, the base64 string will be used instead
-      onLoadTileSetImage: (file, base64, setSrc) => {
+      onLoadTileSetImage: (setSrc, file, base64) => {
         uploadImageToImgur(file).then(result=>{
           console.log(file, base64);
           console.log("Uploaded to imgur", result);
           setSrc(result.data.link);
         });
-      }
+      },
+      // if you pass a tileSetLoaderPrompt, it will override onLoadTileSetImage and instead use whatever you pass to setSrc
+      // without prompting the user for a file on their file system
+      // tileSetLoaderPrompt: (setSrc) =>{
+      //   const fileUrl = window.prompt("What is the url of the tileset?", "https://i.imgur.com/ztwPZOI.png");
+      //   if(fileUrl !== null) setSrc(fileUrl)
+      // }
     })
   </script>
   </body>
