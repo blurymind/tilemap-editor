@@ -99,7 +99,7 @@
         </div>
         </div>
       <div class="card_right-column layers">
-        <label class="sticky add_layer"><div>Editing Layer: </div><button id="addLayerBtn" title="Add layer"> ➕</button></label>
+        <label class="sticky add_layer"><label id="activeLayerLabel">Editing Layer </label><button id="addLayerBtn" title="Add layer"> ➕</button></label>
         <div class="layers" id="layers">
       </div>
       </div>
@@ -144,12 +144,13 @@
     function setLayer(newLayer) {
         currentLayer = Number(newLayer);
 
-        oldActivedLayer = document.querySelector('.layer.active');
+        const oldActivedLayer = document.querySelector('.layer.active');
         if (oldActivedLayer) {
             oldActivedLayer.classList.remove('active');
         }
 
         document.querySelector(`.layer[tile-layer="${newLayer}"]`)?.classList.add('active');
+        document.getElementById("activeLayerLabel").innerText = `Editing Layer: ${layers[newLayer]?.name}`;
     }
 
     function setLayerIsVisible(layer, override = null) {
