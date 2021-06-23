@@ -701,7 +701,7 @@
         // Attach
         const attachTo = document.getElementById(attachToId);
         if(attachTo === null) return;
-        apiTileSetLoaders = tileSetLoaders;
+        apiTileSetLoaders = tileSetLoaders || {};
         apiTileSetLoaders.base64 = {
             name: "Fs (as base64)",
             onSelectImage: (setSrc, file, base64) => {
