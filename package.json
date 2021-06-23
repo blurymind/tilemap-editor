@@ -2,7 +2,7 @@
   "name": "tilemap-editor",
   "version": "0.2.4",
   "description": "A fat-free tilemap editor with zero dependencies and a scalable, mobile-friendly interface!",
-  "main": "tilemap-editor.js",
+  "main": "src/tilemap-editor.js",
   "scripts": {
     "start": "serve",
     "deploy": "gh-pages -d ."

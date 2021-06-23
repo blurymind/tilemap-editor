@@ -50,6 +50,7 @@
   border:1px solid cyan;
   border-radius: 3px;
   touch-action: none;
+  /*touch-action: auto;*/
 }
 #tileset-source {
   pointer-events: none;
