@@ -111,26 +111,20 @@
       e.preventDefault();
       deferredPrompt = e;
       addBtn.style.display = 'block';
-
       addBtn.addEventListener('click', () => {
         addBtn.style.display = 'none';
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
-          // if (choiceResult.outcome === 'accepted') {
-          //   console.log('User accepted the A2HS prompt');
-          // } else {
-          //   console.log('User dismissed the A2HS prompt');
-          // }
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the A2HS prompt');
+          }
           deferredPrompt = null;
         });
       });
     });
     window.addEventListener('appinstalled', () => {
-      // Hide the app-provided install promotion
       addBtn.style.display = 'none';
-      // Clear the deferredPrompt so it can be garbage collected
       deferredPrompt = null;
-      // Optionally, send analytics event to indicate successful install
       console.log('PWA was installed');
     });
 

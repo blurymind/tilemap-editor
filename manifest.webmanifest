@@ -1,0 +1,17 @@
+{
+  "background_color": "black",
+  "description": "Let's you create and edit tile maps anywhere",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "name": "TileMap Editor",
+  "short_name": "Tile map",
+  "start_url": "/tilemap-editor/index.html",
+  "theme_color": "purple"
+}
