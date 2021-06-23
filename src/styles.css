@@ -1,3 +1,41 @@
+/* Minimal dropdown */
+.menu:hover .dropdown {
+  max-height: 700px;
+}
+.menu {
+  background: #00000033;
+  padding: 3px;
+  border-radius: 3px;
+  min-width: 70px;
+  z-index: 400;
+}
+.menu .dropdown {
+  clear: left;
+  overflow: auto;
+  max-height: 0px;
+  transition: max-height 0.5s;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  position: absolute;
+  background: #000000e0;
+  color: white;
+  min-width: 200px;
+  border-radius: 5px;
+  left: 3px;
+}
+.menu:hover {
+  background: rgba(0, 0, 0, 0.88);
+}
+.menu .dropdown .item {
+  display: block;
+  box-sizing: border-box;
+  padding: 7px;
+}
+.menu .dropdown .item:hover {
+  color: black;
+  background: rgba(219, 198, 198, 0.88);
+}
+
 .card {
   height: 100%;
 }
@@ -45,6 +83,9 @@
   border-radius: 3px;
   user-select: none;
   padding-right: 0;
+}
+.card_right-column.layers:hover{
+  background: rgba(0, 0, 0, 0.69);
 }
 #mapCanvas {
   border:1px solid cyan;

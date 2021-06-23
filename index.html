@@ -35,6 +35,46 @@
   <div id="tileMapEditor"></div>
   <button id="addPwaBtn" >🍰 Install pwa</button>
   <script>
+    // kaboomJs example exporter
+    const kaboomJsExport = ({flattenedData, topLayer, layers}) =>{
+      const asciiMap = `\n${flattenedData[topLayer].map((row,rowIndex) => "'" + row.map(tile => tile.tileSymbol).join("")).join("',\n") + "'"}`;
+      const kaboomJsCode = `
+        layers([${layers.map(layer => layer.name).join(",")}]);
+        // slice the image into 12 x 3 = 36 frames with equal sizes
+        // need to name the tileset here, path is the base64
+        loadSprite("tileset", "path_to_image.png", {
+            sliceX: 12,
+            sliceY: 3,
+        });
+        add([
+            sprite("tileset", { frame: 12, }),
+        ]);
+
+        // https://kaboomjs.com/examples#rpg
+        // kaboom maps can take from multiple tilesets
+        addLevel(levels[levelIdx], {
+            width: 11,
+            height: 11,
+            pos: vec2(20, 20),
+            "=": [
+                sprite("tileset", { frame: 1, }),
+                solid(),
+            ],
+            "$": [
+                sprite("tileset", { frame: 2, }),
+                "key",
+             ],
+        });
+        // will only draw the rectangle area of x: 0, y: 0, w: 0.2, h: 0.2 of the image
+        add([
+            sprite("tileset", { quad: quad(0, 0, 0.2, 0.2), }),
+        ])
+        `;
+
+      console.log("WIP kaboomjs code exporter\n\n", kaboomJsCode, asciiMap)
+      // return the transformed data in the end
+      return asciiMap
+    };
     // upload to imgur, then return the src
     const uploadImageToImgur = (blob) => {
       const formData = new FormData();
@@ -78,10 +118,6 @@
       tileSize:32,
       mapWidth: 20,
       tileSetImages: [tilesetImageImgr, tilesetImageLocal],
-      exporters: {kaboomJsExporter}, // These turn into menu options for exporting data
-      // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
-      onApply:console.log, // adds a button in the header to trigger a callback with the exported data (optional)
-      applyButtonText: "OK", // controls the apply button's text
       // You can write your own custom load image function here and use it for the tileset src. If you dont, the base64 string will be used instead
       tileSetLoaders: {
         fromUrl: {
@@ -101,7 +137,23 @@
             });
           },
         },
-      }
+      },
+      // You can write your own tilemap exporters here. Whatever they return will get added to the export data you get out when you trigger onAppy
+      tileMapExporters: {
+        kaboomJs: { // the exporter's key is later used by the onApply option
+          name: "Export KaboomJs",
+          description: "Exports boilerplate js code for KaboomJs",
+          transformer: kaboomJsExport
+        }
+      },
+      // If passed, a new button gets added to the header, upon being clicked, you can get data from the tilemap editor and trigger events
+      onApply: {
+        exporter: "kaboomJs", // we need to give it an exporter that exists, otherwise it will export the raw data
+        onClick: ({flattenedData, topLayer, layers}) => {
+          console.log("Apply, gets exporter data")
+        },
+        buttonText: "OK", // controls the apply button's text
+      },
     })
 
     // Pwa stuff

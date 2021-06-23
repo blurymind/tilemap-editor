@@ -38,6 +38,15 @@
        <div id="tilemapjs_root" class="card tilemapjs_root">
  
        <div class="tileset_opt_field header">
+       <div class="menu">
+            <span> File </span>
+            <div class="dropdown" id="fileMenuDropDown">
+                <span class="item" onclick="alert('TODO')">Open json</span>
+                <span class="item" onclick="alert('TODO')">Save json</span>
+                <span class="item" onclick="alert('TODO')">Save screenshot</span>
+                <span class="item" onclick="alert('TODO')">About</span>
+            </div>
+        </div>
         <div id="toolButtonsWrapper">
           <button class="button-as-link active-tool" id="paintToolBtn" value="0" title="paint tiles">🖌️</button>
           <button class="button-as-link" id="eraseToolBtn" value="1" title="erase tiles">🗑️</button>
@@ -142,6 +151,7 @@
 
     let apiTileSetLoaders = {};
     let selectedTileSetLoader = {};
+    let apiTileMapExporters = {};
 
     function getContext() {
         const ctx = canvas.getContext('2d');
@@ -492,16 +502,15 @@
         }
     }
 
-    const getExportData = () => {
+    const getFlattenedData = () => {
         const flattenedData = Array(layers.length).fill([]).map(()=>{
-            return Array(mapTileHeight).fill([]).map(row=>{
-                return Array(mapTileWidth).fill([]).map(column => ({
-                    tile: null,
-                    tileSymbol: " "// a space is an empty tile
-                }))
-            })
-        })
-
+           return Array(mapTileHeight).fill([]).map(row=>{
+               return Array(mapTileWidth).fill([]).map(column => ({
+                   tile: null,
+                   tileSymbol: " "// a space is an empty tile
+               }))
+           })
+       });
         layers.forEach((layerObj,lrIndex) => {
             Object.entries(layerObj.tiles).forEach(([key,tile])=>{
                 const [x,y] = key.split("-");
@@ -510,59 +519,10 @@
                 }
             })
         });
-
-        const activeLayer = layers.length - 1; // Top layer is automatically used as the player map
-        const asciiMap = `\n${flattenedData[activeLayer].map((row,rowIndex) => "'" + row.map(tile => tile.tileSymbol).join("")).join("',\n") + "'"}
-        `
-
-        //TODO tileset generation code
-        const kaboomTileset = ``;
-        //TODO tilemap background generation code for all layers below the top one
-        const kaboomBGLayers = ``;
-        // generate map code for kaboomjs
-        const kaboomJsCode = `
-        layers([${layers.map(layer=>layer.name).join(",")}]);
-        // slice the image into 12 x 3 = 36 frames with equal sizes
-        // need to name the tileset here, path is the base64
-        loadSprite("tileset", "path_to_image.png", {
-            sliceX: 12,
-            sliceY: 3,
-        });
-        add([
-            sprite("tileset", { frame: 12, }),
-        ]);
-        
-        // https://kaboomjs.com/examples#rpg
-        // kaboom maps can take from multiple tilesets
-        addLevel(levels[levelIdx], {
-            width: 11,
-            height: 11,
-            pos: vec2(20, 20),
-            "=": [
-                sprite("tileset", { frame: 1, }),
-                solid(),
-            ],
-            "$": [
-                sprite("tileset", { frame: 2, }),
-                "key",
-             ],
-        });
-        // will only draw the rectangle area of x: 0, y: 0, w: 0.2, h: 0.2 of the image
-        add([
-            sprite("tileset", { quad: quad(0, 0, 0.2, 0.2), }),
-        ]);
-        
-        //tilemap code
-        const level = [
-            ${asciiMap}
-        ];
-        `;
-
-        console.log("FLATTENED", flattenedData, kaboomJsCode);
-        // TODO create a sensible tileset data model,
-        //  tilesets must have uids linked to their image, width and height, size of crop,
-        // as well as tiles data (grid), currently embedded in tiles[Number(tilesetDataSel.value)], which goes to the map
-        const exportData = {asciiMap, kaboomJsCode, flattenedData, maps, tileSets };
+        return flattenedData;
+    };
+    const getExportData = () => {
+        const exportData = {maps, tileSets, flattenedData: getFlattenedData(), layers, topLayer: layers.length - 1};
         console.log("Exported ", exportData);
         return exportData;
     }
@@ -697,12 +657,14 @@
             tileSetImages,
             applyButtonText,
             onApply,
-            tileSetLoaders
+            tileSetLoaders,
+            tileMapExporters
         }
     ) => {
         // Attach
         const attachTo = document.getElementById(attachToId);
         if(attachTo === null) return;
+
         apiTileSetLoaders = tileSetLoaders || {};
         apiTileSetLoaders.base64 = {
             name: "Fs (as base64)",
@@ -710,6 +672,7 @@
                 setSrc(base64);
             },
         }
+        apiTileMapExporters = tileMapExporters;
 
         IMAGES = tileSetImages;
         SIZE_OF_CROP = tileSize || 32;
@@ -728,7 +691,7 @@
 
         confirmBtn = document.getElementById("confirmBtn");
         if(onApply){
-            confirmBtnText = applyButtonText;
+            confirmBtnText = applyButtonText || "Ok";
             confirmBtn.innerText = confirmBtnText;
         } else {
             confirmBtn.style.display = "none";
@@ -940,7 +903,7 @@
 
         clearCanvasBtn.addEventListener('click', clearCanvas);
         if(onApply){
-            confirmBtn.addEventListener('click', () => onApply(getExportData()));
+            confirmBtn.addEventListener('click', () => onApply.onClick({data: getExportData()}));
         } else {
             confirmBtn.addEventListener('click', exportImage);
         }
@@ -955,6 +918,20 @@
                 maps[ACTIVE_MAP].name = newName;
                 updateMaps();
             }
+        })
+        const fileMenuDropDown = document.getElementById("fileMenuDropDown");
+
+        Object.entries(tileMapExporters).forEach(([key, exporter])=>{
+            const menuItem = document.createElement("span");
+            menuItem.className = "item";
+            menuItem.innerText = exporter.name;
+            menuItem.title = exporter.description;
+            menuItem.value = key;
+            menuItem.onclick = () => {
+                exporter.transformer(getExportData());
+            }
+            console.log("ADD exporter", menuItem)
+            fileMenuDropDown.appendChild(menuItem);
         })
 
         initDataAfterLoad();
