@@ -82,20 +82,26 @@
       exporters: {kaboomJsExporter}, // These turn into menu options for exporting data
       // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
       onApply:console.log,
-      // You can write your own custom load image function here and use it for the tilemap src. If you dont, the base64 string will be used instead
-      onLoadTileSetImage: (setSrc, file, base64) => {
-        uploadImageToImgur(file).then(result=>{
-          console.log(file, base64);
-          console.log("Uploaded to imgur", result);
-          setSrc(result.data.link);
-        });
-      },
-      // if you pass a tileSetLoaderPrompt, it will override onLoadTileSetImage and instead use whatever you pass to setSrc
-      // without prompting the user for a file on their file system
-      // tileSetLoaderPrompt: (setSrc) =>{
-      //   const fileUrl = window.prompt("What is the url of the tileset?", "https://i.imgur.com/ztwPZOI.png");
-      //   if(fileUrl !== null) setSrc(fileUrl)
-      // }
+      // You can write your own custom load image function here and use it for the tileset src. If you dont, the base64 string will be used instead
+      tileSetLoaders: {
+        fromUrl: {
+          name: "Any url", // name is required and used for the loader's title in the select menu
+          prompt: (setSrc) => { // Pass prompt ot onSelectImage. Prompt lets you do anything without asking the user to select a file
+            const fileUrl = window.prompt("What is the url of the tileset?", "https://i.imgur.com/ztwPZOI.png");
+            if(fileUrl !== null) setSrc(fileUrl)
+          }
+        },
+        imgur: {
+          name: "Imgur (host)",
+          onSelectImage: (setSrc, file, base64) => { // In case you want them to give you a file from the fs, you can do this instead of prompt
+            uploadImageToImgur(file).then(result=>{
+              console.log(file, base64);
+              console.log("Uploaded to imgur", result);
+              setSrc(result.data.link);
+            });
+          },
+        },
+      }
     })
 
     // Pwa stuff
