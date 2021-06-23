@@ -113,6 +113,7 @@ text-align: center;
 
 .tilemapjs_root {
  font-family: Arial, Helvetica, sans-serif;
+ touch-action: manipulation;
 }
 
 .layers button {

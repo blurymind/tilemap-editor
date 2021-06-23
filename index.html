@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <meta name="description" content="Create your tile map with this online Tile Map Editor" />
-
     <link rel="stylesheet" href="src/styles.css" />
+
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#317EFB">
+    <link rel="apple-touch-icon" href="/icon.png">
     <style>
       * {
         box-sizing: border-box;
@@ -30,6 +33,7 @@
   </head>
   <body>
   <div id="tileMapEditor"></div>
+  <button id="addPwaBtn" >🍰 Install pwa</button>
   <script>
     // upload to imgur, then return the src
     const uploadImageToImgur = (blob) => {
@@ -93,6 +97,57 @@
       //   if(fileUrl !== null) setSrc(fileUrl)
       // }
     })
+
+    // Pwa stuff
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+              .register('/tilemap-editor/sw.js')
+              .then(() => { console.log('Service Worker Registered'); });
+    }
+    let deferredPrompt;
+    const addBtn = document.getElementById("addPwaBtn");
+    addBtn.style.display = 'none';
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      addBtn.style.display = 'block';
+
+      addBtn.addEventListener('click', () => {
+        addBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          // if (choiceResult.outcome === 'accepted') {
+          //   console.log('User accepted the A2HS prompt');
+          // } else {
+          //   console.log('User dismissed the A2HS prompt');
+          // }
+          deferredPrompt = null;
+        });
+      });
+    });
+    window.addEventListener('appinstalled', () => {
+      // Hide the app-provided install promotion
+      addBtn.style.display = 'none';
+      // Clear the deferredPrompt so it can be garbage collected
+      deferredPrompt = null;
+      // Optionally, send analytics event to indicate successful install
+      console.log('PWA was installed');
+    });
+
   </script>
+
+  <style>
+    #addPwaBtn {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      background: #1a1a1a;
+      color: yellow;
+      border: 1px solid grey;
+      border-radius: 3px;
+      padding: 10px;
+    }
+  </style>
+
   </body>
 </html>
