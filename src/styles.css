@@ -172,6 +172,7 @@ cursor: pointer;
   gap: 3px;
   align-items: center;
   padding: 0 2px;
+  justify-content: space-between;
 }
 
 .tilemap_editor_root{

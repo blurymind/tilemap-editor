@@ -43,8 +43,11 @@
           <button class="button-as-link" id="eraseToolBtn" value="1" title="erase tiles">🗑️</button>
           <button class="button-as-link" id="panToolBtn" value="2" title="pan">✋</button> 
         </div>
-         <button class="button-as-link" id="aboutBtn" title="About...">❓</button>
-        <button class="primary-button" id="confirmBtn">${confirmBtnText  || "Export image"}</button>
+        <div>
+            <button class="button-as-link" id="aboutBtn" title="About...">❓</button>
+            <button class="primary-button" id="confirmBtn">${confirmBtnText || "apply"}</button>
+        </div>
+
       </div>
       <div class="card_body">
         <div class="card_left_column">
@@ -282,7 +285,7 @@
         if(!tilesetData) return;
 
         const {tileCount, gridWidth, tileData} = tilesetData;
-        console.log("Tilesets data", tileSets, tileSets[tilesetDataSel.value], tilesetDataSel.value)
+        // console.log("Tilesets data", tileSets, tileSets[tilesetDataSel.value], tilesetDataSel.value)
         const newGrid = Array.from({length: tileCount}, (x, i) => i).map(tile=>{
             const x = tile % gridWidth;
             const y = Math.floor(tile / gridWidth);
@@ -637,7 +640,6 @@
             .map(img => new Promise(resolve => { img.onload = img.onerror = resolve; })))
             .then(() => {
                 tilesetImage.src = TILESET_ELEMENTS[0].src;
-                console.info('images finished loading! Set tileset atlas to ', tilesetImage.src);
                 updateSelection();
                 updateTilesetGridContainer();
             });
@@ -723,9 +725,14 @@
         tilesetImage = document.getElementById('tileset-source');
         cropSize = document.getElementById('cropSize');
         clearCanvasBtn = document.getElementById("clearCanvasBtn");
+
         confirmBtn = document.getElementById("confirmBtn");
-        confirmBtnText = applyButtonText;
-        confirmBtn.innerText = confirmBtnText;
+        if(onApply){
+            confirmBtnText = applyButtonText;
+            confirmBtn.innerText = confirmBtnText;
+        } else {
+            confirmBtn.style.display = "none";
+        }
         canvas = document.querySelector('canvas');
         tilesetContainer = document.querySelector('.tileset-container');
         tilesetSelection = document.querySelector('.tileset-container-selection');
@@ -787,7 +794,6 @@
         // Tileset DATA Callbacks //tileDataSel
         tileDataSel = document.getElementById("tileDataSel");
         tileDataSel.addEventListener("change",()=>{
-            console.log("Change tm")
             updateTilesetGridContainer();
         })
         document.getElementById("addTileTagBtn").addEventListener("click",()=>{
@@ -853,17 +859,14 @@
         });
         const tileSetLoadersSel = document.getElementById("tileSetLoadersSel");
         Object.entries(apiTileSetLoaders).forEach(([key,loader])=>{
-            console.log("TS loader", key,loader)
             const tsLoaderOption = document.createElement("option");
             tsLoaderOption.value = key;
             tsLoaderOption.innerText = loader.name;
             tileSetLoadersSel.appendChild(tsLoaderOption);
         });
         selectedTileSetLoader = apiTileSetLoaders[tileSetLoadersSel.value];
-        console.log("EEE", selectedTileSetLoader)
         tileSetLoadersSel.addEventListener("change", e=>{
             selectedTileSetLoader = apiTileSetLoaders[e.target.value];
-            console.log("changed to", selectedTileSetLoader)
         })
         document.getElementById("removeTilesetBtn").addEventListener("click",()=>{
             //Remove current tileset
@@ -904,11 +907,9 @@
             resizingCanvas = e.target.parentNode;
         })
         document.querySelector(".canvas_resizer[resizerdir='y'] input").addEventListener("change", e=>{
-            console.log("new:",e)
             updateMapSize({mapHeight: Number(e.target.value)})
         })
         document.querySelector(".canvas_resizer[resizerdir='x'] input").addEventListener("change", e=>{
-            console.log("new:",Number(e.target.value))
             updateMapSize({mapWidth: Number(e.target.value) })
         })
         document.addEventListener("pointermove", e=>{

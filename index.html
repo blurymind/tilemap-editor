@@ -78,10 +78,10 @@
       tileSize:32,
       mapWidth: 20,
       tileSetImages: [tilesetImageImgr, tilesetImageLocal],
-      applyButtonText: "OK",
       exporters: {kaboomJsExporter}, // These turn into menu options for exporting data
       // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
-      onApply:console.log,
+      onApply:console.log, // adds a button in the header to trigger a callback with the exported data (optional)
+      applyButtonText: "OK", // controls the apply button's text
       // You can write your own custom load image function here and use it for the tileset src. If you dont, the base64 string will be used instead
       tileSetLoaders: {
         fromUrl: {
