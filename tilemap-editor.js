@@ -264,7 +264,7 @@
             tilesetSelection.innerText = tileData?.tileSymbol || "";
         }
 
-        if(ACTIVE_TOOL === 1) setActiveTool(0);
+        setActiveTool(0);
     }
 
     const randomLetters = new Array(10680).fill(1).map((_, i) => String.fromCharCode(165 + i));
