@@ -236,7 +236,7 @@ cursor: pointer;
     border-top: solid grey 1px;
     padding-right: 0;
     padding-top: 3px;
-    flex: 4;
+    flex: 8;
   }
   .card_right-column.layers{
     padding-bottom: 25px;
@@ -247,12 +247,24 @@ cursor: pointer;
     overflow: auto;
     padding-right: 0;
     max-width: unset;
+    transition-duration: 500ms;
+    transition-property: flex;
+  }
+  .card_left_column:hover{
+    flex: 6;
   }
   .tileset_opt_field {
     font-size: 0.7em;
   }
   .layers{
     width:100%;
+  }
+  .card_right-column.layers{
+    transition-duration: 500ms;
+    transition-property: flex;
+  }
+  .card_right-column.layers:hover {
+    flex: 3;
   }
 }
 
