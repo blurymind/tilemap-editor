@@ -327,10 +327,10 @@
     }
 
     // the tile needs to use the image of the tileset it came from
-    function draw() {
+    function draw(shouldDrawGrid = true) {
         const ctx = getContext();
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
-        drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP);
+        if(shouldDrawGrid)drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP);
 
         layers.forEach((layer) => {
             Object.keys(layer.tiles).forEach((key) => {
@@ -477,13 +477,16 @@
     }
 
     function exportImage() {
+        draw(false);
         const data = canvas.toDataURL();
 
         const image = new Image();
         image.src = data;
+        image.crossOrigin = "anonymous";
 
         const w = window.open('');
         w.document.write(image.outerHTML);
+        draw();
     }
 
     exports.getLayers = ()=> {
@@ -573,6 +576,7 @@
             tilesetDataSel.appendChild(newOpt);
             const tilesetImgElement = document.createElement("img");
             tilesetImgElement.src = tsImage;
+            tilesetImgElement.crossOrigin = "Anonymous";
             // Add tileset data for all tiles
             tilesetImgElement.addEventListener("load",()=>{
                 const gridWidth = tilesetImgElement.width / SIZE_OF_CROP;
@@ -600,6 +604,7 @@
             .map(img => new Promise(resolve => { img.onload = img.onerror = resolve; })))
             .then(() => {
                 tilesetImage.src = TILESET_ELEMENTS[0].src;
+                tilesetImage.crossOrigin = "Anonymous";
                 updateSelection();
                 updateTilesetGridContainer();
             });
@@ -673,6 +678,10 @@
             },
         }
         apiTileMapExporters = tileMapExporters;
+        apiTileMapExporters.exportAsImage = {
+            name: "Export as image",
+            transformer: exportImage
+        }
 
         IMAGES = tileSetImages;
         SIZE_OF_CROP = tileSize || 32;
@@ -777,6 +786,7 @@
         tilesetDataSel = document.getElementById("tilesetDataSel");
         tilesetDataSel.addEventListener("change",e=>{
             tilesetImage.src = TILESET_ELEMENTS[e.target.value].src;
+            tilesetImage.crossOrigin = "Anonymous";
         })
 
         const replaceSelectedTileSet = (src) => {
@@ -904,8 +914,6 @@
         clearCanvasBtn.addEventListener('click', clearCanvas);
         if(onApply){
             confirmBtn.addEventListener('click', () => onApply.onClick({data: getExportData()}));
-        } else {
-            confirmBtn.addEventListener('click', exportImage);
         }
 
         document.getElementById("renameMapBtn").addEventListener("click",()=>{
