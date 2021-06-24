@@ -15,11 +15,11 @@ try it online at https://blurymind.github.io/tilemap-editor/
 
 ---
 
-## :information_source: About
+## :space_invader: About
 
 TileMap Editor is a fat-free tile map editor with zero dependencies and a scalable, mobile-friendly interface.
 
-## :information_source: features
+## :gift: features
 
 - Multiple tileset support
 - Multiple tilemap support (wip)
@@ -48,7 +48,7 @@ Planned:
   <img src="screenshots/mobile.png" />
 </p>
 
-## :interrobang: Reason
+## :cyclone: Reason
 
 But Todor, why are you making another tilemap editor with all these other ones out there?
 
@@ -61,7 +61,7 @@ While I am a big fan of Tiled and LdTk, for my case I was looking for something 
 - Again it just uses vanilla javascript, no react, no webpack, no 1gb+ eaten by the node modules folder. Inspect its code in the browser and it all there clear as a day.
 - No complicated build processes. Since it's just a js file, you don't need to wait for it to rebuild every time you change it
 
-## :link: Getting started
+## :eyeglasses: Getting started
 
    ```bash
    $ git clone https://github.com/blurymind/tilemap-editor.git
@@ -69,7 +69,7 @@ While I am a big fan of Tiled and LdTk, for my case I was looking for something 
    $ yarn start
    ```
 
-## :link: Api
+## :book: Api
 
 To get it from npm, you can run
 
@@ -132,7 +132,7 @@ To use it, you can import it via require or in the index file like so
    ```
    
 
-## :link: How to Contribute
+## :wrench: How to Contribute
 
 You are welcome to add new features or fix some bugs:
 
