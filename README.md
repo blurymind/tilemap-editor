@@ -87,28 +87,46 @@ To use it, you can import it via require or in the index file like so
 <script src="tilemap-editor.js"></script>
 
 <script>
-    TilemapEditor.init("tileMapEditor",{ // The first parameter is the id of the ellement you want to attach it to
-    tileSize: 32, // initial tile size (opt)
-    mapWidth: 20, // initial map width/height (opt)
-    mapHeight: 20,
-    tileSetImages: ["http://someUrlOrBase64String.com/tilemap-image.png"], // image src for tilesets (requires at least one atm)
-    applyButtonText: "OK", // custom button title
-    // You can write your own tilemap export function here, if you dont, tilemap-edit will simply download the data to your fs
-    onApply: (exportData, self) => {
-    // custom button callback (returns maps and tilesets data to use in other engines/apps)
-    console.log(exportData, self);
-
-    // It also returns itself, so you can close it like so (still not implemented)
-    self.close();
-},
-    // You can write your own custom load image function here and use it for the tileset src loading. If you dont, the base64 string will be used instead
-    onLoadTileSetImage: (file, base64, setSrc) => {
-    // every time a tileset is loaded, you can use the file, the base64 and setSrc to write your own method
-    // For example here you can put the image data in cache,or upload it or whatever.
-
-    // Then use setSrc to set the tilemap's src tag
-    setSrc(base64);// here you can pass something you made from the file blob instead of the base64
-}
+    TilemapEditor.init("tileMapEditor",{
+    tileSize:32,
+    mapWidth: 20,
+    tileSetImages: [tilesetImageImgr, tilesetImageLocal],
+    // You can write your own custom load image function here and use it for the tileset src. If you dont, the base64 string will be used instead
+    tileSetLoaders: {
+        fromUrl: {
+            name: "Any url", // name is required and used for the loader's title in the select menu
+            prompt: (setSrc) => { // Pass prompt ot onSelectImage. Prompt lets you do anything without asking the user to select a file
+            const fileUrl = window.prompt("What is the url of the tileset?", "https://i.imgur.com/ztwPZOI.png");
+            if(fileUrl !== null) setSrc(fileUrl)
+            }
+        },
+        imgur: {
+            name: "Imgur (host)",
+            onSelectImage: (setSrc, file, base64) => { // In case you want them to give you a file from the fs, you can do this instead of prompt
+                uploadImageToImgur(file).then(result=>{
+                    console.log(file, base64);
+                    console.log("Uploaded to imgur", result);
+                    setSrc(result.data.link);
+                });
+            },
+        },
+    },
+    // You can write your own tilemap exporters here. Whatever they return will get added to the export data you get out when you trigger onAppy
+    tileMapExporters: {
+        kaboomJs: { // the exporter's key is later used by the onApply option
+            name: "Export KaboomJs",
+            description: "Exports boilerplate js code for KaboomJs",
+            transformer: kaboomJsExport // See demo to learn how to make a transformer function
+        }
+    },
+    // If passed, a new button gets added to the header, upon being clicked, you can get data from the tilemap editor and trigger events
+    onApply: {
+        exporter: "kaboomJs", // we need to give it an exporter that exists, otherwise it will export the raw data
+        onClick: ({flattenedData, topLayer, layers}) => {
+            //TODO
+        },
+        buttonText: "OK", // controls the apply button's text
+    },
 })
 </script>
    ```
