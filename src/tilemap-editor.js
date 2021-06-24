@@ -74,8 +74,8 @@
               <div class="tileset_opt_field">
                 <span>Tile size:</span>
                 <input type="number" id="cropSize" name="crop" placeholder="32" min="1" max="128">
-                <span class="flex">width: </span><input id="canvasWidthInp" value="1" type="number" min="1">
-                <span class="flex">height: </span><input id="canvasHeightInp" value="1" type="number" min="1">
+<!--                <span class="flex">width: </span><input id="canvasWidthInp" value="1" type="number" min="1">-->
+<!--                <span class="flex">height: </span><input id="canvasHeightInp" value="1" type="number" min="1">-->
               </div>
               <div class="tileset_opt_field">
                 <span>Tileset loader:</span>
@@ -114,6 +114,19 @@
             <select name="mapsData" id="mapsDataSel"></select>
             <button id="addMapBtn">+</button>
             <button id="removeMapBtn">-</button>
+<!--            <button id="removeMapBtn">📏</button>-->
+            
+            <a class="button" href="#popup1">📏</a>
+            <div id="popup1" class="overlay">
+            <div class="popup">
+            <h4>Tilemap settings</h4>
+            <a class="close" href="#">&times;</a>
+            <div class="content">
+                <span class="flex">width: </span><input id="canvasWidthInp" value="1" type="number" min="1">
+                <span class="flex">height: </span><input id="canvasHeightInp" value="1" type="number" min="1">
+            </div>
+            </div>
+            </div>
         </div>
 
         <label class="sticky add_layer">

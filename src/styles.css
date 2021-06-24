@@ -36,6 +36,47 @@
   background: rgba(219, 198, 198, 0.88);
 }
 
+/*POPUP*/
+.overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  transition: opacity 500ms;
+  visibility: hidden;
+  opacity: 0;
+}
+.overlay:target {
+  visibility: visible;
+  opacity: 1;
+}
+.popup {
+  margin: 25% auto;
+  padding: 10px;
+  background: #000000;
+  border: 1px solid white;
+  border-radius: 5px;
+  width: 50%;
+  position: relative;
+  transition: all 2s ease-in-out;
+}
+.popup .close {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  transition: all 200ms;
+  font-size: 30px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #b0b0b0;
+}
+.popup .content {
+  max-height: 30%;
+  overflow: auto;
+}
+
 /* Other */
 .card {
   height: 100%;
