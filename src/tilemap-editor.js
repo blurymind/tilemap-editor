@@ -43,7 +43,28 @@
             <div class="dropdown" id="fileMenuDropDown">
                 <span class="item" onclick="alert('TODO')">Open json</span>
                 <span class="item" onclick="alert('TODO')">Save json</span>
-                <span class="item" onclick="alert('TODO')">About</span>
+                                 
+                <a class="button item button-as-link" href="#popup2">About</a>
+                <div id="popup2" class="overlay">
+                <div class="popup">
+                <h4>Tilemap editor</h4>
+                <a class="close" href="#">&times;</a>
+                <div class="content"> 
+                    <div>Created by Todor Imreorov (blurymind@gmail.com)</div>
+                    <br/>
+                    <div><a class="button-as-link" href="https://github.com/blurymind/tilemap-editor">Project page (Github)</a></div>
+                    <div><a class="button-as-link" href="https://ko-fi.com/blurymind">Donate page (ko-fi)</a></div>
+                    <br/>
+                    <div>Instructions:</div>
+                    <div>right click on map - picks tile</div>
+                    <div>mid-click - erases tile</div>
+                    <div>left-click adds tile</div> 
+                    <div>right-click on tileset - lets you change tile symbol or metadata</div>
+                    <div>left-click - selects tile</div>
+ 
+                </div>
+                </div>
+                </div>
             </div>
         </div>
         <div id="toolButtonsWrapper">
@@ -52,7 +73,6 @@
           <button class="button-as-link" id="panToolBtn" value="2" title="pan">✋</button> 
         </div>
         <div>
-            <button class="button-as-link" id="aboutBtn" title="About...">❓</button>
             <button class="primary-button" id="confirmBtn">${confirmBtnText || "apply"}</button>
         </div>
 
@@ -119,7 +139,7 @@
             <a class="button" href="#popup1">📏</a>
             <div id="popup1" class="overlay">
             <div class="popup">
-            <h4>Tilemap settings</h4>
+            <h4>TileMap settings</h4>
             <a class="close" href="#">&times;</a>
             <div class="content">
                 <span class="flex">width: </span><input id="canvasWidthInp" value="1" type="number" min="1">
@@ -958,24 +978,5 @@
         })
 
         initDataAfterLoad();
-
-        document.getElementById("aboutBtn").addEventListener("click", () =>{
-            const ask = window.confirm(`
-                Tilemap editor
-                Created by Todor Imreorov (blurymind@gmail.com)
-                https://github.com/blurymind/tilemap-editor
-                
-                Would you like to donate to the project or visit its page?
-                
-                Instructions:
-                right click on map - picks tile
-                mid-click - erases tile
-                left-click adds tile
-                
-                right-click on tileset - lets you change tile symbol or metadata
-                left-click - selects tile      
-            `)
-            if(ask) window.open('https://github.com/blurymind/tilemap-editor', '_blank');
-        })
     };
 });
