@@ -43,7 +43,6 @@
             <div class="dropdown" id="fileMenuDropDown">
                 <span class="item" onclick="alert('TODO')">Open json</span>
                 <span class="item" onclick="alert('TODO')">Save json</span>
-                <span class="item" onclick="alert('TODO')">Save screenshot</span>
                 <span class="item" onclick="alert('TODO')">About</span>
             </div>
         </div>
@@ -63,11 +62,7 @@
         <details class="details_container" open="true">
           <summary >
             <span  id="mapSelectContainer">
-            <select name="mapsData" id="mapsDataSel">
-            </select>
-            <button id="addMapBtn">+</button>
-            <button id="removeMapBtn">-</button>
-            | <select name="tileSetSelectData" id="tilesetDataSel"></select>
+            | <select name="tileSetSelectData" id="tilesetDataSel" class="limited_select"></select>
             <button id="replaceTilesetBtn" title="replace">r</button>
             <input id="tilesetReplaceInput" type="file" style="display: none" />
             <button id="addTilesetBtn" title="add">+</button>
@@ -115,7 +110,14 @@
         </div>
         </div>
       <div class="card_right-column layers">
-        <label class="sticky add_layer"><label id="activeLayerLabel">Editing Layer </label><button id="addLayerBtn" title="Add layer"> ➕</button></label>
+      <div id="mapSelectContainer" class="tilemaps_selector">
+            <select name="mapsData" id="mapsDataSel"></select>
+            <button id="addMapBtn">+</button>
+            <button id="removeMapBtn">-</button>
+        </div>
+
+        <label class="sticky add_layer">
+        <label id="activeLayerLabel">Editing Layer </label><button id="addLayerBtn" title="Add layer"> ➕</button></label>
         <div class="layers" id="layers">
       </div>
       </div>

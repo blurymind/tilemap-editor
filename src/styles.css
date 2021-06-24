@@ -36,6 +36,7 @@
   background: rgba(219, 198, 198, 0.88);
 }
 
+/* Other */
 .card {
   height: 100%;
 }
@@ -65,7 +66,6 @@
   display: flex;
   flex: 1;
   height: 100%;
-  /*padding-top: 6px;*/
 }
 
 .card_right-column {
@@ -112,10 +112,7 @@
   max-width: 45px;
 }
 
-#tilesetDataSel,
-#mapsDataSel {
-  max-width: 75px;
-}
+
 .tileset_opt_field.header{
   padding: 3px;
 }
@@ -314,8 +311,8 @@ cursor: pointer;
 }
 
 .sticky {
-  background: #c2daff;
-  color: #0a0101;
+  background: #000000;
+  color: #ffffff;
   position: sticky;
   top: 0;
 }
@@ -361,4 +358,30 @@ cursor: pointer;
   position: sticky;
   top: 0;
   z-index: 1;
+}
+
+.tilemaps_selector{
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  background-color: #00000094;
+  padding: 2px;
+ }
+
+.tilemaps_selector button {
+  background-color: #6b6b6b;
+  min-width: 20px;
+  border-radius: 10px;
+  text-align: -webkit-center;
+  border: 1px solid #757575;
+  color: white;
+}
+.tilemaps_selector button:hover{
+  background-color: #858585;
+}
+.tilemaps_selector select{
+  width: 100%;
+}
+.limited_select {
+  width: 50%;
 }
