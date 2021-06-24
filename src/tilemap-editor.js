@@ -83,9 +83,9 @@
           <summary >
             <span  id="mapSelectContainer">
             | <select name="tileSetSelectData" id="tilesetDataSel" class="limited_select"></select>
-            <button id="replaceTilesetBtn" title="replace">r</button>
+            <button id="replaceTilesetBtn" title="replace tileset">r</button>
             <input id="tilesetReplaceInput" type="file" style="display: none" />
-            <button id="addTilesetBtn" title="add">+</button>
+            <button id="addTilesetBtn" title="add tileset">+</button>
             <input id="tilesetReadInput" type="file" style="display: none" />
             <button id="removeTilesetBtn" title="remove">-</button>
             </span>
@@ -100,10 +100,6 @@
               <div class="tileset_opt_field">
                 <span>Tileset loader:</span>
                 <select name="tileSetLoaders" id="tileSetLoadersSel"></select>
-              </div>
-              <div class="tileset_opt_field">
-                <button id="renameMapBtn" title="Rename map">🏷️ Rename map</button>
-                <button id="clearCanvasBtn" title="Clear map">💥 Clear map</button>
               </div>
           </div>
 
@@ -133,9 +129,7 @@
       <div id="mapSelectContainer" class="tilemaps_selector">
             <select name="mapsData" id="mapsDataSel"></select>
             <button id="addMapBtn">+</button>
-            <button id="removeMapBtn">-</button>
-<!--            <button id="removeMapBtn">📏</button>-->
-            
+            <button id="removeMapBtn">-</button>            
             <a class="button" href="#popup1">📏</a>
             <div id="popup1" class="overlay">
             <div class="popup">
@@ -144,13 +138,19 @@
             <div class="content">
                 <span class="flex">width: </span><input id="canvasWidthInp" value="1" type="number" min="1">
                 <span class="flex">height: </span><input id="canvasHeightInp" value="1" type="number" min="1">
+                
+                <div class="tileset_opt_field">
+                <button id="renameMapBtn" title="Rename map">Rename</button>
+                <button id="clearCanvasBtn" title="Clear map">Clear</button>
+              </div>
             </div>
             </div>
             </div>
         </div>
 
         <label class="sticky add_layer">
-        <label id="activeLayerLabel">Editing Layer </label><button id="addLayerBtn" title="Add layer"> ➕</button></label>
+            <label id="activeLayerLabel">Editing Layer </label><button id="addLayerBtn" title="Add layer">+</button>
+        </label>
         <div class="layers" id="layers">
       </div>
       </div>
@@ -243,9 +243,9 @@
         layersElement.innerHTML = layers.map((layer, index)=>{
             return `
               <div class="layer">
-                <button id="selectLayerBtn-${index}" class="layer select_layer" tile-layer="${index}" title="${layer.name}">${layer.name}</button>
+                <div id="selectLayerBtn-${index}" class="layer select_layer" tile-layer="${index}" title="${layer.name}">${layer.name}</div>
                 <span id="setLayerVisBtn-${index}" vis-layer="${index}"></span>
-                <button id="trashLayerBtn-${index}" trash-layer="${index}" ${layers.length > 1 ? "":`disabled="true"`}>🗑️</button>
+                <div id="trashLayerBtn-${index}" trash-layer="${index}" ${layers.length > 1 ? "":`disabled="true"`}>🗑️</div>
               </div>
             `
         }).reverse().join("\n")

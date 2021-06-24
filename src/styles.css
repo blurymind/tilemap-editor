@@ -47,13 +47,14 @@
   transition: opacity 500ms;
   visibility: hidden;
   opacity: 0;
+  z-index: 100;
 }
 .overlay:target {
   visibility: visible;
   opacity: 1;
 }
 .popup {
-  margin: 25% auto;
+  margin: 30% auto;
   padding: 10px;
   background: #000000;
   border: 1px solid white;
@@ -227,7 +228,7 @@ cursor: pointer;
   cursor: pointer;
 }
 .active-tool{
-  background-color: yellow;
+  background-color: yellow !important;
   border-radius: 3px;
 }
 
@@ -319,7 +320,7 @@ cursor: pointer;
     border-top: solid grey 1px;
     padding-right: 0;
     padding-top: 3px;
-    flex: 8;
+    flex: 6;
   }
   .card_right-column.layers{
     padding-bottom: 25px;
@@ -391,7 +392,7 @@ cursor: pointer;
 .layer.select_layer{
   color: antiquewhite;
 }
-.layers button.active {
+.layers .active {
   color: #88c6ff;
   background-color: rgba(255, 255, 0, 0.05);
 }
@@ -409,17 +410,24 @@ cursor: pointer;
   padding: 2px;
  }
 
-.tilemaps_selector button {
+#tilemapjs_root button {
   background-color: #6b6b6b;
-  min-width: 20px;
-  border-radius: 10px;
-  text-align: -webkit-center;
-  border: 1px solid #757575;
   color: white;
+  border: 1px solid #757575;
+  margin: 2px;
 }
-.tilemaps_selector button:hover{
+#tilemapjs_root button:hover{
   background-color: #858585;
 }
+.add_layer button,
+.tilemaps_selector button {
+  min-width: 20px;
+  text-align: -webkit-center;
+}
+.tilemaps_selector > button{
+  border-radius: 10px;
+}
+
 .tilemaps_selector select{
   width: 100%;
 }
