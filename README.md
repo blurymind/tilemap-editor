@@ -22,12 +22,12 @@ TileMap Editor is a fat-free tile map editor with zero dependencies and a scalab
 ## :gift: features
 
 - Multiple tileset support
-- Multiple tilemap support (wip)
+- Multiple tilemap support
 - Multi-tile selection and painting (drag select multiple tiles from the tileset)
 - Tileset meta-data editing (Assign tags to tiles, automatic assignment of symbols to tiles) (wip)
 - Tilemap layers (as many as you like)
 - Export boilerplate code for kaboomjs https://kaboomjs.com/ (wip)
-- Customizable export data (wip)
+- Customizable export data
 - Resizable tilemap - non destructive too
 - Paint tool, Pan tool, eraser tool
 - Responsive interface (scales down to portrait mode on mobile)
