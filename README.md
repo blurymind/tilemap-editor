@@ -93,7 +93,7 @@ To use it, you can import it via require or in the index file like so
         // { maps : {...}, tileSets: {...}}
         tileMapData: ioJsonData,
         // tileSize is used to slice the tileset and give the tilemap the right sized grid
-        tileSize:32,
+        tileSize: 32,
         // How many tiles is the initial map wide
         mapWidth: 20,
         // How many tiles is the initial map tall
