@@ -36,14 +36,11 @@
     const getHtml = (width, height) =>{
         return `
        <div id="tilemapjs_root" class="card tilemapjs_root">
- 
+        <a id="downloadAnchorElem" style="display:none"></a>
        <div class="tileset_opt_field header">
        <div class="menu">
             <span> File </span>
-            <div class="dropdown" id="fileMenuDropDown">
-                <span class="item" onclick="alert('TODO')">Open json</span>
-                <span class="item" onclick="alert('TODO')">Save json</span>
-                                 
+            <div class="dropdown" id="fileMenuDropDown">                            
                 <a class="button item button-as-link" href="#popup2">About</a>
                 <div id="popup2" class="overlay">
                 <div class="popup">
@@ -61,7 +58,6 @@
                     <div>left-click adds tile</div> 
                     <div>right-click on tileset - lets you change tile symbol or metadata</div>
                     <div>left-click - selects tile</div>
- 
                 </div>
                 </div>
                 </div>
@@ -187,6 +183,7 @@
     let apiTileSetLoaders = {};
     let selectedTileSetLoader = {};
     let apiTileMapExporters = {};
+    let apiTileMapImporters = {};
 
     function getContext() {
         const ctx = canvas.getContext('2d');
@@ -511,6 +508,14 @@
         }
     }
 
+    const exportJson = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({tileSets, maps}));
+        const dlAnchorElem = document.getElementById('downloadAnchorElem');
+        dlAnchorElem.setAttribute("href",     dataStr     );
+        dlAnchorElem.setAttribute("download", "tilemap-editor.json");
+        dlAnchorElem.click();
+    }
+
     function exportImage() {
         draw(false);
         const data = canvas.toDataURL();
@@ -673,24 +678,35 @@
         })
         document.getElementById("removeMapBtn").disabled = Object.keys(maps).length === 1;
     }
+
+    const loadData = (data) =>{
+        try {
+            selection = [{}];
+            stateHistory = [{}, {}, {}];
+            ACTIVE_MAP = data ? Object.keys(data.maps)[0] : "Map_1";
+            maps = data ? data.maps : {[ACTIVE_MAP]: getEmptyMap("Map 1")};
+            tileSets = data ? data.tileSets : {};
+            layers = maps[ACTIVE_MAP].layers;
+            updateTilesets();
+            tilesetDataSel.value = "0";
+            cropSize.value = data ? maps[ACTIVE_MAP].tileSize : SIZE_OF_CROP;
+            updateMaps();
+            updateMapSize();
+        } catch(e){
+            console.error(e)
+        }
+    }
     const initDataAfterLoad = () =>{
         WIDTH = canvas.width;
         HEIGHT = canvas.height;
         selection = [{}];
-        stateHistory = [{}, {}, {}];
-        ACTIVE_MAP = "Map_1";
-        maps = {[ACTIVE_MAP]: getEmptyMap("Map 1")};
-        layers = maps["Map_1"].layers;
-        updateTilesets();
-        tilesetDataSel.value = "0";
-        cropSize.value = SIZE_OF_CROP;
-        updateMaps();
-        updateMapSize();
+        loadData();
     }
-
+    // Create the tilemap-editor in the dom and its events
     exports.init = (
         attachToId,
         {
+            tileMapData,
             tileSize,
             mapWidth,
             mapHeight,
@@ -698,7 +714,8 @@
             applyButtonText,
             onApply,
             tileSetLoaders,
-            tileMapExporters
+            tileMapExporters,
+            tileMapImporters
         }
     ) => {
         // Attach
@@ -717,6 +734,23 @@
             name: "Export as image",
             transformer: exportImage
         }
+        apiTileMapExporters.saveData = {
+            name: "Download Json file",
+            transformer: exportJson
+        }
+        apiTileMapImporters = tileMapImporters;
+        apiTileMapImporters.openData = {
+            name: "Open Json file",
+            onSelectFiles: (setData, files) => {
+                const readFile = new FileReader();
+                readFile.onload = (e) => {
+                    const json = JSON.parse(e.target.result);
+                    setData(json);
+                };
+                readFile.readAsText(files[0]);
+            },
+            acceptFile: "application/JSON"
+        }
 
         IMAGES = tileSetImages;
         SIZE_OF_CROP = tileSize || 32;
@@ -724,7 +758,6 @@
         mapTileHeight = mapHeight || 10;
         const canvasWidth = mapTileWidth * tileSize;
         const canvasHeight = mapTileHeight * tileSize;
-
 
         // Attach elements
         attachTo.innerHTML = getHtml(canvasWidth, canvasHeight);
@@ -962,21 +995,39 @@
                 updateMaps();
             }
         })
-        const fileMenuDropDown = document.getElementById("fileMenuDropDown");
 
-        Object.entries(tileMapExporters).forEach(([key, exporter])=>{
+        const fileMenuDropDown = document.getElementById("fileMenuDropDown");
+        const makeMenuItem = (name, value, description) =>{
             const menuItem = document.createElement("span");
             menuItem.className = "item";
-            menuItem.innerText = exporter.name;
-            menuItem.title = exporter.description;
-            menuItem.value = key;
-            menuItem.onclick = () => {
+            menuItem.innerText = name;
+            menuItem.title = description || name;
+            menuItem.value = value;
+            fileMenuDropDown.appendChild(menuItem);
+            return menuItem;
+        }
+        Object.entries(tileMapExporters).forEach(([key, exporter])=>{
+            makeMenuItem(exporter.name, key,exporter.description).onclick = () => {
                 exporter.transformer(getExportData());
             }
-            console.log("ADD exporter", menuItem)
-            fileMenuDropDown.appendChild(menuItem);
         })
-
+        Object.entries(apiTileMapImporters).forEach(([key, importer])=>{
+            makeMenuItem(importer.name, key,importer.description).onclick = () => {
+                if(importer.onSelectFiles) {
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.id = `importerInput-${key}`;
+                    if(importer.acceptFile) input.accept = importer.acceptFile;
+                    input.style.display = "none";
+                    input.addEventListener("change",e=> {
+                        importer.onSelectFiles(loadData, e.target.files);
+                    })
+                    input.click();
+                }
+            }
+        })
+        // go ahead and init the data
         initDataAfterLoad();
+        if (tileMapData) loadData(tileMapData);
     };
 });
