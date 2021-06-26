@@ -594,17 +594,18 @@
             WIDTH = mapTileWidth * SIZE_OF_CROP;
             maps[ACTIVE_MAP].mapWidth = mapTileWidth;
             document.querySelector(".canvas_resizer[resizerdir='x']").style=`left:${WIDTH}px`;
+            document.querySelector(".canvas_resizer[resizerdir='x'] input").value = String(mapTileWidth);
+            document.getElementById("canvasWidthInp").value  = String(mapTileWidth);
         }
         if(size?.mapHeight && size?.mapHeight > 1){
             mapTileHeight = size?.mapHeight;
             HEIGHT = mapTileHeight * SIZE_OF_CROP;
             maps[ACTIVE_MAP].mapHeight = mapTileHeight;
             document.querySelector(".canvas_resizer[resizerdir='y']").style=`top:${HEIGHT}px`;
+            document.querySelector(".canvas_resizer[resizerdir='y'] input").value = String(mapTileHeight);
+            document.getElementById("canvasHeightInp").value  = String(mapTileHeight);
         }
-        document.querySelector(".canvas_resizer[resizerdir='x'] input").value = String(mapTileWidth);
-        document.getElementById("canvasWidthInp").value  = String(mapTileWidth);
-        document.querySelector(".canvas_resizer[resizerdir='y'] input").value = String(mapTileHeight);
-        document.getElementById("canvasHeightInp").value  = String(mapTileHeight);
+
         draw();
     }
 
@@ -682,7 +683,6 @@
 
         tilesetImage.addEventListener('load', function () {
             draw();
-            console.log("TILESETS", tileSets)
             updateLayers();
             selection = [getTileData(0, 0)];
             updateSelection();
@@ -732,6 +732,7 @@
             tilesetDataSel.value = "0";
             cropSize.value = data ? maps[ACTIVE_MAP].tileSize : SIZE_OF_CROP;
             updateMaps();
+            updateMapSize({mapWidth: maps[ACTIVE_MAP].mapWidth, mapHeight: maps[ACTIVE_MAP].mapHeight})
         }
         catch(e){
             console.error(e)
@@ -790,8 +791,8 @@
 
         IMAGES = tileSetImages;
         SIZE_OF_CROP = tileSize || 32;
-        mapTileWidth = mapWidth || 10;
-        mapTileHeight = mapHeight || 10;
+        mapTileWidth = mapWidth || 12;
+        mapTileHeight = mapHeight || 12;
         const canvasWidth = mapTileWidth * tileSize;
         const canvasHeight = mapTileHeight * tileSize;
 
