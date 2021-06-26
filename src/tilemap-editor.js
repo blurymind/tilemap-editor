@@ -827,9 +827,9 @@
                         }else {
                             tagTiles[tileKey] = { mark: "O"};
                         }
-                        updateTilesetGridContainer();
                     }
-                })
+                });
+                updateTilesetGridContainer();
             }
         });
         tilesetContainer.addEventListener('dblclick', (e) => {
