@@ -90,8 +90,6 @@
               <div class="tileset_opt_field">
                 <span>Tile size:</span>
                 <input type="number" id="cropSize" name="crop" placeholder="32" min="1" max="128">
-<!--                <span class="flex">width: </span><input id="canvasWidthInp" value="1" type="number" min="1">-->
-<!--                <span class="flex">height: </span><input id="canvasHeightInp" value="1" type="number" min="1">-->
               </div>
               <div class="tileset_opt_field">
                 <span>Tileset loader:</span>
@@ -158,7 +156,6 @@
         layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,
         tilesetDataSel, mapsDataSel;
 
-    // let IMG_SOURCE = '';
     let TILESET_ELEMENTS = [];
     let IMAGES = [''];
     let SIZE_OF_CROP = 32;
@@ -190,13 +187,12 @@
     let apiTileMapExporters = {};
     let apiTileMapImporters = {};
 
-    function getContext() {
+    const getContext = () => {
         const ctx = canvas.getContext('2d');
-
         return ctx;
     }
 
-    function setLayer(newLayer) {
+    const setLayer = (newLayer) => {
         currentLayer = Number(newLayer);
 
         const oldActivedLayer = document.querySelector('.layer.active');
@@ -208,7 +204,7 @@
         document.getElementById("activeLayerLabel").innerText = `Editing Layer: ${layers[newLayer]?.name}`;
     }
 
-    function setLayerIsVisible(layer, override = null) {
+    const setLayerIsVisible = (layer, override = null) => {
         const layerNumber = Number(layer);
         layers[layerNumber].visible = override ?? !layers[layerNumber].visible;
         document
@@ -217,7 +213,7 @@
         draw();
     }
 
-    function trashLayer(layer) {
+    const trashLayer = (layer) => {
         const layerNumber = Number(layer);
         // isLayerVisible[layerNumber] = !isLayerVisible[layerNumber];
 
@@ -232,7 +228,7 @@
 
     }
 
-    function addLayer() {
+    const addLayer = () => {
         const newLayerName = prompt("Enter layer name", `Layer${layers.length + 1}`);
         if(newLayerName !== null) {
             layers.push(getEmptyLayer(newLayerName));
@@ -241,7 +237,7 @@
         }
     }
 
-    function updateLayers(){
+    const updateLayers = () => {
         layersElement.innerHTML = layers.map((layer, index)=>{
             return `
               <div class="layer">
@@ -304,13 +300,12 @@
 
     const randomLetters = new Array(10680).fill(1).map((_, i) => String.fromCharCode(165 + i));
 
-    function updateTilesetGridContainer(){
+    const updateTilesetGridContainer = () =>{
         const viewMode = tileDataSel.value;
         const tilesetData = tileSets[tilesetDataSel.value];
         if(!tilesetData) return;
 
         const {tileCount, gridWidth, tileData, tags} = tilesetData;
-        // console.log("Tilesets data", tileSets, tileSets[tilesetDataSel.value], tilesetDataSel.value)
         const newGrid = Array.from({length: tileCount}, (x, i) => i).map(tile=>{
             const x = tile % gridWidth;
             const y = Math.floor(tile / gridWidth);
@@ -330,18 +325,14 @@
         const selHeight = endY - y + 1;
 
         tilesetSelection.style.left = `${x * SIZE_OF_CROP}px`;
-        tilesetSelection.style.top =  `${y * SIZE_OF_CROP}px`;
+        tilesetSelection.style.top = `${y * SIZE_OF_CROP}px`;
         tilesetSelection.style.width = `${selWidth * SIZE_OF_CROP}px`;
         tilesetSelection.style.height = `${selHeight * SIZE_OF_CROP}px`;
 
         const viewMode = tileDataSel.value;
-        // tilesetSelection.innerText = "";
         if(viewMode !== ""){
-            // const tileData = getTileData();
-            // tilesetSelection.innerText = tileData?.tileSymbol || "";
-            // const tilesetData = tileSets[tilesetDataSel.value];
             const tileKey = `${x}-${y}`;
-            const tagTiles = tileSets[tilesetDataSel.value].tags[viewMode].tiles;
+            const tagTiles = tileSets[tilesetDataSel.value]?.tags[viewMode]?.tiles;
             if (tagTiles){
                 if(tileKey in tagTiles) {
                     delete tagTiles[tileKey]
@@ -356,7 +347,7 @@
     }
 
     let tileSelectStart = null;
-    function getSelectedTile(event) {
+    const getSelectedTile = (event) => {
         const { x, y } = event.target.getBoundingClientRect();
         const tx = Math.floor(Math.max(event.clientX - x, 0) / SIZE_OF_CROP);
         const ty = Math.floor(Math.max(event.clientY - y, 0) / SIZE_OF_CROP);
@@ -377,7 +368,7 @@
     }
 
     // the tile needs to use the image of the tileset it came from
-    function draw(shouldDrawGrid = true) {
+    const draw = (shouldDrawGrid = true) =>{
         const ctx = getContext();
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
         if(shouldDrawGrid)drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP);
@@ -404,19 +395,19 @@
 
     }
 
-    function setMouseIsTrue(e) {
+    const setMouseIsTrue=(e)=> {
         if(e.button === 0) {
             isMouseDown = true;
         }
     }
 
-    function setMouseIsFalse(e) {
+    const setMouseIsFalse=(e)=> {
         if(e.button === 0) {
             isMouseDown = false;
         }
     }
 
-    function toggleTile(event) {
+    const toggleTile=(event)=> {
         if(ACTIVE_TOOL === 2) return;
 
         if (!layers[currentLayer].visible) {
@@ -452,7 +443,7 @@
         draw();
     }
 
-    function addTile(key) {
+    const addTile = (key) => {
         const [x, y] = key.split("-")
         const {x: startX, y: startY} = selection[0];
         const {x: endX, y: endY} = selection[selection.length - 1];
@@ -468,7 +459,7 @@
         }
     }
 
-    function getTile(key) {
+    const getTile =(key)=> {
         const clicked = layers[currentLayer].tiles[key];
 
         if (clicked) {
@@ -486,11 +477,11 @@
         }
     }
 
-    function removeTile(key) {
+    const removeTile=(key) =>{
         delete layers[currentLayer].tiles[key];
     }
 
-    function applyCtrlZ(key, isArray) {
+    const applyCtrlZ=(key, isArray) => {
         const tileHistory = stateHistory[currentLayer][key];
 
         if (isArray(tileHistory)) {
@@ -505,7 +496,7 @@
         }
     }
 
-    function updateStateHistory(key, isArray) {
+    const updateStateHistory=(key, isArray) => {
         const tileHistory = stateHistory[currentLayer][key];
 
         const selected = layers[currentLayer].tiles[key];
@@ -518,7 +509,7 @@
         }
     }
 
-    function clearCanvas() {
+    const clearCanvas = () => {
         const result = window.confirm("This will clear the map...\nAre you sure you want to do this?");
         if (result) {
             initDataAfterLoad();
@@ -534,7 +525,7 @@
         dlAnchorElem.click();
     }
 
-    function exportImage() {
+    const exportImage = () => {
         draw(false);
         const data = canvas.toDataURL();
 
@@ -681,7 +672,7 @@
                 updateTilesetGridContainer();
             });
 
-        tilesetImage.addEventListener('load', function () {
+        tilesetImage.addEventListener('load', () => {
             draw();
             updateLayers();
             selection = [getTileData(0, 0)];
