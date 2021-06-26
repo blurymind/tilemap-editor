@@ -808,8 +808,8 @@
         tilesetContainer.addEventListener('pointerup', (e) => {
             selection = getSelectedTile(e);
             updateSelection();
-            tileSelectStart = null;
             selection = getSelectedTile(e);
+            tileSelectStart = null;
 
             const viewMode = tileDataSel.value;
             if(viewMode === "" && e.button === 2){
@@ -817,18 +817,19 @@
                 return;
             }
             if (viewMode !== "" && e.button === 0) {
-                const selected = selection[0];
-                const {x, y} = selected;
-                const tileKey = `${x}-${y}`;
-                const tagTiles = tileSets[tilesetDataSel.value]?.tags[viewMode]?.tiles;
-                if (tagTiles){
-                    if(tileKey in tagTiles) {
-                        delete tagTiles[tileKey]
-                    }else {
-                        tagTiles[tileKey] = { mark: "O"};
+                selection.forEach(selected=>{
+                    const {x, y} = selected;
+                    const tileKey = `${x}-${y}`;
+                    const tagTiles = tileSets[tilesetDataSel.value]?.tags[viewMode]?.tiles;
+                    if (tagTiles){
+                        if(tileKey in tagTiles) {
+                            delete tagTiles[tileKey]
+                        }else {
+                            tagTiles[tileKey] = { mark: "O"};
+                        }
+                        updateTilesetGridContainer();
                     }
-                    updateTilesetGridContainer()
-                }
+                })
             }
         });
         tilesetContainer.addEventListener('dblclick', (e) => {
