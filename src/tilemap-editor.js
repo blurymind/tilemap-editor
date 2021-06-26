@@ -310,7 +310,7 @@
             const x = tile % gridWidth;
             const y = Math.floor(tile / gridWidth);
             const tileKey = `${x}-${y}`;
-            const innerTile = viewMode === "" ? tileData[tileKey]?.tileSymbol : tags[viewMode].tiles[tileKey] || "-";//tag[viewMode].tiles[x,y]
+            const innerTile = viewMode === "" ? tileData[tileKey]?.tileSymbol : tags[viewMode]?.tiles[tileKey]?.mark || "-";
             return `<div style="width:${SIZE_OF_CROP}px;height:${SIZE_OF_CROP}px" class="tileset_grid_tile">${innerTile}</div>`
         }).join("\n")
         tilesetGridContainer.innerHTML = newGrid;
@@ -328,20 +328,6 @@
         tilesetSelection.style.top = `${y * SIZE_OF_CROP}px`;
         tilesetSelection.style.width = `${selWidth * SIZE_OF_CROP}px`;
         tilesetSelection.style.height = `${selHeight * SIZE_OF_CROP}px`;
-
-        const viewMode = tileDataSel.value;
-        if(viewMode !== ""){
-            const tileKey = `${x}-${y}`;
-            const tagTiles = tileSets[tilesetDataSel.value]?.tags[viewMode]?.tiles;
-            if (tagTiles){
-                if(tileKey in tagTiles) {
-                    delete tagTiles[tileKey]
-                }else {
-                    tagTiles[tileKey] = "O";
-                }
-                updateTilesetGridContainer()
-            }
-        }
 
         setActiveTool(0);
     }
@@ -543,7 +529,6 @@
     }
 
     const renameCurrentTileSymbol = ()=>{
-        if(tileDataSel.value === "") {
             const {x, y, tileSymbol} = selection[0];
             const newSymbol = window.prompt("Enter tile symbol", tileSymbol || "*");
             if(newSymbol !== null) {
@@ -551,7 +536,6 @@
                 updateSelection();
                 updateTilesetGridContainer();
             }
-        }
     }
 
     const getFlattenedData = () => {
@@ -825,12 +809,33 @@
             selection = getSelectedTile(e);
             updateSelection();
             tileSelectStart = null;
-            if(e.button !== 2) return;
             selection = getSelectedTile(e);
-            renameCurrentTileSymbol();
+
+            const viewMode = tileDataSel.value;
+            if(viewMode === "" && e.button === 2){
+                renameCurrentTileSymbol();
+                return;
+            }
+            if (viewMode !== "" && e.button === 0) {
+                const selected = selection[0];
+                const {x, y} = selected;
+                const tileKey = `${x}-${y}`;
+                const tagTiles = tileSets[tilesetDataSel.value]?.tags[viewMode]?.tiles;
+                if (tagTiles){
+                    if(tileKey in tagTiles) {
+                        delete tagTiles[tileKey]
+                    }else {
+                        tagTiles[tileKey] = { mark: "O"};
+                    }
+                    updateTilesetGridContainer()
+                }
+            }
         });
         tilesetContainer.addEventListener('dblclick', (e) => {
-            renameCurrentTileSymbol();
+            const viewMode = tileDataSel.value;
+            if(viewMode === "") {
+                renameCurrentTileSymbol();
+            }
         });
         document.getElementById("addLayerBtn").addEventListener("click",()=>{
             addLayer();
