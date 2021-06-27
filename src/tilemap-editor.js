@@ -68,7 +68,8 @@
           <button class="button-as-link" value="4" title="random from selected">💐</button> 
           <button class="button-as-link" value="1" title="erase tiles">🗑️</button>
           <button class="button-as-link" value="2" title="pan">✋</button>
-          <button class="button-as-link" value="3" title="pick tile">💉</button>
+          <button class="button-as-link" value="3" title="pick tile">🎨</button>
+          <button class="button-as-link" value="5" title="fill layer">🌈</button>
         </div>
         <div>
             <button class="primary-button" id="confirmBtn">${confirmBtnText || "apply"}</button>
@@ -332,7 +333,8 @@
         tilesetSelection.style.width = `${selWidth * SIZE_OF_CROP}px`;
         tilesetSelection.style.height = `${selHeight * SIZE_OF_CROP}px`;
 
-        if(![0, 4].includes(ACTIVE_TOOL)) setActiveTool(0);
+        // Autoselect tool upon selecting a tile
+        if(![0, 4, 5].includes(ACTIVE_TOOL)) setActiveTool(0);
     }
 
     let tileSelectStart = null;
@@ -421,6 +423,7 @@
         } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === 3) {
             const pickedTile = getTile(key, true);
             if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1);
+            else if(ACTIVE_TOOL === 5 || ACTIVE_TOOL === 4) setActiveTool(0);
         } else {
             if(ACTIVE_TOOL === 0){
                 addTile(key);
@@ -428,6 +431,8 @@
                 removeTile(key);
             } else if (ACTIVE_TOOL === 4){
                 addRandomTile(key);
+            } else if (ACTIVE_TOOL === 5){
+                fillEmptyTiles(key);
             }
         }
 
@@ -453,6 +458,18 @@
     const addRandomTile = (key) =>{
         // TODO add probability for empty
         layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
+    }
+
+    const fillEmptyTiles = (key) => {
+        console.log()
+        Array.from({length: mapTileWidth * mapTileHeight}, (x, i) => i).map(tile=>{
+            const x = tile % mapTileWidth;
+            const y = Math.floor(tile / mapTileWidth);
+            const coordKey = `${x}-${y}`;
+            if(!(coordKey in layers[currentLayer].tiles)) {
+                layers[currentLayer].tiles[coordKey] = selection[0];
+            }
+        })
     }
 
     const getTile =(key, allLayers = false)=> {
