@@ -450,7 +450,7 @@
         const clicked = allLayers ?
             [...layers].reverse().find((layer,index)=> {
                 if(key in layer.tiles){
-                    setLayer(index);
+                    setLayer(layers.length - index - 1);
                     return layer.tiles[key]
                 }
             })?.tiles[key]
