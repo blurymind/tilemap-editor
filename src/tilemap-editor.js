@@ -96,6 +96,7 @@
                 <span>Tileset loader:</span>
                 <select name="tileSetLoaders" id="tileSetLoadersSel"></select>
               </div>
+              <div id="tilesetSrcLabel"></div>
           </div>
 
         </details>
@@ -673,6 +674,8 @@
             updateSelection();
             updateTilesetDataList();
             updateTilesetGridContainer();
+            document.getElementById("tilesetSrcLabel").innerText = `src: ${tilesetImage.src}`;
+            document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
             document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
         });
     }

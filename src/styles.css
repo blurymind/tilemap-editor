@@ -287,6 +287,13 @@ cursor: pointer;
   padding: 0 3px;
   border-bottom: 1px solid #80808045;
 }
+
+#tilesetSrcLabel{
+  margin-left: 3px;
+  color: #ececcd;
+  font-size: 0.8em;
+}
+#tilesetSrcLabel,
 #activeLayerLabel,
 .select_layer{
   flex:1;
