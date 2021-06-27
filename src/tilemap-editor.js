@@ -422,8 +422,8 @@
             removeTile(key);
         } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === 3) {
             const pickedTile = getTile(key, true);
-            if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1);
-            else if(ACTIVE_TOOL === 5 || ACTIVE_TOOL === 4) setActiveTool(0);
+            if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1); //picking empty tile, sets tool to eraser
+            else if(ACTIVE_TOOL === 5 || ACTIVE_TOOL === 4) setActiveTool(0); //
         } else {
             if(ACTIVE_TOOL === 0){
                 addTile(key);
