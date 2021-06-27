@@ -65,9 +65,10 @@
         </div>
         <div id="toolButtonsWrapper">
           <button class="button-as-link active-tool" value="0" title="paint tiles">🖌️</button>
+          <button class="button-as-link" value="4" title="random from selected">💐</button> 
           <button class="button-as-link" value="1" title="erase tiles">🗑️</button>
           <button class="button-as-link" value="2" title="pan">✋</button>
-          <button class="button-as-link" value="3" title="pick">💉</button> 
+          <button class="button-as-link" value="3" title="pick tile">💉</button>
         </div>
         <div>
             <button class="primary-button" id="confirmBtn">${confirmBtnText || "apply"}</button>
@@ -331,7 +332,7 @@
         tilesetSelection.style.width = `${selWidth * SIZE_OF_CROP}px`;
         tilesetSelection.style.height = `${selHeight * SIZE_OF_CROP}px`;
 
-        setActiveTool(0);
+        if(![0, 4].includes(ACTIVE_TOOL)) setActiveTool(0);
     }
 
     let tileSelectStart = null;
@@ -419,12 +420,14 @@
             removeTile(key);
         } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === 3) {
             const pickedTile = getTile(key, true);
-            if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1)
+            if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1);
         } else {
             if(ACTIVE_TOOL === 0){
                 addTile(key);
             } else if(ACTIVE_TOOL === 1) {
                 removeTile(key);
+            } else if (ACTIVE_TOOL === 4){
+                addRandomTile(key);
             }
         }
 
@@ -445,6 +448,11 @@
                 layers[currentLayer].tiles[coordKey] = selection.find(tile => tile.x === startX + ix && tile.y === startY + iy);
             }
         }
+    }
+
+    const addRandomTile = (key) =>{
+        // TODO add probability for empty
+        layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
     }
 
     const getTile =(key, allLayers = false)=> {
