@@ -76,7 +76,7 @@
       </div>
       <div class="card_body">
         <div class="card_left_column">
-        <details class="details_container" open="true">
+        <details class="details_container" id="tilesetDataDetails" open="true">
           <summary >
             <span  id="mapSelectContainer">
             | <select name="tileSetSelectData" id="tilesetDataSel" class="limited_select"></select>
@@ -819,6 +819,10 @@
         });
 
         tilesetContainer.addEventListener('pointerup', (e) => {
+            setTimeout(()=>{
+                document.getElementById("tilesetDataDetails").open = false;
+            },100);
+
             selection = getSelectedTile(e);
             updateSelection();
             selection = getSelectedTile(e);
