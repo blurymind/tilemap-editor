@@ -416,7 +416,7 @@
         if (event.shiftKey || event.button === 1) {
             removeTile(key);
         } else if (event.ctrlKey || event.button === 2) {
-            const pickedTile = getTile(key);
+            const pickedTile = getTile(key, true);
             if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1)
         } else {
             if(ACTIVE_TOOL === 0){
@@ -445,11 +445,20 @@
         }
     }
 
-    const getTile =(key)=> {
-        const clicked = layers[currentLayer].tiles[key];
+    const getTile =(key, allLayers = false)=> {
+        const clicked = allLayers ?
+            layers.find((layer,index)=> {
+                if(key in layer.tiles){
+                    setLayer(index);
+                    return layer.tiles[key]
+                }
+            }).tiles[key]
+            :
+            layers[currentLayer].tiles[key];
 
         if (clicked) {
             selection = [clicked];
+            console.log("clicked", clicked)
             // TODO switch to different tileset if its from a different one
             // if(clicked.tilesetIdx !== tilesetDataSel.value) {
             //     tilesetDataSel.value = clicked.tilesetIdx;
