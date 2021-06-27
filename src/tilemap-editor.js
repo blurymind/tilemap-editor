@@ -64,9 +64,10 @@
             </div>
         </div>
         <div id="toolButtonsWrapper">
-          <button class="button-as-link active-tool" id="paintToolBtn" value="0" title="paint tiles">🖌️</button>
-          <button class="button-as-link" id="eraseToolBtn" value="1" title="erase tiles">🗑️</button>
-          <button class="button-as-link" id="panToolBtn" value="2" title="pan">✋</button> 
+          <button class="button-as-link active-tool" value="0" title="paint tiles">🖌️</button>
+          <button class="button-as-link" value="1" title="erase tiles">🗑️</button>
+          <button class="button-as-link" value="2" title="pan">✋</button>
+          <button class="button-as-link" value="3" title="pick">💉</button> 
         </div>
         <div>
             <button class="primary-button" id="confirmBtn">${confirmBtnText || "apply"}</button>
@@ -415,7 +416,7 @@
 
         if (event.shiftKey || event.button === 1) {
             removeTile(key);
-        } else if (event.ctrlKey || event.button === 2) {
+        } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === 3) {
             const pickedTile = getTile(key, true);
             if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1)
         } else {
@@ -447,12 +448,12 @@
 
     const getTile =(key, allLayers = false)=> {
         const clicked = allLayers ?
-            layers.find((layer,index)=> {
+            [...layers].reverse().find((layer,index)=> {
                 if(key in layer.tiles){
                     setLayer(index);
                     return layer.tiles[key]
                 }
-            }).tiles[key]
+            })?.tiles[key]
             :
             layers[currentLayer].tiles[key];
 
