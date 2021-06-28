@@ -628,12 +628,10 @@
 
     const setActiveMap =(id) =>{
         ACTIVE_MAP = id;
+        draw();
         layers = maps[ACTIVE_MAP].layers;
-        setCropSize(maps[ACTIVE_MAP].tileSize);
         updateMapSize({mapWidth: maps[ACTIVE_MAP].mapWidth, mapHeight: maps[ACTIVE_MAP].mapHeight})
         updateLayers();
-        updateTilesetGridContainer();
-        draw();
     }
 
     const updateTilesetDataList = () => {
@@ -721,7 +719,7 @@
 
     const updateMaps = ()=>{
         mapsDataSel.innerHTML = "";
-        let lastMap;
+        let lastMap = ACTIVE_MAP;
         Object.keys(maps).forEach((key, idx)=>{
             const newOpt = document.createElement("option");
             newOpt.innerText = maps[key].name//`map ${idx}`;
