@@ -721,12 +721,16 @@
 
     const updateMaps = ()=>{
         mapsDataSel.innerHTML = "";
+        let lastMap;
         Object.keys(maps).forEach((key, idx)=>{
             const newOpt = document.createElement("option");
             newOpt.innerText = maps[key].name//`map ${idx}`;
             newOpt.value = key;
             mapsDataSel.appendChild(newOpt);
-        })
+            if (idx === Object.keys(maps).length - 1) lastMap = key;
+        });
+        mapsDataSel.value = lastMap;
+        setActiveMap(lastMap);
         document.getElementById("removeMapBtn").disabled = Object.keys(maps).length === 1;
     }
 
