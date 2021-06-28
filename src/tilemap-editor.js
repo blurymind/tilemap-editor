@@ -72,7 +72,7 @@
           <button class="button-as-link" value="5" title="fill layer">🌈</button>
         </div>
         <div>
-            <button class="primary-button" id="confirmBtn">${confirmBtnText || "apply"}</button>
+            <button class="primary-button" id="confirmBtn">"apply"</button>
         </div>
 
       </div>
@@ -157,7 +157,7 @@
     }
     const getEmptyLayer = (name="layer")=> ({tiles:{}, visible: true, name});
     let tilesetImage, canvas, tilesetContainer, tilesetSelection, cropSize,
-        clearCanvasBtn, confirmBtn, confirmBtnText, tilesetGridContainer,
+        clearCanvasBtn, confirmBtn, tilesetGridContainer,
         layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,
         tilesetDataSel, mapsDataSel;
 
@@ -820,8 +820,7 @@
 
         confirmBtn = document.getElementById("confirmBtn");
         if(onApply){
-            confirmBtnText = applyButtonText || "Ok";
-            confirmBtn.innerText = confirmBtnText;
+            confirmBtn.innerText = applyButtonText || "Ok";
         } else {
             confirmBtn.style.display = "none";
         }
