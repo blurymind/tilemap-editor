@@ -182,7 +182,6 @@
     let selection = [{}];
     let currentLayer = 2;
     let isMouseDown = false;
-    let layers = [];
     let maps = {};
     let tileSets = {};
     let stateHistory = [{}, {}, {}];
@@ -206,54 +205,52 @@
         }
 
         document.querySelector(`.layer[tile-layer="${newLayer}"]`)?.classList.add('active');
-        document.getElementById("activeLayerLabel").innerText = `Editing Layer: ${layers[newLayer]?.name}`;
+        document.getElementById("activeLayerLabel").innerText = `Editing Layer: ${maps[ACTIVE_MAP].layers[newLayer]?.name}`;
     }
 
     const setLayerIsVisible = (layer, override = null) => {
         const layerNumber = Number(layer);
-        layers[layerNumber].visible = override ?? !layers[layerNumber].visible;
+        maps[ACTIVE_MAP].layers[layerNumber].visible = override ?? !maps[ACTIVE_MAP].layers[layerNumber].visible;
         document
             .getElementById(`setLayerVisBtn-${layer}`)
-            .innerHTML = layers[layerNumber].visible ? "👁️": "👓";
+            .innerHTML = maps[ACTIVE_MAP].layers[layerNumber].visible ? "👁️": "👓";
         draw();
     }
 
     const trashLayer = (layer) => {
         const layerNumber = Number(layer);
-        // isLayerVisible[layerNumber] = !isLayerVisible[layerNumber];
-
         const result = window.confirm("Are you sure? Undo is not implemented!");
         if(result) {
-            layers.splice(layerNumber, 1);
+            maps[ACTIVE_MAP].layers.splice(layerNumber, 1);
             stateHistory.splice(layerNumber, 1);
             updateLayers();
-            setLayer(layers.length - 1);
+            setLayer(maps[ACTIVE_MAP].layers.length - 1);
             draw();
         }
 
     }
 
     const addLayer = () => {
-        const newLayerName = prompt("Enter layer name", `Layer${layers.length + 1}`);
+        const newLayerName = prompt("Enter layer name", `Layer${maps[ACTIVE_MAP].layers.length + 1}`);
         if(newLayerName !== null) {
-            layers.push(getEmptyLayer(newLayerName));
+            maps[ACTIVE_MAP].layers.push(getEmptyLayer(newLayerName));
             stateHistory.push({});//TODO merge all of these into one damn array
             updateLayers();
         }
     }
 
     const updateLayers = () => {
-        layersElement.innerHTML = layers.map((layer, index)=>{
+        layersElement.innerHTML = maps[ACTIVE_MAP].layers.map((layer, index)=>{
             return `
               <div class="layer">
                 <div id="selectLayerBtn-${index}" class="layer select_layer" tile-layer="${index}" title="${layer.name}">${layer.name}</div>
                 <span id="setLayerVisBtn-${index}" vis-layer="${index}"></span>
-                <div id="trashLayerBtn-${index}" trash-layer="${index}" ${layers.length > 1 ? "":`disabled="true"`}>🗑️</div>
+                <div id="trashLayerBtn-${index}" trash-layer="${index}" ${maps[ACTIVE_MAP].layers.length > 1 ? "":`disabled="true"`}>🗑️</div>
               </div>
             `
         }).reverse().join("\n")
 
-        layers.forEach((_,index)=>{
+        maps[ACTIVE_MAP].layers.forEach((_,index)=>{
             document.getElementById(`selectLayerBtn-${index}`).addEventListener("click",e=>{
                 setLayer(e.target.getAttribute("tile-layer"));
             })
@@ -365,7 +362,7 @@
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
         if(shouldDrawGrid)drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP);
 
-        layers.forEach((layer) => {
+        maps[ACTIVE_MAP].layers.forEach((layer) => {
             Object.keys(layer.tiles).forEach((key) => {
                 if(!layer.visible) return;
 
@@ -400,11 +397,7 @@
     }
 
     const toggleTile=(event)=> {
-        if(ACTIVE_TOOL === 2) return;
-
-        if (!layers[currentLayer].visible) {
-            return;
-        }
+        if(ACTIVE_TOOL === 2 || !maps[ACTIVE_MAP].layers[currentLayer].visible) return;
 
         const {x,y} = getSelectedTile(event)[0];
         const key = `${x}-${y}`;
@@ -447,38 +440,39 @@
         const selWidth = endX - startX + 1;
         const selHeight = endY - startY + 1;
 
-        layers[currentLayer].tiles[key] = selection[0];
+        maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[0];
         for (let ix = 0; ix < selWidth; ix++) {
             for (let iy = 0; iy < selHeight; iy++) {
                 const coordKey = `${Number(x)+ix}-${Number(y)+iy}`
-                layers[currentLayer].tiles[coordKey] = selection.find(tile => tile.x === startX + ix && tile.y === startY + iy);
+                maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = selection.find(tile => tile.x === startX + ix && tile.y === startY + iy);
             }
         }
     }
 
     const addRandomTile = (key) =>{
         // TODO add probability for empty
-        layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
+        maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
     }
 
     const fillEmptyOrSameTiles = (key) => {
-        const pickedTile = layers[currentLayer].tiles[key];
+        const pickedTile = maps[ACTIVE_MAP].layers[currentLayer].tiles[key];
         Array.from({length: mapTileWidth * mapTileHeight}, (x, i) => i).map(tile=>{
             const x = tile % mapTileWidth;
             const y = Math.floor(tile / mapTileWidth);
             const coordKey = `${x}-${y}`;
-            const filledTile = layers[currentLayer].tiles[coordKey];
+            const filledTile = maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey];
 
             if(pickedTile && filledTile && filledTile.x === pickedTile.x && filledTile.y === pickedTile.y){
-                layers[currentLayer].tiles[coordKey] = selection[0];// Replace all clicked on tiles with selected
+                maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = selection[0];// Replace all clicked on tiles with selected
             }
-            else if(!pickedTile && !(coordKey in layers[currentLayer].tiles)) {
-                layers[currentLayer].tiles[coordKey] = selection[0]; // when clicked on empty, replace all empty with selection
+            else if(!pickedTile && !(coordKey in maps[ACTIVE_MAP].layers[currentLayer].tiles)) {
+                maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = selection[0]; // when clicked on empty, replace all empty with selection
             }
         })
     }
 
     const getTile =(key, allLayers = false)=> {
+        const layers = maps[ACTIVE_MAP].layers;
         const clicked = allLayers ?
             [...layers].reverse().find((layer,index)=> {
                 if(key in layer.tiles){
@@ -506,7 +500,7 @@
     }
 
     const removeTile=(key) =>{
-        delete layers[currentLayer].tiles[key];
+        delete maps[ACTIVE_MAP].layers[currentLayer].tiles[key];
     }
 
     const applyCtrlZ=(key, isArray) => {
@@ -527,7 +521,7 @@
     const updateStateHistory=(key, isArray) => {
         const tileHistory = stateHistory[currentLayer][key];
 
-        const selected = layers[currentLayer].tiles[key];
+        const selected = maps[ACTIVE_MAP].layers[currentLayer].tiles[key];
         if (isArray(tileHistory)) {
             if (selected && !(selected.x === selection[0].x && selected.y === selection[0].y)) {
                 stateHistory[currentLayer][key].push(selected);
@@ -538,9 +532,11 @@
     }
 
     const clearCanvas = () => {
-        const result = window.confirm("This will clear the map...\nAre you sure you want to do this?");
+        const result = window.confirm(`This will clear the map ${maps[ACTIVE_MAP].name}...\nAre you sure you want to do this? It can't be undone...`);
         if (result) {
-            initDataAfterLoad();
+            maps[ACTIVE_MAP].layers = [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")];
+            setLayer(layers.length - 1);
+            updateLayers();
             draw();
         }
     }
@@ -567,7 +563,7 @@
     }
 
     exports.getLayers = ()=> {
-        return layers;
+        return maps[ACTIVE_MAP].layers;
     }
 
     const renameCurrentTileSymbol = ()=>{
@@ -581,6 +577,7 @@
     }
 
     const getFlattenedData = () => {
+        const layers = maps[ACTIVE_MAP].layers;
         const flattenedData = Array(layers.length).fill([]).map(()=>{
            return Array(mapTileHeight).fill([]).map(row=>{
                return Array(mapTileWidth).fill([]).map(column => ({
@@ -600,7 +597,7 @@
         return flattenedData;
     };
     const getExportData = () => {
-        const exportData = {maps, tileSets, flattenedData: getFlattenedData(), layers, topLayer: layers.length - 1};
+        const exportData = {maps, tileSets, flattenedData: getFlattenedData()};
         console.log("Exported ", exportData);
         return exportData;
     }
@@ -629,7 +626,6 @@
     const setActiveMap =(id) =>{
         ACTIVE_MAP = id;
         draw();
-        layers = maps[ACTIVE_MAP].layers;
         updateMapSize({mapWidth: maps[ACTIVE_MAP].mapWidth, mapHeight: maps[ACTIVE_MAP].mapHeight})
         updateLayers();
     }
@@ -747,7 +743,6 @@
             ACTIVE_MAP = data ? Object.keys(data.maps)[0] : "Map_1";
             maps = data ? {...data.maps} : {[ACTIVE_MAP]: getEmptyMap("Map 1")};
             tileSets = data ? {...data.tileSets} : {};
-            layers = maps[ACTIVE_MAP].layers;
             updateTilesets();
             tilesetDataSel.value = "0";
             cropSize.value = data ? maps[ACTIVE_MAP].tileSize : SIZE_OF_CROP;
@@ -922,9 +917,12 @@
             updateMaps();
         })
         document.getElementById("removeMapBtn").addEventListener("click",()=>{
-            delete maps[ACTIVE_MAP];
-            setActiveMap(Object.keys(maps)[0])
-            updateMaps();
+            const confirm = window.confirm(`Are you sure you want to delete ${maps[ACTIVE_MAP].name}?\nYou can't undo this...`);
+            if (confirm) {
+                delete maps[ACTIVE_MAP];
+                setActiveMap(Object.keys(maps)[0])
+                updateMaps();
+            }
         })
         // Tileset DATA Callbacks //tileDataSel
         tileDataSel = document.getElementById("tileDataSel");
