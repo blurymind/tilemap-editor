@@ -471,7 +471,7 @@
             if(pickedTile && filledTile && filledTile.x === pickedTile.x && filledTile.y === pickedTile.y){
                 layers[currentLayer].tiles[coordKey] = selection[0];// Replace all clicked on tiles with selected
             }
-            else if(!(coordKey in layers[currentLayer].tiles)) {
+            else if(!pickedTile && !(coordKey in layers[currentLayer].tiles)) {
                 layers[currentLayer].tiles[coordKey] = selection[0]; // when clicked on empty, replace all empty with selection
             }
         })
