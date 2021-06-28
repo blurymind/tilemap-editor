@@ -44,7 +44,40 @@
       const layers = maps[activeMap].layers;//TODO this exporter should generate code for all the maps, not just the active one
       const topLayer = layers.length - 1;
 
-      const tilesetsBoilder = ``;//TODO generate code for all the tilesets
+      const getTileData = (tileSet, tileSetIdx) => Array.from({length: tileSet.tileCount}, (x, i) => i).map(tile=>{
+        const x = tile % tileSet.gridWidth;
+        const y = Math.floor(tile / tileSet.gridWidth);
+        const tileKey = `${x}-${y}`;
+
+        const tags = Object.keys(tileSet.tags).filter(tagKey => !!tileSet.tags[tagKey]?.tiles[tileKey]);
+        return `"${tileSet.tileData[tileKey]?.tileSymbol}": [
+          sprite("tileset-${tileSetIdx}", { frame: ${tile}, }),
+          ${tags?.join(",")|| ""}
+        ]`
+      }).join(",")
+
+      const tileSet = tileSets[0];//TODO make it map them all and tileSetBoiler a function that takes
+      const tileSetIdx = 0;
+      const tilesetsBoiler = `
+      loadSprite("tileset-${tileSetIdx}", "${tileSet.src}", {
+            sliceX: ${tileSet.gridWidth},
+            sliceY: ${tileSet.gridHeight},
+        });
+      const tileset-${tileSetIdx}-data = {
+            width: 11, // for thelevel?
+            height: 11,
+            pos: vec2(0, 0),
+            "=": [
+                sprite("tileset", { frame: 1, }),
+                solid(),
+            ],
+            "$": [
+                sprite("tileset", { frame: 2, }),
+                "key",
+             ],
+             ${getTileData(tileSet, tileSetIdx)}
+        };
+      `;//TODO generate code for all the tilesets
       const asciiMap = `\n${flattenedData[topLayer].map((row,rowIndex) => "'" + row.map(tile => tile.tileSymbol).join("")).join("',\n") + "'"}`;
       const kaboomJsCode = `
         layers([${layers.map(layer => layer.name).join(",")}]);
@@ -60,7 +93,7 @@
 
         // https://kaboomjs.com/examples#rpg
         // kaboom maps can take from multiple tilesets
-        addLevel(levels[levelIdx], {
+        addLevel(levels[levelIdx], { // this is a tileset
             width: 11,
             height: 11,
             pos: vec2(20, 20),
@@ -79,9 +112,9 @@
         ])
         `;
 
-      console.log("WIP kaboomjs code exporter\n\n", kaboomJsCode, asciiMap)
+      console.log("WIP kaboomjs code exporter\n\n", kaboomJsCode, asciiMap, tilesetsBoiler)
       // return the transformed data in the end
-      return asciiMap
+      return tilesetsBoiler
     };
     // upload to imgur, then return the src
     const uploadImageToImgur = (blob) => {
@@ -169,6 +202,7 @@
         onClick: ({flattenedData, maps, tileSets, activeMap}) => {
           console.log("onClick, gets the data too")
           const copyText = document.createElement("input");
+          document.body.appendChild(copyText);
           copyText.value = kaboomJsExport({flattenedData, maps, tileSets, activeMap});
           copyText.select();
           copyText.setSelectionRange(0, 99999); /* For mobile devices */

@@ -172,7 +172,7 @@
         ({layers: [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")], name,
             mapWidth, mapHeight, tileSize, width: mapWidth * SIZE_OF_CROP,height: mapHeight * SIZE_OF_CROP });
 
-    const getEmptyTilesetTag = (name, tiles ={}) =>({name,tiles});
+    const getEmptyTilesetTag = (name, code, tiles ={}) =>({name,code,tiles});
 
     const getEmptyTileSet = (src, name="tileset",gridWidth, gridHeight, tileData = {},symbolStartIdx, tags={}) => {
         return { src, name, gridWidth, gridHeight, tileCount: gridWidth * gridHeight, tileData, symbolStartIdx, tags}
@@ -931,7 +931,7 @@
                     alert("Tag already exists");
                     return;
                 }
-                tileSets[tilesetDataSel.value].tags[result] = getEmptyTilesetTag(result);
+                tileSets[tilesetDataSel.value].tags[result] = getEmptyTilesetTag(result, result);
                 updateTilesetDataList();
             }
         });
