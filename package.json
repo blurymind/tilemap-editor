@@ -1,6 +1,6 @@
 {
   "name": "tilemap-editor",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "A fat-free tilemap editor with zero dependencies and a scalable, mobile-friendly interface!",
   "main": "src/tilemap-editor.js",
   "scripts": {

@@ -432,7 +432,7 @@
             } else if (ACTIVE_TOOL === 4){
                 addRandomTile(key);
             } else if (ACTIVE_TOOL === 5){
-                fillEmptyTiles(key);
+                fillEmptyOrSameTiles(key);
             }
         }
 
@@ -460,14 +460,19 @@
         layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
     }
 
-    const fillEmptyTiles = (key) => {
-        console.log()
+    const fillEmptyOrSameTiles = (key) => {
+        const pickedTile = layers[currentLayer].tiles[key];
         Array.from({length: mapTileWidth * mapTileHeight}, (x, i) => i).map(tile=>{
             const x = tile % mapTileWidth;
             const y = Math.floor(tile / mapTileWidth);
             const coordKey = `${x}-${y}`;
-            if(!(coordKey in layers[currentLayer].tiles)) {
-                layers[currentLayer].tiles[coordKey] = selection[0];
+            const filledTile = layers[currentLayer].tiles[coordKey];
+
+            if(pickedTile && filledTile && filledTile.x === pickedTile.x && filledTile.y === pickedTile.y){
+                layers[currentLayer].tiles[coordKey] = selection[0];// Replace all clicked on tiles with selected
+            }
+            else if(!(coordKey in layers[currentLayer].tiles)) {
+                layers[currentLayer].tiles[coordKey] = selection[0]; // when clicked on empty, replace all empty with selection
             }
         })
     }
