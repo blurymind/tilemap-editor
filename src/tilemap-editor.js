@@ -191,10 +191,7 @@
     let apiTileMapExporters = {};
     let apiTileMapImporters = {};
 
-    const getContext = () => {
-        const ctx = canvas.getContext('2d');
-        return ctx;
-    }
+    const getContext = () =>  canvas.getContext('2d');
 
     const setLayer = (newLayer) => {
         currentLayer = Number(newLayer);
@@ -227,7 +224,6 @@
             setLayer(maps[ACTIVE_MAP].layers.length - 1);
             draw();
         }
-
     }
 
     const addLayer = () => {
@@ -597,7 +593,7 @@
         return flattenedData;
     };
     const getExportData = () => {
-        const exportData = {maps, tileSets, flattenedData: getFlattenedData()};
+        const exportData = {maps, tileSets, flattenedData: getFlattenedData(), activeMap: ACTIVE_MAP};
         console.log("Exported ", exportData);
         return exportData;
     }
@@ -1077,7 +1073,7 @@
 
         clearCanvasBtn.addEventListener('click', clearCanvas);
         if(onApply){
-            confirmBtn.addEventListener('click', () => onApply.onClick({data: getExportData()}));
+            confirmBtn.addEventListener('click', () => onApply.onClick(getExportData()));
         }
 
         document.getElementById("renameMapBtn").addEventListener("click",()=>{
