@@ -908,7 +908,7 @@
             }
             const newMapKey = makeNewKey(ACTIVE_MAP);
 
-            maps[newMapKey] = {...JSON.parse(JSON.stringify(maps[ACTIVE_MAP])), name: newMapKey};
+            maps[newMapKey] = {...JSON.parse(JSON.stringify(maps[ACTIVE_MAP])), name: newMapKey};// todo prompt to ask for name
             updateMaps();
         })
         document.getElementById("removeMapBtn").addEventListener("click",()=>{
