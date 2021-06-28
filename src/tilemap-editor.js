@@ -65,7 +65,7 @@
         </div>
         <div id="toolButtonsWrapper">
           <button class="button-as-link active-tool" value="0" title="paint tiles">🖌️</button>
-          <button class="button-as-link" value="4" title="random from selected">💐</button> 
+          <button class="button-as-link" value="4" title="random from selected">🎲</button> 
           <button class="button-as-link" value="1" title="erase tiles">🗑️</button>
           <button class="button-as-link" value="2" title="pan">✋</button>
           <button class="button-as-link" value="3" title="pick tile">🎨</button>
@@ -125,9 +125,10 @@
       <div class="card_right-column layers">
       <div id="mapSelectContainer" class="tilemaps_selector">
             <select name="mapsData" id="mapsDataSel"></select>
-            <button id="addMapBtn">+</button>
-            <button id="removeMapBtn">-</button>            
-            <a class="button" href="#popup1">📏</a>
+            <button id="addMapBtn" title="Add tilemap">+</button>
+            <button id="removeMapBtn" title="Remove tilemap">-</button>        
+            <button id="duplicateMapBtn" title="Duplicate tilemap">📑</button>     
+            <a class="button" href="#popup1">🎚️</a>
             <div id="popup1" class="overlay">
             <div class="popup">
             <h4>TileMap settings</h4>
@@ -654,7 +655,6 @@
         const oldTilesets = {...tileSets};
         tileSets = {};
         let symbolStartIdx = 0;
-        console.log("OLD", oldTilesets)
         // Generate tileset data for each of the loaded images
         IMAGES.forEach((tsImage, idx)=>{
             const newOpt = document.createElement("option");
@@ -897,7 +897,6 @@
             const suggestMapName = `Map ${Object.keys(maps).length + 1}`;
             const result = window.prompt("Enter new map key...", suggestMapName);
             if(result !== null) {
-
                 const newMapKey = result.trim().replaceAll(" ","_") || suggestMapName;
                 if (newMapKey in maps){
                     alert("A map with this key already exists.")
@@ -905,6 +904,19 @@
                 }
                 maps[newMapKey] = getEmptyMap(result.trim());
             }
+            updateMaps();
+        })
+        document.getElementById("duplicateMapBtn").addEventListener("click",()=>{
+            const makeNewKey = (key) => {
+                const suggestedNew = `${key}_copy`;
+                if (suggestedNew in maps){
+                    return makeNewKey(suggestedNew)
+                }
+                return suggestedNew;
+            }
+            const newMapKey = makeNewKey(ACTIVE_MAP);
+
+            maps[newMapKey] = {...JSON.parse(JSON.stringify(maps[ACTIVE_MAP])), name: newMapKey};
             updateMaps();
         })
         document.getElementById("removeMapBtn").addEventListener("click",()=>{
