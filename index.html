@@ -26,6 +26,47 @@
         overscroll-behavior-y: none;
         margin: 0;
       }
+      #snackbar {
+        visibility: hidden;
+        min-width: 250px;
+        margin-left: -125px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 2px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1;
+        left: 50%;
+        bottom: 30px;
+      }
+
+      #snackbar.show {
+        visibility: visible;
+        -webkit-animation: fadein 0.5s;
+        animation: fadein 0.5s;
+      }
+      @-webkit-keyframes fadein {
+        from {
+          bottom: 0;
+          opacity: 0;
+        }
+        to {
+          bottom: 30px;
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadein {
+        from {
+          bottom: 0;
+          opacity: 0;
+        }
+        to {
+          bottom: 30px;
+          opacity: 1;
+        }
+      }
     </style>
     <script src="src/tilemap-editor.js"></script>
 
@@ -34,6 +75,7 @@
   <body>
   <div id="tileMapEditor"></div>
   <button id="addPwaBtn" >🍰 Install pwa</button>
+  <div id="snackbar">A new version of this app is available.<a id="reload"> Click here to update.</a></div>
   <script>
 
     // Example data structure that tiledmap-editor can read and write
@@ -217,11 +259,43 @@
     })
 
     // Pwa stuff
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-              .register('/tilemap-editor/sw.js')
-              .then(() => { console.log('Service Worker Registered'); });
+    let newWorker;
+    function showUpdateBar() {
+      let snackbar = document.getElementById('snackbar');
+      snackbar.className = 'show';
     }
+    // The click event on the pop up notification
+    document.getElementById('reload').addEventListener('click', function(){
+      newWorker.postMessage({ action: 'skipWaiting' });
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/tilemap-editor/sw.js').then(reg => {
+        console.log('Service Worker Registered');
+        reg.addEventListener('updatefound', () => {
+          // A wild service worker has appeared in reg.installing!
+          newWorker = reg.installing;
+
+          newWorker.addEventListener('statechange', () => {
+            // Has network.state changed?
+            switch (newWorker.state) {
+              case 'installed':
+                if (navigator.serviceWorker.controller) {
+                  showUpdateBar();
+                }
+                break;
+            }
+          });
+        });
+      });
+    }
+    let refreshing;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (refreshing) return;
+      window.location.reload();
+      refreshing = true;
+    });
+
     let deferredPrompt;
     const addBtn = document.getElementById("addPwaBtn");
     addBtn.style.display = 'none';
