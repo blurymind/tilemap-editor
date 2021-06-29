@@ -1,6 +1,6 @@
 {
   "name": "tilemap-editor",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A fat-free tilemap editor with zero dependencies and a scalable, mobile-friendly interface!",
   "main": "src/tilemap-editor.js",
   "scripts": {
@@ -14,6 +14,9 @@
   },
   "keywords": [
     "tilemap",
+    "level",
+    "editor",
+    "gamedev",
     "editor",
     "kaboomjs"
   ],

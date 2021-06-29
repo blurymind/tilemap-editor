@@ -537,12 +537,15 @@
         }
     }
 
-    const exportJson = () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({tileSets, maps}));
+    const downloadAsTextFile = (input, fileName = "tilemap-editor.json") =>{
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(typeof input === "string" ? input : JSON.stringify(input));
         const dlAnchorElem = document.getElementById('downloadAnchorElem');
         dlAnchorElem.setAttribute("href",     dataStr     );
-        dlAnchorElem.setAttribute("download", "tilemap-editor.json");
+        dlAnchorElem.setAttribute("download", fileName);
         dlAnchorElem.click();
+    }
+    const exportJson = () => {
+        downloadAsTextFile({tileSets, maps});
     }
 
     const exportImage = () => {
@@ -593,7 +596,7 @@
         return flattenedData;
     };
     const getExportData = () => {
-        const exportData = {maps, tileSets, flattenedData: getFlattenedData(), activeMap: ACTIVE_MAP};
+        const exportData = {maps, tileSets, flattenedData: getFlattenedData(), activeMap: ACTIVE_MAP, downloadAsTextFile};
         console.log("Exported ", exportData);
         return exportData;
     }
