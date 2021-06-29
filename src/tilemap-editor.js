@@ -57,7 +57,7 @@
                     <div>mid-click - erases tile</div>
                     <div>left-click adds tile</div> 
                     <div>right-click on tileset - lets you change tile symbol or metadata</div>
-                    <div>left-click - selects tile</div>
+                    <div>left-click - selects tile </div>
                 </div>
                 </div>
                 </div>

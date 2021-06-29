@@ -5,6 +5,7 @@
   "main": "src/tilemap-editor.js",
   "scripts": {
     "start": "serve",
+    "predeploy": "node updatePwa.js",
     "deploy": "gh-pages -d ."
   },
   "repository": {
