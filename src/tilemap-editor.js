@@ -157,7 +157,7 @@
     }
     const getEmptyLayer = (name="layer")=> ({tiles:{}, visible: true, name});
     let tilesetImage, canvas, tilesetContainer, tilesetSelection, cropSize,
-        clearCanvasBtn, confirmBtn, tilesetGridContainer,
+        confirmBtn, tilesetGridContainer,
         layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,
         tilesetDataSel, mapsDataSel;
 
@@ -531,7 +531,7 @@
         const result = window.confirm(`This will clear the map ${maps[ACTIVE_MAP].name}...\nAre you sure you want to do this? It can't be undone...`);
         if (result) {
             maps[ACTIVE_MAP].layers = [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")];
-            setLayer(layers.length - 1);
+            setLayer(0);
             updateLayers();
             draw();
         }
@@ -815,7 +815,6 @@
         attachTo.className = "tilemap_editor_root";
         tilesetImage = document.getElementById('tileset-source');
         cropSize = document.getElementById('cropSize');
-        clearCanvasBtn = document.getElementById("clearCanvasBtn");
 
         confirmBtn = document.getElementById("confirmBtn");
         if(onApply){
@@ -1074,7 +1073,7 @@
             draw();
         })
 
-        clearCanvasBtn.addEventListener('click', clearCanvas);
+        document.getElementById("clearCanvasBtn").addEventListener('click', clearCanvas);
         if(onApply){
             confirmBtn.addEventListener('click', () => onApply.onClick(getExportData()));
         }
