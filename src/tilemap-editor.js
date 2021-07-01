@@ -174,8 +174,8 @@
 
     const getEmptyTilesetTag = (name, code, tiles ={}) =>({name,code,tiles});
 
-    const getEmptyTileSet = (src, name="tileset",gridWidth, gridHeight, tileData = {},symbolStartIdx, tags={}) => {
-        return { src, name, gridWidth, gridHeight, tileCount: gridWidth * gridHeight, tileData, symbolStartIdx, tags}
+    const getEmptyTileSet = (src, name="tileset",gridWidth, gridHeight, tileData = {},symbolStartIdx,tileSize=SIZE_OF_CROP, tags={}) => {
+        return { src, name, gridWidth, gridHeight, tileCount: gridWidth * gridHeight, tileData, symbolStartIdx,tileSize, tags}
     }
 
     const getSnappedPos = (pos) => Math.round(pos / SIZE_OF_CROP) * SIZE_OF_CROP;
@@ -576,24 +576,45 @@
     }
 
     const getFlattenedData = () => {
-        const layers = maps[ACTIVE_MAP].layers;
-        const flattenedData = Array(layers.length).fill([]).map(()=>{
-           return Array(mapTileHeight).fill([]).map(row=>{
-               return Array(mapTileWidth).fill([]).map(column => ({
-                   tile: null,
-                   tileSymbol: " "// a space is an empty tile
-               }))
-           })
-       });
-        layers.forEach((layerObj,lrIndex) => {
-            Object.entries(layerObj.tiles).forEach(([key,tile])=>{
-                const [x,y] = key.split("-");
-                if(Number(y) < mapTileHeight && Number(x) < mapTileWidth) {
-                    flattenedData[lrIndex][Number(y)][Number(x)] = {tile, tileSymbol: tile.tileSymbol || "*"};
-                }
-            })
+        const result = Object.entries(maps).map(([key, map])=>{
+            const layers = map.layers;
+            const flattenedData = Array(layers.length).fill([]).map(()=>{
+                return Array(map.mapHeight).fill([]).map(row=>{
+                    return Array(map.mapWidth).fill([]).map(column => ({
+                        tile: null,
+                        tileSymbol: " "// a space is an empty tile
+                    }))
+                })
+            });
+            layers.forEach((layerObj,lrIndex) => {
+                Object.entries(layerObj.tiles).forEach(([key,tile])=>{
+                    const [x,y] = key.split("-");
+                    if(Number(y) < map.mapHeight && Number(x) < map.mapWidth) {
+                        flattenedData[lrIndex][Number(y)][Number(x)] = {tile, tileSymbol: tile.tileSymbol || "*"};
+                    }
+                })
+            });
+            return {map:key,flattenedData};
         });
-        return flattenedData;
+        return result;
+       //  const layers = maps[ACTIVE_MAP].layers;
+       //  const flattenedData = Array(layers.length).fill([]).map(()=>{
+       //     return Array(mapTileHeight).fill([]).map(row=>{
+       //         return Array(mapTileWidth).fill([]).map(column => ({
+       //             tile: null,
+       //             tileSymbol: " "// a space is an empty tile
+       //         }))
+       //     })
+       // });
+       //  layers.forEach((layerObj,lrIndex) => {
+       //      Object.entries(layerObj.tiles).forEach(([key,tile])=>{
+       //          const [x,y] = key.split("-");
+       //          if(Number(y) < mapTileHeight && Number(x) < mapTileWidth) {
+       //              flattenedData[lrIndex][Number(y)][Number(x)] = {tile, tileSymbol: tile.tileSymbol || "*"};
+       //          }
+       //      })
+       //  });
+       //  return flattenedData;
     };
     const getExportData = () => {
         const exportData = {maps, tileSets, flattenedData: getFlattenedData(), activeMap: ACTIVE_MAP, downloadAsTextFile};
@@ -672,7 +693,7 @@
                         x, y, tilesetIdx: idx, tileSymbol
                     }
                 })
-                tileSets[idx] = getEmptyTileSet(tsImage,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, oldTilesets[idx]?.tags);
+                tileSets[idx] = getEmptyTileSet(tsImage,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, SIZE_OF_CROP, oldTilesets[idx]?.tags);
 
                 symbolStartIdx += tileCount;
                 // tileSets = {...tileSets, ...oldTilesets};
