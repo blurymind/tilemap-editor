@@ -308,7 +308,9 @@
             const x = tile % gridWidth;
             const y = Math.floor(tile / gridWidth);
             const tileKey = `${x}-${y}`;
-            const innerTile = viewMode === "" ? tileData[tileKey]?.tileSymbol : tags[viewMode]?.tiles[tileKey]?.mark || "-";
+            const innerTile = viewMode === "" ?
+                tileData[tileKey]?.tileSymbol :
+                viewMode === "frames" ? tile :tags[viewMode]?.tiles[tileKey]?.mark || "-";
             return `<div style="width:${SIZE_OF_CROP}px;height:${SIZE_OF_CROP}px" class="tileset_grid_tile">${innerTile}</div>`
         }).join("\n")
         tilesetGridContainer.innerHTML = newGrid;
@@ -651,7 +653,7 @@
     }
 
     const updateTilesetDataList = () => {
-        tileDataSel.innerHTML = '<option value="">Symbols</option>';// Symbols is always there
+        tileDataSel.innerHTML = '<option value="">Symbols</option><option value="frames">Frames</option>';// Symbols is always there
         if(!tileSets[tilesetDataSel.value]?.tags) return;
 
         Object.keys(tileSets[tilesetDataSel.value]?.tags).forEach(tag=>{
