@@ -174,7 +174,7 @@
     </div>
         `
     }
-    const getEmptyLayer = (name="layer")=> ({tiles:{}, visible: true, name});
+    const getEmptyLayer = (name="layer")=> ({tiles:{}, visible: true, name, animatedTiles: {}});
     let tilesetImage, canvas, tilesetContainer, tilesetSelection, cropSize,
         confirmBtn, tilesetGridContainer,
         layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,tileFrameSel,
@@ -395,9 +395,10 @@
         if(shouldDrawGrid)drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP);
 
         maps[ACTIVE_MAP].layers.forEach((layer) => {
-            Object.keys(layer.tiles).forEach((key) => {
-                if(!layer.visible) return;
+            if(!layer.visible) return;
 
+            //static tiles on this layer
+            Object.keys(layer.tiles).forEach((key) => {
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {x, y, tilesetIdx} = layer.tiles[key];
                 ctx.drawImage(
@@ -410,6 +411,24 @@
                     positionY * SIZE_OF_CROP,
                     SIZE_OF_CROP,
                     SIZE_OF_CROP
+                );
+            });
+            // animated tiles
+            Object.keys(layer.animatedTiles || {}).forEach((key) => {
+                const [positionX, positionY] = key.split('-').map(Number);
+                const {start, width, height, frameCount} = layer.animatedTiles[key];
+                const {x, y, tilesetIdx} = start;
+                const frameIndex = tileDataSel.value === "frames" ? Math.round(Date.now()/120) % frameCount : 1; //30fps
+                ctx.drawImage(
+                    TILESET_ELEMENTS[tilesetIdx],
+                    x * SIZE_OF_CROP + (frameIndex * SIZE_OF_CROP * width),//src x
+                    y * SIZE_OF_CROP,//src y
+                    SIZE_OF_CROP * width,// src width
+                    SIZE_OF_CROP * height, // src height
+                    positionX * SIZE_OF_CROP, //target x
+                    positionY * SIZE_OF_CROP, //target y
+                    SIZE_OF_CROP * width, // target width
+                    SIZE_OF_CROP * height // target height
                 );
             });
         });
@@ -428,41 +447,9 @@
         }
     }
 
-    const toggleTile=(event)=> {
-        if(ACTIVE_TOOL === 2 || !maps[ACTIVE_MAP].layers[currentLayer].visible) return;
-
-        const {x,y} = getSelectedTile(event)[0];
-        const key = `${x}-${y}`;
-
-        const isArray = (likely) => Array.isArray(likely) && likely[0] !== undefined;
-
-        if (event.altKey) {
-            if (event.type === 'pointerdown' || event.type === 'pointermove') {
-                applyCtrlZ(key, isArray);
-            }
-            return;
-        }
-        updateStateHistory(key, isArray);
-
-        if (event.shiftKey || event.button === 1) {
-            removeTile(key);
-        } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === 3) {
-            const pickedTile = getTile(key, true);
-            if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1); //picking empty tile, sets tool to eraser
-            else if(ACTIVE_TOOL === 5 || ACTIVE_TOOL === 4) setActiveTool(0); //
-        } else {
-            if(ACTIVE_TOOL === 0){
-                addTile(key);
-            } else if(ACTIVE_TOOL === 1) {
-                removeTile(key);
-            } else if (ACTIVE_TOOL === 4){
-                addRandomTile(key);
-            } else if (ACTIVE_TOOL === 5){
-                fillEmptyOrSameTiles(key);
-            }
-        }
-
-        draw();
+    const removeTile=(key) =>{
+        delete maps[ACTIVE_MAP].layers[currentLayer].tiles[key];
+        if (key in (maps[ACTIVE_MAP].layers[currentLayer].animatedTiles || {})) delete maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key];
     }
 
     const addTile = (key) => {
@@ -472,12 +459,20 @@
         const selWidth = endX - startX + 1;
         const selHeight = endY - startY + 1;
 
-        maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[0];
-        for (let ix = 0; ix < selWidth; ix++) {
-            for (let iy = 0; iy < selHeight; iy++) {
-                const coordKey = `${Number(x)+ix}-${Number(y)+iy}`
-                maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = selection.find(tile => tile.x === startX + ix && tile.y === startY + iy);
+
+        const selectedFrameCount = tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.frameCount || 1;
+        if (tileDataSel.value !== "frames" && selectedFrameCount !== 1) {
+            maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[0];
+            for (let ix = 0; ix < selWidth; ix++) {
+                for (let iy = 0; iy < selHeight; iy++) {
+                    const coordKey = `${Number(x)+ix}-${Number(y)+iy}`
+                    maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = selection.find(tile => tile.x === startX + ix && tile.y === startY + iy);
+                }
             }
+        } else {
+            // if animated tile mode and has more than one frames, add/remove to animatedTiles
+            if(!maps[ACTIVE_MAP].layers[currentLayer].animatedTiles) maps[ACTIVE_MAP].layers[currentLayer].animatedTiles = {};
+            maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key] = tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value];
         }
     }
 
@@ -531,10 +526,6 @@
         }
     }
 
-    const removeTile=(key) =>{
-        delete maps[ACTIVE_MAP].layers[currentLayer].tiles[key];
-    }
-
     const applyCtrlZ=(key, isArray) => {
         const tileHistory = stateHistory[currentLayer][key];
 
@@ -548,6 +539,43 @@
                 draw();
             }
         }
+    }
+
+    const toggleTile=(event)=> {
+        if(ACTIVE_TOOL === 2 || !maps[ACTIVE_MAP].layers[currentLayer].visible) return;
+
+        const {x,y} = getSelectedTile(event)[0];
+        const key = `${x}-${y}`;
+
+        const isArray = (likely) => Array.isArray(likely) && likely[0] !== undefined;
+
+        if (event.altKey) {
+            if (event.type === 'pointerdown' || event.type === 'pointermove') {
+                applyCtrlZ(key, isArray);
+            }
+            return;
+        }
+        updateStateHistory(key, isArray);
+
+        if (event.shiftKey || event.button === 1) {
+            removeTile(key);
+        } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === 3) {
+            const pickedTile = getTile(key, true);
+            if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1); //picking empty tile, sets tool to eraser
+            else if(ACTIVE_TOOL === 5 || ACTIVE_TOOL === 4) setActiveTool(0); //
+        } else {
+            if(ACTIVE_TOOL === 0){
+                addTile(key);// also works with animated
+            } else if(ACTIVE_TOOL === 1) {
+                removeTile(key);// also works with animated
+            } else if (ACTIVE_TOOL === 4){
+                addRandomTile(key);
+            } else if (ACTIVE_TOOL === 5){
+                fillEmptyOrSameTiles(key);
+            }
+        }
+
+        draw();
     }
 
     const updateStateHistory=(key, isArray) => {
@@ -1215,5 +1243,12 @@
             }
         })
         if (tileMapData) loadData(tileMapData);
+
+        // Animated tiles when on frames mode
+        const animateTiles = () => {
+            if (tileDataSel.value === "frames") draw();
+            requestAnimationFrame(animateTiles);
+        }
+        requestAnimationFrame(animateTiles);
     };
 });
