@@ -699,7 +699,7 @@
     const updateTilesetDataList = (populateFrames = false) => {
         const populateWithOptions = (selectEl, options, newContent)=>{
             if(!options) return;
-            const value = selectEl.value;
+            const value = selectEl.value + "";
             selectEl.innerHTML = newContent;
             Object.keys(options).forEach(opt=>{
                 const newOption = document.createElement("option");
@@ -707,7 +707,7 @@
                 newOption.value = opt;
                 selectEl.appendChild(newOption)
             })
-            if (value in options) selectEl.value = value;
+            if (value in options || (["","frames"].includes(value) && !populateFrames)) selectEl.value = value;
         }
 
         if (!populateFrames) populateWithOptions(tileDataSel, tileSets[tilesetDataSel.value]?.tags, '<option value="">Symbols</option><option value="frames">Frames</option>');
@@ -1046,6 +1046,7 @@
                     alert("Frame already exists");
                     return;
                 }
+                tileSets[tilesetDataSel.value].frames[result] = {frameCount: Number(document.getElementById("tileFrameCount").value)}
                 setFramesToSelection(result);
                 updateTilesetDataList(true);
                 tileFrameSel.value = result;
@@ -1062,7 +1063,6 @@
         document.getElementById("tileFrameCount").addEventListener("change", e=>{
 
             tileSets[tilesetDataSel.value].frames[tileFrameSel.value].frameCount = Number(e.target.value);
-            console.log("Set frame count", tileSets[tilesetDataSel.value].frames[tileFrameSel.value].frameCount )
             updateTilesetGridContainer();
         })
         // Tileset SELECT callbacks
