@@ -404,12 +404,24 @@ cursor: pointer;
   color: #88c6ff;
   background-color: rgba(255, 255, 0, 0.05);
 }
-#tilesetSelectContainer{
+.sticky_top{
   position: sticky;
   top: 0;
   z-index: 1;
 }
-
+.sticky_top2{
+  position: sticky;
+  top: 30px;
+  z-index: 1;
+}
+.sticky_settings{
+  background-color: #17171fc7 !important;
+  border-radius: 2px;
+  padding: 2px;
+}
+.sticky_settings select{
+  max-width: 35%;
+}
 .tilemaps_selector{
   display: flex;
   flex-direction: row;

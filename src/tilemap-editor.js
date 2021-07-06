@@ -102,12 +102,31 @@
           </div>
 
         </details>
-        <div class="select_container layer" id="tilesetSelectContainer">
+        <div class="select_container layer sticky_top" id="tilesetSelectContainer">
             <select name="tileData" id="tileDataSel">
                 <option value="">Symbols</option>
             </select>
             <button id="addTileTagBtn" title="add">+</button>
             <button id="removeTileTagBtn" title="remove">-</button>
+        </div>
+        <div class="select_container layer sticky_top2 tileset_opt_field sticky_settings" style="display: none" id="tileFrameSelContainer">
+            <select name="tileFrameData" id="tileFrameSel">
+<!--            <option value="anim1">anim1rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr</option>-->
+        </select>
+        <button id="addTileFrameBtn" title="add">+</button>
+        <button id="removeTileFrameBtn" title="remove">-</button>
+        frames: <input id="tileFrameCount" value="1" type="number" min="1">
+<!--        <div class="sticky_settings">-->
+<!--            <div>-->
+<!--                <span>width: </span><input id="tileSizeFrame" value="1" type="number" min="1">-->
+<!--                <span>height: </span><input id="tileSizeFrame" value="1" type="number" min="1">-->
+<!--            </div>-->
+<!--            <div>-->
+<!--                <span>start: </span><input id="tileStartFrame" value="1" type="number" min="1">-->
+<!--                <span>count: </span><input id="tileCountFrame" value="2" type="number" min="2">-->
+<!--            </div>-->
+<!--        </div>-->
+
         </div>
       <div class="tileset-container">
         <img id="tileset-source" crossorigin />
@@ -158,7 +177,7 @@
     const getEmptyLayer = (name="layer")=> ({tiles:{}, visible: true, name});
     let tilesetImage, canvas, tilesetContainer, tilesetSelection, cropSize,
         confirmBtn, tilesetGridContainer,
-        layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,
+        layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,tileFrameSel,
         tilesetDataSel, mapsDataSel;
 
     let TILESET_ELEMENTS = [];
@@ -174,8 +193,8 @@
 
     const getEmptyTilesetTag = (name, code, tiles ={}) =>({name,code,tiles});
 
-    const getEmptyTileSet = (src, name="tileset",gridWidth, gridHeight, tileData = {},symbolStartIdx,tileSize=SIZE_OF_CROP, tags={}) => {
-        return { src, name, gridWidth, gridHeight, tileCount: gridWidth * gridHeight, tileData, symbolStartIdx,tileSize, tags}
+    const getEmptyTileSet = (src, name="tileset",gridWidth, gridHeight, tileData = {},symbolStartIdx,tileSize=SIZE_OF_CROP, tags={}, frames= {}) => {
+        return { src, name, gridWidth, gridHeight, tileCount: gridWidth * gridHeight, tileData, symbolStartIdx,tileSize, tags, frames}
     }
 
     const getSnappedPos = (pos) => Math.round(pos / SIZE_OF_CROP) * SIZE_OF_CROP;
@@ -294,7 +313,25 @@
             .className = "button-as-link active-tool"
     }
 
+    let selectionSize = [1,1];
+    const updateSelection = () => {
+        const selected = selection[0];
+        if(!selected) return;
+        const {x, y} = selected;
+        const {x: endX, y: endY} = selection[selection.length - 1];
+        const selWidth = endX - x + 1;
+        const selHeight = endY - y + 1;
+        selectionSize = [selWidth, selHeight]
 
+        const tileSize = tileSets[tilesetDataSel.value].tileSize;
+        tilesetSelection.style.left = `${x * tileSize}px`;
+        tilesetSelection.style.top = `${y * tileSize}px`;
+        tilesetSelection.style.width = `${selWidth * tileSize}px`;
+        tilesetSelection.style.height = `${selHeight * tileSize}px`;
+
+        // Autoselect tool upon selecting a tile
+        if(![0, 4, 5].includes(ACTIVE_TOOL)) setActiveTool(0);
+    }
 
     const randomLetters = new Array(10680).fill(1).map((_, i) => String.fromCharCode(165 + i));
 
@@ -311,33 +348,30 @@
             const innerTile = viewMode === "" ?
                 tileData[tileKey]?.tileSymbol :
                 viewMode === "frames" ? tile :tags[viewMode]?.tiles[tileKey]?.mark || "-";
+
             return `<div style="width:${SIZE_OF_CROP}px;height:${SIZE_OF_CROP}px" class="tileset_grid_tile">${innerTile}</div>`
         }).join("\n")
         tilesetGridContainer.innerHTML = newGrid;
-    }
 
-    const updateSelection = () => {
-        const selected = selection[0];
-        if(!selected) return;
-        const {x, y} = selected;
-        const {x: endX, y: endY} = selection[selection.length - 1];
-        const selWidth = endX - x + 1;
-        const selHeight = endY - y + 1;
+        if (viewMode === "frames") {
+            const frameData = tileSets[tilesetDataSel.value].frames[tileFrameSel.value];
+            if(!frameData || Object.keys(frameData).length === 0) return;
 
-        tilesetSelection.style.left = `${x * SIZE_OF_CROP}px`;
-        tilesetSelection.style.top = `${y * SIZE_OF_CROP}px`;
-        tilesetSelection.style.width = `${selWidth * SIZE_OF_CROP}px`;
-        tilesetSelection.style.height = `${selHeight * SIZE_OF_CROP}px`;
-
-        // Autoselect tool upon selecting a tile
-        if(![0, 4, 5].includes(ACTIVE_TOOL)) setActiveTool(0);
+            const {width, height, start, tiles,frameCount} = frameData;
+            selection = [...tiles];
+            updateSelection();
+            console.log(">>",start.x,start.y, SIZE_OF_CROP * start.y)
+            tilesetGridContainer.innerHTML += `<div style="width:${SIZE_OF_CROP * (width * (frameCount - 1))}px;height:${SIZE_OF_CROP * height}px;
+            border: 1px solid red; position: absolute; left: ${SIZE_OF_CROP * (start.x + width)}px;top: ${SIZE_OF_CROP * start.y}px;"></div>`
+        }
     }
 
     let tileSelectStart = null;
     const getSelectedTile = (event) => {
         const { x, y } = event.target.getBoundingClientRect();
-        const tx = Math.floor(Math.max(event.clientX - x, 0) / SIZE_OF_CROP);
-        const ty = Math.floor(Math.max(event.clientY - y, 0) / SIZE_OF_CROP);
+        const tileSize = tileSets[tilesetDataSel.value].tileSize;
+        const tx = Math.floor(Math.max(event.clientX - x, 0) / tileSize);
+        const ty = Math.floor(Math.max(event.clientY - y, 0) / tileSize);
         // add start tile, add end tile, add all tiles inbetween
         const newSelection = [];
         if (tileSelectStart !== null){
@@ -599,24 +633,6 @@
             return {map:key,flattenedData};
         });
         return result;
-       //  const layers = maps[ACTIVE_MAP].layers;
-       //  const flattenedData = Array(layers.length).fill([]).map(()=>{
-       //     return Array(mapTileHeight).fill([]).map(row=>{
-       //         return Array(mapTileWidth).fill([]).map(column => ({
-       //             tile: null,
-       //             tileSymbol: " "// a space is an empty tile
-       //         }))
-       //     })
-       // });
-       //  layers.forEach((layerObj,lrIndex) => {
-       //      Object.entries(layerObj.tiles).forEach(([key,tile])=>{
-       //          const [x,y] = key.split("-");
-       //          if(Number(y) < mapTileHeight && Number(x) < mapTileWidth) {
-       //              flattenedData[lrIndex][Number(y)][Number(x)] = {tile, tileSymbol: tile.tileSymbol || "*"};
-       //          }
-       //      })
-       //  });
-       //  return flattenedData;
     };
     const getExportData = () => {
         const exportData = {maps, tileSets, flattenedData: getFlattenedData(), activeMap: ACTIVE_MAP, downloadAsTextFile};
@@ -652,16 +668,24 @@
         updateLayers();
     }
 
-    const updateTilesetDataList = () => {
-        tileDataSel.innerHTML = '<option value="">Symbols</option><option value="frames">Frames</option>';// Symbols is always there
-        if(!tileSets[tilesetDataSel.value]?.tags) return;
+    const updateTilesetDataList = (populateFrames = false) => {
+        const populateWithOptions = (selectEl, options, newContent)=>{
+            if(!options) return;
+            const value = selectEl.value;
+            selectEl.innerHTML = newContent;
+            Object.keys(options).forEach(opt=>{
+                const newOption = document.createElement("option");
+                newOption.innerText = opt;
+                newOption.value = opt;
+                selectEl.appendChild(newOption)
+            })
+            if (value in options) selectEl.value = value;
+        }
 
-        Object.keys(tileSets[tilesetDataSel.value]?.tags).forEach(tag=>{
-            const newOption = document.createElement("option");
-            newOption.innerText = tag;
-            newOption.value = tag;
-            tileDataSel.appendChild(newOption)
-        })
+        if (!populateFrames) populateWithOptions(tileDataSel, tileSets[tilesetDataSel.value]?.tags, '<option value="">Symbols</option><option value="frames">Frames</option>');
+        else populateWithOptions(tileFrameSel, tileSets[tilesetDataSel.value]?.frames, '');
+
+        document.getElementById("tileFrameCount").value = tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.frameCount || 1;
     }
     // Note: only call this when tileset images have changed
     const updateTilesets = () =>{
@@ -695,10 +719,9 @@
                         x, y, tilesetIdx: idx, tileSymbol
                     }
                 })
-                tileSets[idx] = getEmptyTileSet(tsImage,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, SIZE_OF_CROP, oldTilesets[idx]?.tags);
+                tileSets[idx] = getEmptyTileSet(tsImage,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, SIZE_OF_CROP, oldTilesets[idx]?.tags,oldTilesets[idx]?.frames);
 
                 symbolStartIdx += tileCount;
-                // tileSets = {...tileSets, ...oldTilesets};
             })
 
             TILESET_ELEMENTS.push(tilesetImgElement);
@@ -719,6 +742,7 @@
             selection = [getTileData(0, 0)];
             updateSelection();
             updateTilesetDataList();
+            updateTilesetDataList(true);
             updateTilesetGridContainer();
             document.getElementById("tilesetSrcLabel").innerText = `src: ${tilesetImage.src}`;
             document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
@@ -865,6 +889,12 @@
             }
         });
 
+        const setFramesToSelection = (animName) =>{
+            tileSets[tilesetDataSel.value].frames[animName] = {
+                ...(tileSets[tilesetDataSel.value].frames[animName]||{}),
+                width: selectionSize[0], height:selectionSize[1], start: selection[0], tiles: selection,
+            }
+        }
         tilesetContainer.addEventListener('pointerup', (e) => {
             setTimeout(()=>{
                 document.getElementById("tilesetDataDetails").open = false;
@@ -880,19 +910,25 @@
                 renameCurrentTileSymbol();
                 return;
             }
-            if (viewMode !== "" && e.button === 0) {
-                selection.forEach(selected=>{
-                    const {x, y} = selected;
-                    const tileKey = `${x}-${y}`;
-                    const tagTiles = tileSets[tilesetDataSel.value]?.tags[viewMode]?.tiles;
-                    if (tagTiles){
-                        if(tileKey in tagTiles) {
-                            delete tagTiles[tileKey]
-                        }else {
-                            tagTiles[tileKey] = { mark: "O"};
+            if (e.button === 0) {
+                if(viewMode !== "" && viewMode !== "frames"){
+                    selection.forEach(selected=>{
+                        const {x, y} = selected;
+                        const tileKey = `${x}-${y}`;
+                        const tagTiles = tileSets[tilesetDataSel.value]?.tags[viewMode]?.tiles;
+                        if (tagTiles){
+                            if(tileKey in tagTiles) {
+                                delete tagTiles[tileKey]
+                            }else {
+                                tagTiles[tileKey] = { mark: "O"};
+                            }
                         }
-                    }
-                });
+                    });
+
+                } else if (viewMode === "frames") {
+                    setFramesToSelection(tileFrameSel.value);
+                    console.log("FRAMES", tileSets[tilesetDataSel.value].frames[tileFrameSel.value])
+                }
                 updateTilesetGridContainer();
             }
         });
@@ -947,6 +983,9 @@
         // Tileset DATA Callbacks //tileDataSel
         tileDataSel = document.getElementById("tileDataSel");
         tileDataSel.addEventListener("change",()=>{
+            document.getElementById("tileFrameSelContainer").style.display = tileDataSel.value ===  "frames" ?
+                "block":"none"
+            // tilesetContainer.style.top = tileDataSel.value ===  "frames" ? "45px" : "0";
             updateTilesetGridContainer();
         })
         document.getElementById("addTileTagBtn").addEventListener("click",()=>{
@@ -966,6 +1005,38 @@
                 updateTilesetDataList();
             }
         });
+        // Tileset frames
+        tileFrameSel = document.getElementById("tileFrameSel");
+        tileFrameSel.addEventListener("change", e =>{
+            document.getElementById("tileFrameCount").value = tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.frameCount || 1;
+            updateTilesetGridContainer();
+        });
+        document.getElementById("addTileFrameBtn").addEventListener("click",()=>{
+            const result = window.prompt("Name your frame", `anim${Object.keys(tileSets[tilesetDataSel.value]?.frames||{}).length}`);
+            if(result !== null){
+                if (result in tileSets[tilesetDataSel.value].frames) {
+                    alert("Frame already exists");
+                    return;
+                }
+                setFramesToSelection(result);
+                updateTilesetDataList(true);
+                tileFrameSel.value = result;
+                updateTilesetGridContainer();
+            }
+        });
+        document.getElementById("removeTileFrameBtn").addEventListener("click",()=>{
+            if (tileFrameSel.value && tileFrameSel.value in tileSets[tilesetDataSel.value].frames) {
+                delete tileSets[tilesetDataSel.value].frames[tileFrameSel.value];
+                updateTilesetDataList(true);
+                updateTilesetGridContainer();
+            }
+        });
+        document.getElementById("tileFrameCount").addEventListener("change", e=>{
+
+            tileSets[tilesetDataSel.value].frames[tileFrameSel.value].frameCount = Number(e.target.value);
+            console.log("Set frame count", tileSets[tilesetDataSel.value].frames[tileFrameSel.value].frameCount )
+            updateTilesetGridContainer();
+        })
         // Tileset SELECT callbacks
         tilesetDataSel = document.getElementById("tilesetDataSel");
         tilesetDataSel.addEventListener("change",e=>{
