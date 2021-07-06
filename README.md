@@ -55,6 +55,11 @@ It also scales all the way down to a smartphone screen in portrait mode
   <img src="screenshots/mobile.png" />
 </p>
 
+It can even do animated tiles
+ <p align="center">
+  <img src="screenshots/animatedTiles.gif" />
+</p>
+
 ## :cyclone: Reason
 
 But Todor, why are you making another tilemap editor with all these other ones out there?
