@@ -354,7 +354,7 @@
         tilesetGridContainer.innerHTML = newGrid;
 
         if (viewMode === "frames") {
-            const frameData = tileSets[tilesetDataSel.value].frames[tileFrameSel.value];
+            const frameData = getCurrentFrames();
             if(!frameData || Object.keys(frameData).length === 0) return;
 
             const {width, height, start, tiles,frameCount} = frameData;
@@ -452,33 +452,41 @@
         if (key in (maps[ACTIVE_MAP].layers[currentLayer].animatedTiles || {})) delete maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key];
     }
 
-    const addTile = (key) => {
+    const addSelectedTiles = (key) => {
         const [x, y] = key.split("-")
         const {x: startX, y: startY} = selection[0];
-        const {x: endX, y: endY} = selection[selection.length - 1];
-        const selWidth = endX - startX + 1;
-        const selHeight = endY - startY + 1;
-
-
-        const selectedFrameCount = tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.frameCount || 1;
-        if (tileDataSel.value !== "frames" && selectedFrameCount !== 1) {
-            maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[0];
-            for (let ix = 0; ix < selWidth; ix++) {
-                for (let iy = 0; iy < selHeight; iy++) {
-                    const coordKey = `${Number(x)+ix}-${Number(y)+iy}`
-                    maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = selection.find(tile => tile.x === startX + ix && tile.y === startY + iy);
-                }
+        const selWidth = selectionSize[0];
+        const selHeight = selectionSize[1];
+        maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[0];
+        for (let ix = 0; ix < selWidth; ix++) {
+            for (let iy = 0; iy < selHeight; iy++) {
+                const coordKey = `${Number(x)+ix}-${Number(y)+iy}`
+                maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = selection.find(tile => tile.x === startX + ix && tile.y === startY + iy);
             }
+        }
+    }
+    const getCurrentFrames = () => tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value];
+    const getSelectedFrameCount = () => getCurrentFrames()?.frameCount || 1;
+    const addTile = (key) => {
+        if (tileDataSel.value !== "frames" && getSelectedFrameCount() !== 1) {
+            addSelectedTiles(key);
         } else {
             // if animated tile mode and has more than one frames, add/remove to animatedTiles
             if(!maps[ACTIVE_MAP].layers[currentLayer].animatedTiles) maps[ACTIVE_MAP].layers[currentLayer].animatedTiles = {};
-            maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key] = tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value];
+            maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key] = getCurrentFrames();
         }
     }
 
     const addRandomTile = (key) =>{
         // TODO add probability for empty
-        maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
+        if (tileDataSel.value !== "frames" && getSelectedFrameCount() !== 1) {
+            maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
+        }else {
+            // do the same, but add random from frames instead
+            console.log("Rand frames selections")
+            maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
+        }
+
     }
 
     const fillEmptyOrSameTiles = (key) => {
@@ -713,7 +721,7 @@
         if (!populateFrames) populateWithOptions(tileDataSel, tileSets[tilesetDataSel.value]?.tags, '<option value="">Symbols</option><option value="frames">Frames</option>');
         else populateWithOptions(tileFrameSel, tileSets[tilesetDataSel.value]?.frames, '');
 
-        document.getElementById("tileFrameCount").value = tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.frameCount || 1;
+        document.getElementById("tileFrameCount").value = getCurrentFrames()?.frameCount || 1;
     }
     // Note: only call this when tileset images have changed
     const updateTilesets = () =>{
@@ -1036,7 +1044,7 @@
         // Tileset frames
         tileFrameSel = document.getElementById("tileFrameSel");
         tileFrameSel.addEventListener("change", e =>{
-            document.getElementById("tileFrameCount").value = tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.frameCount || 1;
+            document.getElementById("tileFrameCount").value = getCurrentFrames()?.frameCount || 1;
             updateTilesetGridContainer();
         });
         document.getElementById("addTileFrameBtn").addEventListener("click",()=>{
@@ -1062,7 +1070,7 @@
         });
         document.getElementById("tileFrameCount").addEventListener("change", e=>{
 
-            tileSets[tilesetDataSel.value].frames[tileFrameSel.value].frameCount = Number(e.target.value);
+            getCurrentFrames().frameCount = Number(e.target.value);
             updateTilesetGridContainer();
         })
         // Tileset SELECT callbacks
