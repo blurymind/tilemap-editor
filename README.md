@@ -60,6 +60,11 @@ It can even do animated tiles
   <img src="screenshots/animatedTiles.gif" />
 </p>
 
+The random tile brush can also use animation frames to place a random frame 
+ <p align="center">
+  <img src="screenshots/randomTileFrame.gif" />
+</p>
+
 ## :cyclone: Reason
 
 But Todor, why are you making another tilemap editor with all these other ones out there?

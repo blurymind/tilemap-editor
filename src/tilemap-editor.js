@@ -452,16 +452,17 @@
         if (key in (maps[ACTIVE_MAP].layers[currentLayer].animatedTiles || {})) delete maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key];
     }
 
-    const addSelectedTiles = (key) => {
+    const addSelectedTiles = (key, tiles) => {
         const [x, y] = key.split("-")
-        const {x: startX, y: startY} = selection[0];
+        const tilesPatch = tiles || selection; // tiles is opt override for selection for fancy things like random patch of tiles
+        const {x: startX, y: startY} = tilesPatch[0];// add selection override
         const selWidth = selectionSize[0];
         const selHeight = selectionSize[1];
-        maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[0];
+        maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = tilesPatch[0];
         for (let ix = 0; ix < selWidth; ix++) {
             for (let iy = 0; iy < selHeight; iy++) {
                 const coordKey = `${Number(x)+ix}-${Number(y)+iy}`
-                maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = selection.find(tile => tile.x === startX + ix && tile.y === startY + iy);
+                maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = tilesPatch.find(tile => tile.x === startX + ix && tile.y === startY + iy);
             }
         }
     }
@@ -483,8 +484,11 @@
             maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
         }else {
             // do the same, but add random from frames instead
-            console.log("Rand frames selections")
-            maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
+            const tilesetTiles = tileSets[tilesetDataSel.value].tileData;
+            const {frameCount, tiles, width} = getCurrentFrames();
+            const randOffset = Math.floor(Math.random()*frameCount);
+            const randXOffsetTiles = tiles.map(tile=>tilesetTiles[`${tile.x + randOffset * width}-${tile.y}`]);
+            addSelectedTiles(key,randXOffsetTiles);
         }
 
     }
