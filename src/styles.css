@@ -3,6 +3,8 @@
   max-height: 700px;
 }
 .menu {
+  position: relative;
+  display: flex;
   background: #00000033;
   padding: 3px;
   border-radius: 3px;
@@ -21,13 +23,15 @@
   color: white;
   min-width: 200px;
   border-radius: 5px;
+  top: 25px;
   left: 3px;
 }
 .menu:hover {
   background: rgba(0, 0, 0, 0.88);
 }
 .menu .dropdown .item {
-  display: block;
+  display: flex;
+  gap: 3px;
   box-sizing: border-box;
   padding: 7px;
 }
@@ -234,6 +238,7 @@ cursor: pointer;
 
 #toolButtonsWrapper{
   display: flex;
+  gap: 2px;
 }
 .primary-button {
   border: 0;
@@ -453,4 +458,20 @@ cursor: pointer;
 }
 .limited_select {
   width: 50%;
+}
+
+.toggleFlipX::after {
+  content: "⭕";
+}
+#toggleFlipX:checked ~ .toggleFlipX::after {
+  content: "🔛";
+}
+
+.hidden {
+  display: none;
+}
+input[name='tool']:checked+label{
+  background-color: #2d2906;
+  border-radius: 3px;
+  padding: 2px;
 }

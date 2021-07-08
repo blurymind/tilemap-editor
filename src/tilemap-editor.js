@@ -63,14 +63,31 @@
                 </div>
             </div>
         </div>
-        <div id="toolButtonsWrapper">
-          <button class="button-as-link active-tool" value="0" title="paint tiles">🖌️</button>
-          <button class="button-as-link" value="4" title="random from selected">🎲</button> 
-          <button class="button-as-link" value="1" title="erase tiles">🗑️</button>
-          <button class="button-as-link" value="2" title="pan">✋</button>
-          <button class="button-as-link" value="3" title="pick tile">🎨</button>
-          <button class="button-as-link" value="5" title="fill layer">🌈</button>
+        <div class="menu">
+            <div id="toolButtonsWrapper">             
+              <input id="tool0" type="radio" value="0" name="tool" checked class="hidden"/>
+              <label for="tool0" title="paint tiles" data-value="0">🖌️</label>
+              <input id="tool1" type="radio" value="1" name="tool" class="hidden"/>
+              <label for="tool1" title="erase tiles" data-value="1">🗑️</label>
+              <input id="tool2" type="radio" value="2" name="tool" class="hidden"/> 
+              <label for="tool2" title="pan" data-value="2">✋</label>
+              <input id="tool3" type="radio" value="3" name="tool" class="hidden"/> 
+              <label for="tool3" title="pick tile" data-value="3">🎨</label>
+              <input id="tool4" type="radio" value="4" name="tool" class="hidden"/> 
+              <label for="tool4" title="random from selected" data-value="4">🎲</label>
+               <input id="tool5" type="radio" value="5" name="tool" class="hidden"/> 
+              <label for="tool5" title="fill on layer" data-value="5">🌈</label>
+            </div>
+<!--          <span>️</span>-->
+          <div class="dropdown">
+            <div class="item">
+                <label for="toggleFlipX" class="">Flip tile on x</label>
+                <input type="checkbox" id="toggleFlipX" style="display: none"> 
+                <label class="toggleFlipX"></label>
+            </div>
+          </div>
         </div>
+
         <div>
             <button class="primary-button" id="confirmBtn">"apply"</button>
         </div>
@@ -306,11 +323,8 @@
 
     const setActiveTool = (toolIdx) => {
         ACTIVE_TOOL = Number(toolIdx);
-        document.getElementById("toolButtonsWrapper").childNodes.forEach((child, idx)=>{
-            child.className = "button-as-link"
-        });
-        document.getElementById("toolButtonsWrapper").querySelector(`[value="${toolIdx}"]`)
-            .className = "button-as-link active-tool"
+        const actTool = document.getElementById("toolButtonsWrapper").querySelector(`input[id="tool${toolIdx}"]`);
+        if (actTool) actTool.checked = true;
     }
 
     let selectionSize = [1,1];
@@ -400,18 +414,37 @@
             //static tiles on this layer
             Object.keys(layer.tiles).forEach((key) => {
                 const [positionX, positionY] = key.split('-').map(Number);
-                const {x, y, tilesetIdx} = layer.tiles[key];
-                ctx.drawImage(
-                    TILESET_ELEMENTS[tilesetIdx],
-                    x * SIZE_OF_CROP,
-                    y * SIZE_OF_CROP,
-                    SIZE_OF_CROP,
-                    SIZE_OF_CROP,
-                    positionX * SIZE_OF_CROP,
-                    positionY * SIZE_OF_CROP,
-                    SIZE_OF_CROP,
-                    SIZE_OF_CROP
-                );
+                const {x, y, tilesetIdx, isFlippedX} = layer.tiles[key];
+
+                if(isFlippedX){
+                    ctx.save();//Special canvas crap to flip a slice, cause drawImage cant do it
+                    ctx.translate(ctx.canvas.width, 0);
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(
+                        TILESET_ELEMENTS[tilesetIdx],
+                        x * SIZE_OF_CROP,
+                        y * SIZE_OF_CROP,
+                        SIZE_OF_CROP,
+                        SIZE_OF_CROP,
+                        ctx.canvas.width - (positionX * SIZE_OF_CROP) - SIZE_OF_CROP,
+                        positionY * SIZE_OF_CROP,
+                        SIZE_OF_CROP,
+                        SIZE_OF_CROP
+                    );
+                    ctx.restore();
+                } else {
+                    ctx.drawImage(
+                        TILESET_ELEMENTS[tilesetIdx],
+                        x * SIZE_OF_CROP,
+                        y * SIZE_OF_CROP,
+                        SIZE_OF_CROP,
+                        SIZE_OF_CROP,
+                        positionX * SIZE_OF_CROP,
+                        positionY * SIZE_OF_CROP,
+                        SIZE_OF_CROP,
+                        SIZE_OF_CROP
+                    );
+                }
             });
             // animated tiles
             Object.keys(layer.animatedTiles || {}).forEach((key) => {
@@ -452,6 +485,7 @@
         if (key in (maps[ACTIVE_MAP].layers[currentLayer].animatedTiles || {})) delete maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key];
     }
 
+    const isFlippedOnX = () => document.getElementById("toggleFlipX").checked;
     const addSelectedTiles = (key, tiles) => {
         const [x, y] = key.split("-")
         const tilesPatch = tiles || selection; // tiles is opt override for selection for fancy things like random patch of tiles
@@ -459,10 +493,16 @@
         const selWidth = selectionSize[0];
         const selHeight = selectionSize[1];
         maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = tilesPatch[0];
+        const isFlippedX = isFlippedOnX();
         for (let ix = 0; ix < selWidth; ix++) {
             for (let iy = 0; iy < selHeight; iy++) {
-                const coordKey = `${Number(x)+ix}-${Number(y)+iy}`
-                maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = tilesPatch.find(tile => tile.x === startX + ix && tile.y === startY + iy);
+                const tileX = isFlippedX ? Number(x)-ix : Number(x)+ix;//placed in reverse when flipped on x
+                const coordKey = `${tileX}-${Number(y)+iy}`;
+                maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = {
+                    ...tilesPatch
+                    .find(tile => tile.x === startX + ix && tile.y === startY + iy),
+                    isFlippedX
+                };
             }
         }
     }
@@ -518,13 +558,15 @@
                     setLayer(layers.length - index - 1);
                     return layer.tiles[key]
                 }
-            })?.tiles[key]
+            })?.tiles[key] //TODO this doesnt work on animatedTiles
             :
             layers[currentLayer].tiles[key];
 
         if (clicked) {
             selection = [clicked];
+
             console.log("clicked", clicked)
+            document.getElementById("toggleFlipX").checked = !!clicked?.isFlippedX;
             // TODO switch to different tileset if its from a different one
             // if(clicked.tilesetIdx !== tilesetDataSel.value) {
             //     tilesetDataSel.value = clicked.tilesetIdx;
@@ -1198,7 +1240,6 @@
         })
 
         document.getElementById("toolButtonsWrapper").addEventListener("click",e=>{
-            if (e.target.nodeName !== 'BUTTON') return;
             setActiveTool(e.target.value);
         })
 
@@ -1253,6 +1294,9 @@
                     input.click();
                 }
             }
+        })
+        document.getElementById("toggleFlipX").addEventListener("change",(e)=>{
+            document.querySelector("label[for='tool0']").style.transform = e.target.checked ? "scale(-1, 1)": "scale(1, 1)"
         })
         if (tileMapData) loadData(tileMapData);
 
