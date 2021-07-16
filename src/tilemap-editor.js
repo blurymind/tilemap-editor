@@ -38,7 +38,7 @@
        <div id="tilemapjs_root" class="card tilemapjs_root">
         <a id="downloadAnchorElem" style="display:none"></a>
        <div class="tileset_opt_field header">
-       <div class="menu">
+       <div class="menu file">
             <span> File </span>
             <div class="dropdown" id="fileMenuDropDown">                            
                 <a class="button item button-as-link" href="#popup2">About</a>
@@ -63,10 +63,19 @@
                 </div>
             </div>
         </div>
-        <div class="menu">
+        <div >
             <div id="toolButtonsWrapper">             
               <input id="tool0" type="radio" value="0" name="tool" checked class="hidden"/>
-              <label for="tool0" title="paint tiles" data-value="0">🖌️</label>
+              <label for="tool0" title="paint tiles" data-value="0" class="menu">
+                  <div id="flipBrushIndicator">🖌️</div>
+                  <div class="dropdown">
+                    <div class="item">
+                        <label for="toggleFlipX" class="">Flip tile on x</label>
+                        <input type="checkbox" id="toggleFlipX" style="display: none"> 
+                        <label class="toggleFlipX"></label>
+                    </div>
+                  </div>
+              </label>
               <input id="tool1" type="radio" value="1" name="tool" class="hidden"/>
               <label for="tool1" title="erase tiles" data-value="1">🗑️</label>
               <input id="tool2" type="radio" value="2" name="tool" class="hidden"/> 
@@ -79,13 +88,7 @@
               <label for="tool5" title="fill on layer" data-value="5">🌈</label>
             </div>
 <!--          <span>️</span>-->
-          <div class="dropdown">
-            <div class="item">
-                <label for="toggleFlipX" class="">Flip tile on x</label>
-                <input type="checkbox" id="toggleFlipX" style="display: none"> 
-                <label class="toggleFlipX"></label>
-            </div>
-          </div>
+
         </div>
 
         <div>
@@ -183,7 +186,18 @@
         </div>
 
         <label class="sticky add_layer">
-            <label id="activeLayerLabel">Editing Layer </label><button id="addLayerBtn" title="Add layer">+</button>
+            <label id="activeLayerLabel" class="menu">
+            Editing Layer 
+            <div class="dropdown left">
+                <div class="item">
+                    <label for="toggleFlipX" class="">Flip tile on x</label>
+                    <input type="checkbox" id="toggleFlipX" style="display: none"> 
+                    <label class="toggleFlipX"></label>
+                </div>
+            </div>
+
+            </label>
+            <button id="addLayerBtn" title="Add layer">+</button>
         </label>
         <div class="layers" id="layers">
       </div>
@@ -191,7 +205,7 @@
     </div>
         `
     }
-    const getEmptyLayer = (name="layer")=> ({tiles:{}, visible: true, name, animatedTiles: {}});
+    const getEmptyLayer = (name="layer")=> ({tiles:{}, visible: true, name, animatedTiles: {}, opacity: 1});
     let tilesetImage, canvas, tilesetContainer, tilesetSelection, cropSize,
         confirmBtn, tilesetGridContainer,
         layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,tileFrameSel,
@@ -238,7 +252,25 @@
         }
 
         document.querySelector(`.layer[tile-layer="${newLayer}"]`)?.classList.add('active');
-        document.getElementById("activeLayerLabel").innerText = `Editing Layer: ${maps[ACTIVE_MAP].layers[newLayer]?.name}`;
+        document.getElementById("activeLayerLabel").innerHTML = `
+            Editing Layer: ${maps[ACTIVE_MAP].layers[newLayer]?.name} 
+            <div class="dropdown left">
+                <div class="item">
+                    <div class="slider-wrapper">
+                      <label for="layerOpacitySlider">Opacity</label>
+                      <input type="range" min="0" max="1" value="1" id="layerOpacitySlider" step="0.01">
+                      <output for="layerOpacitySlider" id="layerOpacitySliderValue">${maps[ACTIVE_MAP].layers[newLayer]?.opacity}</output>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById("layerOpacitySlider").value = maps[ACTIVE_MAP].layers[newLayer]?.opacity;
+        document.getElementById("layerOpacitySlider").addEventListener("change", e =>{
+            document.getElementById("layerOpacitySliderValue").innerText = e.target.value;
+            maps[ACTIVE_MAP].layers[currentLayer].opacity = Number(e.target.value);
+            draw();
+            updateLayers();
+        })
     }
 
     const setLayerIsVisible = (layer, override = null) => {
@@ -275,7 +307,7 @@
         layersElement.innerHTML = maps[ACTIVE_MAP].layers.map((layer, index)=>{
             return `
               <div class="layer">
-                <div id="selectLayerBtn-${index}" class="layer select_layer" tile-layer="${index}" title="${layer.name}">${layer.name}</div>
+                <div id="selectLayerBtn-${index}" class="layer select_layer" tile-layer="${index}" title="${layer.name}">${layer.name} ${layer.opacity < 1 ? ` (${layer.opacity})` : ""}</div>
                 <span id="setLayerVisBtn-${index}" vis-layer="${index}"></span>
                 <div id="trashLayerBtn-${index}" trash-layer="${index}" ${maps[ACTIVE_MAP].layers.length > 1 ? "":`disabled="true"`}>🗑️</div>
               </div>
@@ -415,6 +447,7 @@
             Object.keys(layer.tiles).forEach((key) => {
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {x, y, tilesetIdx, isFlippedX} = layer.tiles[key];
+                ctx.globalAlpha = layer.opacity;
 
                 if(isFlippedX){
                     ctx.save();//Special canvas crap to flip a slice, cause drawImage cant do it
@@ -1296,7 +1329,7 @@
             }
         })
         document.getElementById("toggleFlipX").addEventListener("change",(e)=>{
-            document.querySelector("label[for='tool0']").style.transform = e.target.checked ? "scale(-1, 1)": "scale(1, 1)"
+            document.getElementById("flipBrushIndicator").style.transform = e.target.checked ? "scale(-1, 1)": "scale(1, 1)"
         })
         if (tileMapData) loadData(tileMapData);
 
