@@ -187,15 +187,7 @@
 
         <label class="sticky add_layer">
             <label id="activeLayerLabel" class="menu">
-            Editing Layer 
-            <div class="dropdown left">
-                <div class="item">
-                    <label for="toggleFlipX" class="">Flip tile on x</label>
-                    <input type="checkbox" id="toggleFlipX" style="display: none"> 
-                    <label class="toggleFlipX"></label>
-                </div>
-            </div>
-
+            Editing Layer
             </label>
             <button id="addLayerBtn" title="Add layer">+</button>
         </label>
@@ -354,7 +346,7 @@
     }
 
     const setActiveTool = (toolIdx) => {
-        ACTIVE_TOOL = Number(toolIdx);
+        ACTIVE_TOOL = toolIdx;
         const actTool = document.getElementById("toolButtonsWrapper").querySelector(`input[id="tool${toolIdx}"]`);
         if (actTool) actTool.checked = true;
     }
@@ -442,13 +434,12 @@
 
         maps[ACTIVE_MAP].layers.forEach((layer) => {
             if(!layer.visible) return;
+            ctx.globalAlpha = layer.opacity;
 
             //static tiles on this layer
             Object.keys(layer.tiles).forEach((key) => {
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {x, y, tilesetIdx, isFlippedX} = layer.tiles[key];
-                ctx.globalAlpha = layer.opacity;
-
                 if(isFlippedX){
                     ctx.save();//Special canvas crap to flip a slice, cause drawImage cant do it
                     ctx.translate(ctx.canvas.width, 0);
@@ -1273,7 +1264,7 @@
         })
 
         document.getElementById("toolButtonsWrapper").addEventListener("click",e=>{
-            setActiveTool(e.target.value);
+            if(e.target.getAttribute("name") === "tool") setActiveTool(Number(e.target.value));
         })
 
         cropSize.addEventListener('change', e=>{
