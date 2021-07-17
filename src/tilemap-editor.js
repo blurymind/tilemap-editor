@@ -763,7 +763,7 @@
         undoStepPosition += 1;
         undoStack.length = undoStepPosition;
         undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, currentLayer, ACTIVE_MAP, IMAGES, undoStepPosition})));
-        //console.log("undo stack updated", undoStack, undoStepPosition)
+        // console.log("undo stack updated", undoStack, undoStepPosition)
     }
     const restoreFromUndoStackData = () => {
         maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
@@ -774,11 +774,6 @@
         }
         tileSets = undoTileSets;
         updateTilesetDataList();
-        const undoIMAGES = decoupleReferenceFromObj(undoStack[undoStepPosition].IMAGES);
-        if(JSON.stringify(IMAGES) !== JSON.stringify(undoIMAGES)){
-            IMAGES = undoIMAGES;
-            updateTilesets();
-        }
 
         const undoLayer = decoupleReferenceFromObj(undoStack[undoStepPosition].currentLayer);
         const undoActiveMap = decoupleReferenceFromObj(undoStack[undoStepPosition].ACTIVE_MAP);
@@ -788,6 +783,11 @@
         if(undoActiveMap !== ACTIVE_MAP){
             setActiveMap(undoActiveMap)
             updateMaps();
+        }
+        const undoIMAGES = decoupleReferenceFromObj(undoStack[undoStepPosition].IMAGES);
+        if(JSON.stringify(IMAGES) !== JSON.stringify(undoIMAGES)){
+            IMAGES = undoIMAGES;
+            updateTilesets();
         }
         draw();
     }
