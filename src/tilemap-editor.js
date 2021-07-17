@@ -252,12 +252,14 @@
         `;
         document.getElementById("layerOpacitySlider").value = maps[ACTIVE_MAP].layers[newLayer]?.opacity;
         document.getElementById("layerOpacitySlider").addEventListener("change", e =>{
+            addToUndoStack();
             document.getElementById("layerOpacitySliderValue").innerText = e.target.value;
             maps[ACTIVE_MAP].layers[currentLayer].opacity = Number(e.target.value);
             draw();
             updateLayers();
         })
     }
+
 
     const setLayerIsVisible = (layer, override = null) => {
         const layerNumber = Number(layer);
@@ -267,7 +269,6 @@
             .getElementById(`setLayerVisBtn-${layer}`)
             .innerHTML = maps[ACTIVE_MAP].layers[layerNumber].visible ? "👁️": "👓";
         draw();
-        addToUndoStack();
     }
 
     const trashLayer = (layer) => {
@@ -277,7 +278,6 @@
         updateLayers();
         setLayer(maps[ACTIVE_MAP].layers.length - 1);
         draw();
-        addToUndoStack();
     }
 
     const addLayer = () => {
@@ -286,7 +286,6 @@
             addToUndoStack();
             maps[ACTIVE_MAP].layers.push(getEmptyLayer(newLayerName));
             updateLayers();
-            addToUndoStack();
         }
     }
 
@@ -733,11 +732,16 @@
 
     let undoStepPosition = -1;
     let undoStack = [];
+    const clearUndoStack = () => {
+        undoStack = [];
+        undoStepPosition = -1;
+    }
     const addToUndoStack = () => {
+        if(Object.keys(tileSets).length === 0 || Object.keys(maps).length === 0) return;
         const oldState = undoStack.length > 0 ? JSON.stringify(
             {
-                maps:undoStack[undoStepPosition].maps,
-                tileSets:undoStack[undoStepPosition].tileSets,
+                maps: undoStack[undoStepPosition].maps,
+                tileSets: undoStack[undoStepPosition].tileSets,
                 currentLayer,
                 ACTIVE_MAP
             }) : undefined;
@@ -746,17 +750,17 @@
 
         undoStepPosition += 1;
         undoStack.length = undoStepPosition;
-        undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, currentLayer, ACTIVE_MAP, undoStepPosition})));// console.log("undo stack updated", undoStack)
+        undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, currentLayer, ACTIVE_MAP, undoStepPosition})));
+        // console.log("undo stack updated", undoStack, undoStepPosition)
     }
     const restoreFromUndoStackData = () => {
         maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
         tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
         const undoLayer = decoupleReferenceFromObj(undoStack[undoStepPosition].currentLayer);
         const undoActiveMap = decoupleReferenceFromObj(undoStack[undoStepPosition].ACTIVE_MAP);
-        if(currentLayer !== undoLayer) {
-            updateLayers();
-            setLayer(undoLayer);
-        }
+        updateLayers();
+        setLayer(undoLayer);
+
         if(undoActiveMap !== ACTIVE_MAP){
             setActiveMap(undoActiveMap)
             updateMaps();
@@ -890,6 +894,7 @@
     }
     const loadData = (data) =>{
         try {
+            clearUndoStack();
             WIDTH = canvas.width;
             HEIGHT = canvas.height;
             selection = [{}];
