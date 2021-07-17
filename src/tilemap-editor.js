@@ -261,11 +261,13 @@
 
     const setLayerIsVisible = (layer, override = null) => {
         const layerNumber = Number(layer);
+        addToUndoStack();
         maps[ACTIVE_MAP].layers[layerNumber].visible = override ?? !maps[ACTIVE_MAP].layers[layerNumber].visible;
         document
             .getElementById(`setLayerVisBtn-${layer}`)
             .innerHTML = maps[ACTIVE_MAP].layers[layerNumber].visible ? "👁️": "👓";
         draw();
+        addToUndoStack();
     }
 
     const trashLayer = (layer) => {
@@ -281,8 +283,10 @@
     const addLayer = () => {
         const newLayerName = prompt("Enter layer name", `Layer${maps[ACTIVE_MAP].layers.length + 1}`);
         if(newLayerName !== null) {
+            addToUndoStack();
             maps[ACTIVE_MAP].layers.push(getEmptyLayer(newLayerName));
             updateLayers();
+            addToUndoStack();
         }
     }
 
@@ -734,22 +738,28 @@
             {
                 maps:undoStack[undoStepPosition].maps,
                 tileSets:undoStack[undoStepPosition].tileSets,
-                currentLayer
+                currentLayer,
+                ACTIVE_MAP
             }) : undefined;
-        const newState = JSON.stringify({maps,tileSets,currentLayer});
+        const newState = JSON.stringify({maps,tileSets,currentLayer,ACTIVE_MAP});
         if (newState === oldState) return; // prevent updating when no changes are present in the data!
 
         undoStepPosition += 1;
         undoStack.length = undoStepPosition;
-        undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, currentLayer, undoStepPosition})));// console.log("undo stack updated", undoStack)
+        undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, currentLayer, ACTIVE_MAP, undoStepPosition})));// console.log("undo stack updated", undoStack)
     }
     const restoreFromUndoStackData = () => {
         maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
         tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
         const undoLayer = decoupleReferenceFromObj(undoStack[undoStepPosition].currentLayer);
+        const undoActiveMap = decoupleReferenceFromObj(undoStack[undoStepPosition].ACTIVE_MAP);
         if(currentLayer !== undoLayer) {
             updateLayers();
             setLayer(undoLayer);
+        }
+        if(undoActiveMap !== ACTIVE_MAP){
+            setActiveMap(undoActiveMap)
+            updateMaps();
         }
         draw();
     }
@@ -1041,20 +1051,24 @@
         // Maps DATA callbacks
         mapsDataSel = document.getElementById("mapsDataSel");
         mapsDataSel.addEventListener("change", e=>{
+            addToUndoStack();
             setActiveMap(e.target.value);
+            addToUndoStack();
         })
         document.getElementById("addMapBtn").addEventListener("click",()=>{
             const suggestMapName = `Map ${Object.keys(maps).length + 1}`;
             const result = window.prompt("Enter new map key...", suggestMapName);
             if(result !== null) {
+                addToUndoStack();
                 const newMapKey = result.trim().replaceAll(" ","_") || suggestMapName;
                 if (newMapKey in maps){
                     alert("A map with this key already exists.")
                     return
                 }
                 maps[newMapKey] = getEmptyMap(result.trim());
+                addToUndoStack();
+                updateMaps();
             }
-            updateMaps();
         })
         document.getElementById("duplicateMapBtn").addEventListener("click",()=>{
             const makeNewKey = (key) => {
@@ -1064,18 +1078,18 @@
                 }
                 return suggestedNew;
             }
+            addToUndoStack();
             const newMapKey = makeNewKey(ACTIVE_MAP);
-
             maps[newMapKey] = {...JSON.parse(JSON.stringify(maps[ACTIVE_MAP])), name: newMapKey};// todo prompt to ask for name
             updateMaps();
+            addToUndoStack();
         })
         document.getElementById("removeMapBtn").addEventListener("click",()=>{
-            const confirm = window.confirm(`Are you sure you want to delete ${maps[ACTIVE_MAP].name}?\nYou can't undo this...`);
-            if (confirm) {
-                delete maps[ACTIVE_MAP];
-                setActiveMap(Object.keys(maps)[0])
-                updateMaps();
-            }
+            addToUndoStack();
+            delete maps[ACTIVE_MAP];
+            setActiveMap(Object.keys(maps)[0])
+            updateMaps();
+            addToUndoStack();
         })
         // Tileset DATA Callbacks //tileDataSel
         tileDataSel = document.getElementById("tileDataSel");
