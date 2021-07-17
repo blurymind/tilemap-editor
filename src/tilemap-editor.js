@@ -33,6 +33,7 @@
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
+    const decoupleReferenceFromObj = (obj) => JSON.parse(JSON.stringify(obj));
     const getHtml = (width, height) =>{
         return `
        <div id="tilemapjs_root" class="card tilemapjs_root">
@@ -63,8 +64,8 @@
                 </div>
             </div>
         </div>
-        <div >
-            <div id="toolButtonsWrapper">             
+        <div>
+            <div id="toolButtonsWrapper" class="tool_wrapper">             
               <input id="tool0" type="radio" value="0" name="tool" checked class="hidden"/>
               <label for="tool0" title="paint tiles" data-value="0" class="menu">
                   <div id="flipBrushIndicator">🖌️</div>
@@ -87,10 +88,13 @@
                <input id="tool5" type="radio" value="5" name="tool" class="hidden"/> 
               <label for="tool5" title="fill on layer" data-value="5">🌈</label>
             </div>
-<!--          <span>️</span>-->
-
         </div>
 
+        <div class="tool_wrapper">
+            <label id="undoBtn">↩️️</label>
+            <label id="redoBtn">🔁️</label>
+        </div>
+            
         <div>
             <button class="primary-button" id="confirmBtn">"apply"</button>
         </div>
@@ -136,17 +140,6 @@
         <button id="addTileFrameBtn" title="add">+</button>
         <button id="removeTileFrameBtn" title="remove">-</button>
         frames: <input id="tileFrameCount" value="1" type="number" min="1">
-<!--        <div class="sticky_settings">-->
-<!--            <div>-->
-<!--                <span>width: </span><input id="tileSizeFrame" value="1" type="number" min="1">-->
-<!--                <span>height: </span><input id="tileSizeFrame" value="1" type="number" min="1">-->
-<!--            </div>-->
-<!--            <div>-->
-<!--                <span>start: </span><input id="tileStartFrame" value="1" type="number" min="1">-->
-<!--                <span>count: </span><input id="tileCountFrame" value="2" type="number" min="2">-->
-<!--            </div>-->
-<!--        </div>-->
-
         </div>
       <div class="tileset-container">
         <img id="tileset-source" crossorigin />
@@ -226,7 +219,7 @@
     let isMouseDown = false;
     let maps = {};
     let tileSets = {};
-    let stateHistory = [{}, {}, {}];
+    let stateHistory = [{}, {}, {}]; // TODO get rid?
 
     let apiTileSetLoaders = {};
     let selectedTileSetLoader = {};
@@ -652,8 +645,8 @@
                 fillEmptyOrSameTiles(key);
             }
         }
-
         draw();
+        addToUndoStack();
     }
 
     const updateStateHistory=(key, isArray) => {
@@ -774,6 +767,33 @@
         updateLayers();
     }
 
+
+    let undoStepPosition = -1;
+    let undoStack = [];
+    const addToUndoStack = () => {
+        const oldState = undoStack.length > 0 ? JSON.stringify({maps:undoStack[undoStepPosition].maps,tileSets:undoStack[undoStepPosition].tileSets}) : undefined;
+        const newState = JSON.stringify({maps,tileSets});
+        if (newState === oldState) return; // prevent updating when no changes are present in the data!
+
+        undoStepPosition += 1;
+        undoStack.length = undoStepPosition;
+        undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, undoStepPosition})));// console.log("undo stack updated", undoStack)
+    }
+    const undo = () => {
+        if (undoStepPosition === 0) return;
+        undoStepPosition -= 1;
+        maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
+        tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
+        draw();
+    }
+    const redo = () => {
+        if (undoStepPosition === undoStack.length - 1) return;
+        undoStepPosition += 1;
+        maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
+        tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
+        draw();
+    }
+
     const updateTilesetDataList = (populateFrames = false) => {
         const populateWithOptions = (selectEl, options, newContent)=>{
             if(!options) return;
@@ -841,7 +861,7 @@
                 updateSelection();
                 updateTilesetGridContainer();
             });
-
+        // finally current tileset loaded
         tilesetImage.addEventListener('load', () => {
             draw();
             updateLayers();
@@ -853,6 +873,8 @@
             document.getElementById("tilesetSrcLabel").innerText = `src: ${tilesetImage.src}`;
             document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
             document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
+
+            if (undoStepPosition === -1) addToUndoStack();//initial undo stack entry
         });
     }
 
@@ -1322,6 +1344,14 @@
         document.getElementById("toggleFlipX").addEventListener("change",(e)=>{
             document.getElementById("flipBrushIndicator").style.transform = e.target.checked ? "scale(-1, 1)": "scale(1, 1)"
         })
+        document.addEventListener('keypress', e =>{
+            if(e.ctrlKey){
+                if(e.code === "KeyZ") undo();
+                if(e.code === "KeyY") redo();
+            }
+        })
+        document.getElementById("undoBtn").addEventListener("click", undo);
+        document.getElementById("redoBtn").addEventListener("click", redo);
         if (tileMapData) loadData(tileMapData);
 
         // Animated tiles when on frames mode

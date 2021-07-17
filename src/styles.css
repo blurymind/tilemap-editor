@@ -243,11 +243,6 @@ cursor: pointer;
   background-color: yellow !important;
   border-radius: 3px;
 }
-
-#toolButtonsWrapper{
-  display: flex;
-  gap: 2px;
-}
 .primary-button {
   border: 0;
   background: #4e84fa;
@@ -478,11 +473,16 @@ cursor: pointer;
 .hidden {
   display: none;
 }
+.tool_wrapper>*:hover,
 input[name='tool']:checked+label{
   background-color: #2d2906;
   border-radius: 3px;
   padding: 2px;
 }
-#toolButtonsWrapper >label {
+.tool_wrapper{
+  display: flex;
+  gap: 7px;
+}
+.tool_wrapper >label {
   padding: 2px;
 }
