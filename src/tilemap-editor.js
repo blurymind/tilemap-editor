@@ -434,6 +434,12 @@
             Object.keys(layer.tiles).forEach((key) => {
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {x, y, tilesetIdx, isFlippedX} = layer.tiles[key];
+
+                if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect(positionX * SIZE_OF_CROP, positionY * SIZE_OF_CROP, SIZE_OF_CROP, SIZE_OF_CROP);
+                    return;
+                }
                 if(isFlippedX){
                     ctx.save();//Special canvas crap to flip a slice, cause drawImage cant do it
                     ctx.translate(ctx.canvas.width, 0);
@@ -469,6 +475,13 @@
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {start, width, height, frameCount} = layer.animatedTiles[key];
                 const {x, y, tilesetIdx} = start;
+                if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
+                    ctx.fillStyle = 'yellow';
+                    ctx.fillRect(positionX * SIZE_OF_CROP, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
+                    ctx.fillStyle = 'blue';
+                    ctx.fillText("X",positionX * SIZE_OF_CROP + 5,positionY * SIZE_OF_CROP + 10);
+                    return;
+                }
                 const frameIndex = tileDataSel.value === "frames" ? Math.round(Date.now()/120) % frameCount : 1; //30fps
                 ctx.drawImage(
                     TILESET_ELEMENTS[tilesetIdx],
@@ -900,6 +913,7 @@
             HEIGHT = canvas.height;
             selection = [{}];
             ACTIVE_MAP = data ? Object.keys(data.maps)[0] : "Map_1";
+            console.log("MAPS",data)
             maps = data ? {...data.maps} : {[ACTIVE_MAP]: getEmptyMap("Map 1")};
             tileSets = data ? {...data.tileSets} : {};
             updateTilesets();
@@ -1219,7 +1233,7 @@
             //Remove current tileset
             if (tilesetDataSel.value !== "0") {
                 IMAGES.splice(Number(tilesetDataSel.value),1);
-                initDataAfterLoad();
+                updateTilesets();
             }
         });
 
