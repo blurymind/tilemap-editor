@@ -786,6 +786,7 @@
             IMAGES = undoIMAGES;
             updateTilesets();
         }
+        updateTilesetDataList();
         draw();
     }
     const undo = () => {
@@ -1135,12 +1136,14 @@
                 }
                 tileSets[tilesetDataSel.value].tags[result] = getEmptyTilesetTag(result, result);
                 updateTilesetDataList();
+                addToUndoStack();
             }
         });
         document.getElementById("removeTileTagBtn").addEventListener("click",()=>{
             if (tileDataSel.value && tileDataSel.value in tileSets[tilesetDataSel.value].tags) {
                 delete tileSets[tilesetDataSel.value].tags[tileDataSel.value];
                 updateTilesetDataList();
+                addToUndoStack();
             }
         });
         // Tileset frames
