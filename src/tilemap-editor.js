@@ -526,8 +526,9 @@
     }
     const getCurrentFrames = () => tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value];
     const getSelectedFrameCount = () => getCurrentFrames()?.frameCount || 1;
+    const shouldNotAddAnimatedTile = () => (tileDataSel.value !== "frames" && getSelectedFrameCount() !== 1) || Object.keys(tileSets[tilesetDataSel.value]?.frames).length === 0;
     const addTile = (key) => {
-        if (tileDataSel.value !== "frames" && getSelectedFrameCount() !== 1) {
+        if (shouldNotAddAnimatedTile()) {
             addSelectedTiles(key);
         } else {
             // if animated tile mode and has more than one frames, add/remove to animatedTiles
@@ -538,7 +539,7 @@
 
     const addRandomTile = (key) =>{
         // TODO add probability for empty
-        if (tileDataSel.value !== "frames" && getSelectedFrameCount() !== 1) {
+        if (shouldNotAddAnimatedTile()) {
             maps[ACTIVE_MAP].layers[currentLayer].tiles[key] = selection[Math.floor(Math.random()*selection.length)];
         }else {
             // do the same, but add random from frames instead
@@ -1002,6 +1003,7 @@
         });
 
         const setFramesToSelection = (animName) =>{
+            if(animName === "") return;
             tileSets[tilesetDataSel.value].frames[animName] = {
                 ...(tileSets[tilesetDataSel.value].frames[animName]||{}),
                 width: selectionSize[0], height:selectionSize[1], start: selection[0], tiles: selection,
@@ -1039,7 +1041,6 @@
 
                 } else if (viewMode === "frames") {
                     setFramesToSelection(tileFrameSel.value);
-                    console.log("FRAMES", tileSets[tilesetDataSel.value].frames[tileFrameSel.value])
                 }
                 updateTilesetGridContainer();
             }
@@ -1149,7 +1150,7 @@
             }
         });
         document.getElementById("tileFrameCount").addEventListener("change", e=>{
-
+            if(tileFrameSel.value === "") return;
             getCurrentFrames().frameCount = Number(e.target.value);
             updateTilesetGridContainer();
         })
@@ -1166,6 +1167,7 @@
             updateTilesets();
         }
         const addNewTileSet = (src) => {
+            addToUndoStack();
             IMAGES.push(src);
             updateTilesets();
         }
