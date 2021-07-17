@@ -271,14 +271,12 @@
 
     const trashLayer = (layer) => {
         const layerNumber = Number(layer);
-        const result = window.confirm("Are you sure? Undo is not implemented!");
-        if(result) {
-            maps[ACTIVE_MAP].layers.splice(layerNumber, 1);
-            stateHistory.splice(layerNumber, 1);
-            updateLayers();
-            setLayer(maps[ACTIVE_MAP].layers.length - 1);
-            draw();
-        }
+        addToUndoStack();
+        maps[ACTIVE_MAP].layers.splice(layerNumber, 1);
+        stateHistory.splice(layerNumber, 1);
+        updateLayers();
+        setLayer(maps[ACTIVE_MAP].layers.length - 1);
+        draw();
     }
 
     const addLayer = () => {
@@ -773,27 +771,44 @@
     let undoStepPosition = -1;
     let undoStack = [];
     const addToUndoStack = () => {
-        const oldState = undoStack.length > 0 ? JSON.stringify({maps:undoStack[undoStepPosition].maps,tileSets:undoStack[undoStepPosition].tileSets}) : undefined;
-        const newState = JSON.stringify({maps,tileSets});
+        const oldState = undoStack.length > 0 ? JSON.stringify(
+            {
+                maps:undoStack[undoStepPosition].maps,
+                tileSets:undoStack[undoStepPosition].tileSets,
+                currentLayer
+            }) : undefined;
+        const newState = JSON.stringify({maps,tileSets,currentLayer});
         if (newState === oldState) return; // prevent updating when no changes are present in the data!
 
         undoStepPosition += 1;
         undoStack.length = undoStepPosition;
-        undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, undoStepPosition})));// console.log("undo stack updated", undoStack)
+        undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, currentLayer, undoStepPosition})));// console.log("undo stack updated", undoStack)
+    }
+    const restoreFromUndoStackData = () => {
+        maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
+        tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
+        const undoLayer = decoupleReferenceFromObj(undoStack[undoStepPosition].currentLayer);
+        if(currentLayer !== undoLayer) {
+            updateLayers();
+            setLayer(undoLayer);
+        }
+        draw();
     }
     const undo = () => {
         if (undoStepPosition === 0) return;
         undoStepPosition -= 1;
-        maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
-        tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
-        draw();
+        restoreFromUndoStackData();
+        // maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
+        // tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
+        // draw();
     }
     const redo = () => {
         if (undoStepPosition === undoStack.length - 1) return;
         undoStepPosition += 1;
-        maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
-        tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
-        draw();
+        restoreFromUndoStackData();
+        // maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
+        // tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
+        // draw();
     }
 
     const updateTilesetDataList = (populateFrames = false) => {
