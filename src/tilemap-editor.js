@@ -757,14 +757,15 @@
                 maps: undoStack[undoStepPosition].maps,
                 tileSets: undoStack[undoStepPosition].tileSets,
                 currentLayer,
-                ACTIVE_MAP
+                ACTIVE_MAP,
+                IMAGES
             }) : undefined;
-        const newState = JSON.stringify({maps,tileSets,currentLayer,ACTIVE_MAP});
+        const newState = JSON.stringify({maps,tileSets,currentLayer,ACTIVE_MAP,IMAGES});
         if (newState === oldState) return; // prevent updating when no changes are present in the data!
 
         undoStepPosition += 1;
         undoStack.length = undoStepPosition;
-        undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, currentLayer, ACTIVE_MAP, undoStepPosition})));
+        undoStack.push(JSON.parse(JSON.stringify({maps,tileSets, currentLayer, ACTIVE_MAP, IMAGES, undoStepPosition})));
         // console.log("undo stack updated", undoStack, undoStepPosition)
     }
     const restoreFromUndoStackData = () => {
@@ -778,6 +779,12 @@
         if(undoActiveMap !== ACTIVE_MAP){
             setActiveMap(undoActiveMap)
             updateMaps();
+        }
+        // tileset related
+        const undoIMAGES = decoupleReferenceFromObj(undoStack[undoStepPosition].IMAGES);
+        if(JSON.stringify(IMAGES) !== JSON.stringify(undoIMAGES)){
+            IMAGES = undoIMAGES;
+            updateTilesets();
         }
         draw();
     }
@@ -1177,6 +1184,7 @@
         })
 
         const replaceSelectedTileSet = (src) => {
+            addToUndoStack();
             IMAGES[Number(tilesetDataSel.value)] = src;
             updateTilesets();
         }
@@ -1232,6 +1240,7 @@
         document.getElementById("removeTilesetBtn").addEventListener("click",()=>{
             //Remove current tileset
             if (tilesetDataSel.value !== "0") {
+                addToUndoStack();
                 IMAGES.splice(Number(tilesetDataSel.value),1);
                 updateTilesets();
             }
