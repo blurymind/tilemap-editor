@@ -220,7 +220,6 @@
     let isMouseDown = false;
     let maps = {};
     let tileSets = {};
-    let stateHistory = [{}, {}, {}]; // TODO get rid?
 
     let apiTileSetLoaders = {};
     let selectedTileSetLoader = {};
@@ -273,7 +272,6 @@
         const layerNumber = Number(layer);
         addToUndoStack();
         maps[ACTIVE_MAP].layers.splice(layerNumber, 1);
-        stateHistory.splice(layerNumber, 1);
         updateLayers();
         setLayer(maps[ACTIVE_MAP].layers.length - 1);
         draw();
@@ -283,7 +281,6 @@
         const newLayerName = prompt("Enter layer name", `Layer${maps[ACTIVE_MAP].layers.length + 1}`);
         if(newLayerName !== null) {
             maps[ACTIVE_MAP].layers.push(getEmptyLayer(newLayerName));
-            stateHistory.push({});//TODO merge all of these into one damn array
             updateLayers();
         }
     }
@@ -597,36 +594,11 @@
         }
     }
 
-    const applyCtrlZ=(key, isArray) => {
-        const tileHistory = stateHistory[currentLayer][key];
-
-        if (isArray(tileHistory)) {
-            const lastSelected = stateHistory[currentLayer][key].pop();
-
-            if (isArray(lastSelected)) {
-                selection[0] = lastSelected;
-                updateSelection();
-                addTile(key);
-                draw();
-            }
-        }
-    }
-
     const toggleTile=(event)=> {
         if(ACTIVE_TOOL === 2 || !maps[ACTIVE_MAP].layers[currentLayer].visible) return;
 
         const {x,y} = getSelectedTile(event)[0];
         const key = `${x}-${y}`;
-
-        const isArray = (likely) => Array.isArray(likely) && likely[0] !== undefined;
-
-        if (event.altKey) {
-            if (event.type === 'pointerdown' || event.type === 'pointermove') {
-                applyCtrlZ(key, isArray);
-            }
-            return;
-        }
-        updateStateHistory(key, isArray);
 
         if (event.shiftKey || event.button === 1) {
             removeTile(key);
@@ -647,19 +619,6 @@
         }
         draw();
         addToUndoStack();
-    }
-
-    const updateStateHistory=(key, isArray) => {
-        const tileHistory = stateHistory[currentLayer][key];
-
-        const selected = maps[ACTIVE_MAP].layers[currentLayer].tiles[key];
-        if (isArray(tileHistory)) {
-            if (selected && !(selected.x === selection[0].x && selected.y === selection[0].y)) {
-                stateHistory[currentLayer][key].push(selected);
-            }
-        } else {
-            stateHistory[currentLayer][key] = [{coords: [5, 17]}];
-        }
     }
 
     const clearCanvas = () => {
@@ -798,17 +757,11 @@
         if (undoStepPosition === 0) return;
         undoStepPosition -= 1;
         restoreFromUndoStackData();
-        // maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
-        // tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
-        // draw();
     }
     const redo = () => {
         if (undoStepPosition === undoStack.length - 1) return;
         undoStepPosition += 1;
         restoreFromUndoStackData();
-        // maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
-        // tileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets); // console.log({undoStepPosition, undoStack})
-        // draw();
     }
 
     const updateTilesetDataList = (populateFrames = false) => {
@@ -930,7 +883,6 @@
             WIDTH = canvas.width;
             HEIGHT = canvas.height;
             selection = [{}];
-            stateHistory = [{}, {}, {}];
             ACTIVE_MAP = data ? Object.keys(data.maps)[0] : "Map_1";
             maps = data ? {...data.maps} : {[ACTIVE_MAP]: getEmptyMap("Map 1")};
             tileSets = data ? {...data.tileSets} : {};
