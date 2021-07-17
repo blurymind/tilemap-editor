@@ -275,6 +275,7 @@
         updateLayers();
         setLayer(maps[ACTIVE_MAP].layers.length - 1);
         draw();
+        addToUndoStack();
     }
 
     const addLayer = () => {
@@ -622,13 +623,12 @@
     }
 
     const clearCanvas = () => {
-        const result = window.confirm(`This will clear the map ${maps[ACTIVE_MAP].name}...\nAre you sure you want to do this? It can't be undone...`);
-        if (result) {
-            maps[ACTIVE_MAP].layers = [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")];
-            setLayer(0);
-            updateLayers();
-            draw();
-        }
+        addToUndoStack();
+        maps[ACTIVE_MAP].layers = [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")];
+        setLayer(0);
+        updateLayers();
+        draw();
+        addToUndoStack();
     }
 
     const downloadAsTextFile = (input, fileName = "tilemap-editor.json") =>{
