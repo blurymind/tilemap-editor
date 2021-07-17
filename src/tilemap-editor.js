@@ -70,6 +70,7 @@
               <label for="tool0" title="paint tiles" data-value="0" class="menu">
                   <div id="flipBrushIndicator">🖌️</div>
                   <div class="dropdown">
+                    <div class="item nohover">Brush tool options</div>
                     <div class="item">
                         <label for="toggleFlipX" class="">Flip tile on x</label>
                         <input type="checkbox" id="toggleFlipX" style="display: none"> 
@@ -240,6 +241,7 @@
         document.getElementById("activeLayerLabel").innerHTML = `
             Editing Layer: ${maps[ACTIVE_MAP].layers[newLayer]?.name} 
             <div class="dropdown left">
+                <div class="item nohover">Layer: ${maps[ACTIVE_MAP].layers[newLayer]?.name} </div>
                 <div class="item">
                     <div class="slider-wrapper">
                       <label for="layerOpacitySlider">Opacity</label>

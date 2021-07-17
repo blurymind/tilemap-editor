@@ -23,7 +23,7 @@
   position: absolute;
   background: #000000e0;
   color: white;
-  min-width: 175px;
+  min-width: 245px;
   border-radius: 5px;
   top: 25px;
   left: 3px;
@@ -37,13 +37,13 @@
 .menu:hover {
   background: rgba(0, 0, 0, 0.88);
 }
-.menu .dropdown .item {
+.menu .dropdown .item{
   display: flex;
   gap: 3px;
   box-sizing: border-box;
   padding: 7px;
 }
-.menu .dropdown .item:hover {
+.menu .dropdown .item:not(.nohover):hover {
   color: black;
   background: rgba(219, 198, 198, 0.88);
 }
