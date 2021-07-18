@@ -263,7 +263,6 @@
 
     const setLayerIsVisible = (layer, override = null) => {
         const layerNumber = Number(layer);
-        addToUndoStack();
         maps[ACTIVE_MAP].layers[layerNumber].visible = override ?? !maps[ACTIVE_MAP].layers[layerNumber].visible;
         document
             .getElementById(`setLayerVisBtn-${layer}`)
@@ -273,7 +272,6 @@
 
     const trashLayer = (layer) => {
         const layerNumber = Number(layer);
-        addToUndoStack();
         maps[ACTIVE_MAP].layers.splice(layerNumber, 1);
         updateLayers();
         setLayer(maps[ACTIVE_MAP].layers.length - 1);
@@ -283,7 +281,6 @@
     const addLayer = () => {
         const newLayerName = prompt("Enter layer name", `Layer${maps[ACTIVE_MAP].layers.length + 1}`);
         if(newLayerName !== null) {
-            addToUndoStack();
             maps[ACTIVE_MAP].layers.push(getEmptyLayer(newLayerName));
             updateLayers();
         }
@@ -303,12 +300,15 @@
         maps[ACTIVE_MAP].layers.forEach((_,index)=>{
             document.getElementById(`selectLayerBtn-${index}`).addEventListener("click",e=>{
                 setLayer(e.target.getAttribute("tile-layer"));
+                addToUndoStack();
             })
             document.getElementById(`setLayerVisBtn-${index}`).addEventListener("click",e=>{
                 setLayerIsVisible(e.target.getAttribute("vis-layer"))
+                addToUndoStack();
             })
             document.getElementById(`trashLayerBtn-${index}`).addEventListener("click",e=>{
                 trashLayer(e.target.getAttribute("trash-layer"))
+                addToUndoStack();
             })
             setLayerIsVisible(index, true);
         })
@@ -753,9 +753,9 @@
             {
                 maps: undoStack[undoStepPosition].maps,
                 tileSets: undoStack[undoStepPosition].tileSets,
-                currentLayer,
-                ACTIVE_MAP,
-                IMAGES
+                currentLayer:undoStack[undoStepPosition].currentLayer,
+                ACTIVE_MAP:undoStack[undoStepPosition].ACTIVE_MAP,
+                IMAGES:undoStack[undoStepPosition].IMAGES
             }) : undefined;
         const newState = JSON.stringify({maps,tileSets,currentLayer,ACTIVE_MAP,IMAGES});
         if (newState === oldState) return; // prevent updating when no changes are present in the data!
@@ -768,8 +768,13 @@
     const restoreFromUndoStackData = () => {
         maps = decoupleReferenceFromObj(undoStack[undoStepPosition].maps);
         const undoTileSets = decoupleReferenceFromObj(undoStack[undoStepPosition].tileSets);
-        if(JSON.stringify(undoTileSets) !== JSON.stringify(tileSets)) {
-            tileSets = undoTileSets; // done to prevent the below, which is expensive
+        const undoIMAGES = decoupleReferenceFromObj(undoStack[undoStepPosition].IMAGES);
+        if(JSON.stringify(IMAGES) !== JSON.stringify(undoIMAGES)){ // images needs to happen before tilesets
+            IMAGES = undoIMAGES;
+            updateTilesets();
+        }
+        if(JSON.stringify(undoTileSets) !== JSON.stringify(tileSets)) { // done to prevent the below, which is expensive
+            tileSets = undoTileSets;
             updateTilesetGridContainer();
         }
         tileSets = undoTileSets;
@@ -777,18 +782,12 @@
 
         const undoLayer = decoupleReferenceFromObj(undoStack[undoStepPosition].currentLayer);
         const undoActiveMap = decoupleReferenceFromObj(undoStack[undoStepPosition].ACTIVE_MAP);
-        updateLayers();
-        setLayer(undoLayer);
-
         if(undoActiveMap !== ACTIVE_MAP){
             setActiveMap(undoActiveMap)
             updateMaps();
         }
-        const undoIMAGES = decoupleReferenceFromObj(undoStack[undoStepPosition].IMAGES);
-        if(JSON.stringify(IMAGES) !== JSON.stringify(undoIMAGES)){
-            IMAGES = undoIMAGES;
-            updateTilesets();
-        }
+        updateLayers(); // needs to happen after active map is set and maps are updated
+        setLayer(undoLayer);
         draw();
     }
     const undo = () => {
@@ -908,13 +907,6 @@
         mapsDataSel.value = lastMap;
         setActiveMap(lastMap);
         document.getElementById("removeMapBtn").disabled = Object.keys(maps).length === 1;
-    }
-
-    const initDataAfterLoad = () =>{
-        WIDTH = canvas.width;
-        HEIGHT = canvas.height;
-        selection = [{}];
-        loadData();
     }
     const loadData = (data) =>{
         try {
@@ -1075,6 +1067,7 @@
             }
         });
         document.getElementById("addLayerBtn").addEventListener("click",()=>{
+            addToUndoStack();
             addLayer();
         });
         // Maps DATA callbacks
