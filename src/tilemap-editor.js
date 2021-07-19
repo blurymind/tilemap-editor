@@ -555,7 +555,7 @@
 
     const isFlippedOnX = () => document.getElementById("toggleFlipX").checked;
     const addSelectedTiles = (key, tiles) => {
-        const [x, y] = key.split("-")
+        const [x, y] = key.split("-");
         const tilesPatch = tiles || selection; // tiles is opt override for selection for fancy things like random patch of tiles
         const {x: startX, y: startY} = tilesPatch[0];// add selection override
         const selWidth = selectionSize[0];
@@ -584,7 +584,12 @@
             // if animated tile mode and has more than one frames, add/remove to animatedTiles
             if(!maps[ACTIVE_MAP].layers[currentLayer].animatedTiles) maps[ACTIVE_MAP].layers[currentLayer].animatedTiles = {};
             const isFlippedX = isFlippedOnX();
-            maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key] = {...getCurrentFrames(),isFlippedX};
+            const [x,y] = key.split("-");
+            maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key] = {
+                ...getCurrentFrames(),
+                isFlippedX, layer: currentLayer,
+                xPos: Number(x) * SIZE_OF_CROP, yPos: Number(y) * SIZE_OF_CROP
+            };
         }
     }
 
@@ -661,6 +666,8 @@
         } else if (animatedTileFound){
             console.log("Animated tile found", animatedTileFound)
             selection = animatedTileFound.tiles;
+            document.getElementById("toggleFlipX").checked = animatedTileFound.isFlippedX;
+            setLayer(animatedTileFound.layer);
             updateSelection();
             selectMode("frames");
             return true;
@@ -1080,9 +1087,9 @@
             tileSets[tilesetDataSel.value].frames[animName] = {
                 ...(tileSets[tilesetDataSel.value].frames[animName]||{}),
                 width: selectionSize[0], height:selectionSize[1], start: selection[0], tiles: selection,
-                name: animName, layer: currentLayer,
-
-                isFlippedX: false, xPos: 0, yPos: 0//TODO free position&& animated flips
+                name: animName,
+                //To be set when placing tile
+                layer: undefined, isFlippedX: false, xPos: 0, yPos: 0//TODO free position
             }
         }
         tilesetContainer.addEventListener('pointerup', (e) => {
