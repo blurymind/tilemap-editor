@@ -482,6 +482,15 @@
                     return;
                 }
                 const frameIndex = tileDataSel.value === "frames" ? Math.round(Date.now()/120) % frameCount : 1; //30fps
+
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
+                ctx.rect(positionX * SIZE_OF_CROP, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
+                ctx.stroke();
+                ctx.fillStyle = 'white';
+                ctx.fillText("O",positionX * SIZE_OF_CROP + 5,positionY * SIZE_OF_CROP + 10);
+
                 ctx.drawImage(
                     TILESET_ELEMENTS[tilesetIdx],
                     x * SIZE_OF_CROP + (frameIndex * SIZE_OF_CROP * width),//src x
@@ -581,10 +590,22 @@
         })
     }
 
+    const selectMode = (mode = null) => {
+        if (mode !== null) tileDataSel.value = mode;
+        document.getElementById("tileFrameSelContainer").style.display = tileDataSel.value ===  "frames" ?
+            "block":"none"
+        // tilesetContainer.style.top = tileDataSel.value ===  "frames" ? "45px" : "0";
+        updateTilesetGridContainer();
+    }
     const getTile =(key, allLayers = false)=> {
         const layers = maps[ACTIVE_MAP].layers;
+        let animatedTileFound
         const clicked = allLayers ?
             [...layers].reverse().find((layer,index)=> {
+                if(layer.animatedTiles && key in layer.animatedTiles) {
+                    setLayer(layers.length - index - 1);
+                    animatedTileFound = layer.animatedTiles[key];
+                }
                 if(key in layer.tiles){
                     setLayer(layers.length - index - 1);
                     return layer.tiles[key]
@@ -593,10 +614,10 @@
             :
             layers[currentLayer].tiles[key];
 
-        if (clicked) {
+        if (clicked && !animatedTileFound) {
             selection = [clicked];
 
-            console.log("clicked", clicked)
+            console.log("clicked", clicked, "entity data",animatedTileFound)
             document.getElementById("toggleFlipX").checked = !!clicked?.isFlippedX;
             // TODO switch to different tileset if its from a different one
             // if(clicked.tilesetIdx !== tilesetDataSel.value) {
@@ -604,9 +625,16 @@
             //     updateTilesets();
             //     updateTilesetGridContainer();
             // }
+            selectMode("");
             updateSelection();
             return true;
-        } else {
+        } else if (animatedTileFound){
+            console.log("Animated tile found", animatedTileFound)
+            selection = animatedTileFound.tiles;
+            updateSelection();
+            selectMode("frames");
+            return true;
+        }else {
             return false;
         }
     }
@@ -1022,6 +1050,7 @@
             tileSets[tilesetDataSel.value].frames[animName] = {
                 ...(tileSets[tilesetDataSel.value].frames[animName]||{}),
                 width: selectionSize[0], height:selectionSize[1], start: selection[0], tiles: selection,
+                frame: animName
             }
         }
         tilesetContainer.addEventListener('pointerup', (e) => {
@@ -1116,10 +1145,7 @@
         // Tileset DATA Callbacks //tileDataSel
         tileDataSel = document.getElementById("tileDataSel");
         tileDataSel.addEventListener("change",()=>{
-            document.getElementById("tileFrameSelContainer").style.display = tileDataSel.value ===  "frames" ?
-                "block":"none"
-            // tilesetContainer.style.top = tileDataSel.value ===  "frames" ? "45px" : "0";
-            updateTilesetGridContainer();
+            selectMode();
         })
         document.getElementById("addTileTagBtn").addEventListener("click",()=>{
             const result = window.prompt("Name your tag", "solid()");
