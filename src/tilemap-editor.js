@@ -472,7 +472,7 @@
             // animated tiles
             Object.keys(layer.animatedTiles || {}).forEach((key) => {
                 const [positionX, positionY] = key.split('-').map(Number);
-                const {start, width, height, frameCount} = layer.animatedTiles[key];
+                const {start, width, height, frameCount, isFlippedX} = layer.animatedTiles[key];
                 const {x, y, tilesetIdx} = start;
                 if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
                     ctx.fillStyle = 'yellow';
@@ -483,25 +483,54 @@
                 }
                 const frameIndex = tileDataSel.value === "frames" ? Math.round(Date.now()/120) % frameCount : 1; //30fps
 
-                ctx.beginPath();
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
-                ctx.rect(positionX * SIZE_OF_CROP, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
-                ctx.stroke();
-                ctx.fillStyle = 'white';
-                ctx.fillText("O",positionX * SIZE_OF_CROP + 5,positionY * SIZE_OF_CROP + 10);
+                if(isFlippedX) {
+                    ctx.save();//Special canvas crap to flip a slice, cause drawImage cant do it
+                    ctx.translate(ctx.canvas.width, 0);
+                    ctx.scale(-1, 1);
 
-                ctx.drawImage(
-                    TILESET_ELEMENTS[tilesetIdx],
-                    x * SIZE_OF_CROP + (frameIndex * SIZE_OF_CROP * width),//src x
-                    y * SIZE_OF_CROP,//src y
-                    SIZE_OF_CROP * width,// src width
-                    SIZE_OF_CROP * height, // src height
-                    positionX * SIZE_OF_CROP, //target x
-                    positionY * SIZE_OF_CROP, //target y
-                    SIZE_OF_CROP * width, // target width
-                    SIZE_OF_CROP * height // target height
-                );
+                    const positionXFlipped = ctx.canvas.width - (positionX * SIZE_OF_CROP) - SIZE_OF_CROP;
+                    ctx.beginPath();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
+                    ctx.rect(positionXFlipped, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
+                    ctx.stroke();
+                    ctx.fillStyle = 'white';
+                    ctx.fillText("O",positionXFlipped + 5,positionY * SIZE_OF_CROP + 10);
+
+                    ctx.drawImage(
+                        TILESET_ELEMENTS[tilesetIdx],
+                        x * SIZE_OF_CROP + (frameIndex * SIZE_OF_CROP * width),
+                        y * SIZE_OF_CROP,
+                        SIZE_OF_CROP * width,// src width
+                        SIZE_OF_CROP * height, // src height
+                        positionXFlipped,
+                        positionY * SIZE_OF_CROP, //target y
+                        SIZE_OF_CROP * width, // target width
+                        SIZE_OF_CROP * height // target height
+                    );
+                    ctx.restore();
+                }else {
+                    ctx.beginPath();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
+                    ctx.rect(positionX * SIZE_OF_CROP, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
+                    ctx.stroke();
+                    ctx.fillStyle = 'white';
+                    ctx.fillText("O",positionX * SIZE_OF_CROP + 5,positionY * SIZE_OF_CROP + 10);
+
+                    ctx.drawImage(
+                        TILESET_ELEMENTS[tilesetIdx],
+                        x * SIZE_OF_CROP + (frameIndex * SIZE_OF_CROP * width),//src x
+                        y * SIZE_OF_CROP,//src y
+                        SIZE_OF_CROP * width,// src width
+                        SIZE_OF_CROP * height, // src height
+                        positionX * SIZE_OF_CROP, //target x
+                        positionY * SIZE_OF_CROP, //target y
+                        SIZE_OF_CROP * width, // target width
+                        SIZE_OF_CROP * height // target height
+                    );
+                }
+
             });
         });
 
@@ -554,7 +583,8 @@
         } else {
             // if animated tile mode and has more than one frames, add/remove to animatedTiles
             if(!maps[ACTIVE_MAP].layers[currentLayer].animatedTiles) maps[ACTIVE_MAP].layers[currentLayer].animatedTiles = {};
-            maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key] = getCurrentFrames();
+            const isFlippedX = isFlippedOnX();
+            maps[ACTIVE_MAP].layers[currentLayer].animatedTiles[key] = {...getCurrentFrames(),isFlippedX};
         }
     }
 
@@ -1050,7 +1080,9 @@
             tileSets[tilesetDataSel.value].frames[animName] = {
                 ...(tileSets[tilesetDataSel.value].frames[animName]||{}),
                 width: selectionSize[0], height:selectionSize[1], start: selection[0], tiles: selection,
-                frame: animName
+                name: animName, layer: currentLayer,
+
+                isFlippedX: false, xPos: 0, yPos: 0//TODO free position&& animated flips
             }
         }
         tilesetContainer.addEventListener('pointerup', (e) => {
