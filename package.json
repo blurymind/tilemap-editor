@@ -26,8 +26,14 @@
     "url": "https://github.com/blurymind/tilemap-editor/issues"
   },
   "homepage": "https://github.com/blurymind/tilemap-editor#readme",
+  "dependencies": {
+    "serve-handler": "^6.1.3"
+  },
   "devDependencies": {
-    "gh-pages": "^3.2.2",
-    "serve": "^12.0.0"
+    "serve": "^12.0.0",
+    "gh-pages": "^3.2.2"
+  },
+  "bin": {
+    "tilemap-editor": "cli.js"
   }
 }
