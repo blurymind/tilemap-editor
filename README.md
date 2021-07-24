@@ -85,20 +85,47 @@ While I am a big fan of Tiled and LdTk, for my case I was looking for something 
 
 ## :eyeglasses: Getting started
 
-   ```bash
-   $ git clone https://github.com/blurymind/tilemap-editor.git
-   $ yarn
-   $ yarn start
-   ```
+There are a few ways to get started, depending on how you have things setup. You will need [node](https://nodejs.org/en/) installed.
+
+### local - quick
+
+If you just want to run the editor locally, but aren't going to be developing on it, and just want to run the latest version:
+
+```sh
+npx tilemap-editor@latest
+```
+
+### global - quick
+
+If you'd like to install it, globally:
+
+```sh
+npm i -g tilemap-editor
+tilemap-editor
+```
+
+### local - modify
+
+If you'd like to modify how it works:
+
+```sh
+git clone https://github.com/blurymind/tilemap-editor.git
+cd tilemap-editor
+npm i
+npm start
+```
+
 
 ## :book: Api
 
 To get it from npm, you can run
 
 ```bash
-$ npm i tilemap-editor
-or
-$ yarn add tilemap-editor
+npm i tilemap-editor
+
+# or
+
+yarn add tilemap-editor
 ```
   
 To use it, you can import it via require or in the index file like so
@@ -203,27 +230,27 @@ You are welcome to add new features or fix some bugs:
 1. Fork this repository
 
 2. Clone your fork
-   ```bash
-   $ git clone https://github.com/blurymind/tilemap-editor.git
-   ```
+```sh
+git clone https://github.com/blurymind/tilemap-editor.git
+```
 
 - Create a branch with your changes
 
-  ```bash
-  $ git checkout -b my-awesome-changes
-  ```
+```sh
+git checkout -b my-awesome-changes
+```
 
 - Make the commit with your changes
 
-  ```bash
-  $ git commit -m 'feat: add a shortcut to copy a tile of the canvas'
-  ```
+```bash
+git commit -m 'feat: add a shortcut to copy a tile of the canvas'
+```
 
 - Push your branch
 
-  ```bash
-  # Send the code to your remote branch
-  $ git push origin my-awesome-changes
-  ```
+```sh
+# Send the code to your remote branch
+git push origin my-awesome-changes
+```
 
 - Create a _Pull Request_
