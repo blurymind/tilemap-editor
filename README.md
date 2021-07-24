@@ -128,10 +128,10 @@ npm i tilemap-editor
 yarn add tilemap-editor
 ```
   
-To use it, you can import it via require or in the index file like so
+To use it, you can import it via require or in the HTML file like so
 
-   ```js
-   // include the js and css files
+```html
+<!-- include the js and css files -->
 <link rel="stylesheet" href="styles.css"/>
 <script src="tilemap-editor.js"></script>
 
@@ -220,7 +220,7 @@ TilemapEditor.init("tileMapEditor",{ // The id of the element that will become t
     },
 })
 </script>
-   ```
+```
    
 
 ## :wrench: How to Contribute
