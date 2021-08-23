@@ -10,6 +10,10 @@
   border-radius: 3px;
   z-index: 400;
 }
+.menu.parameters{
+  display: contents;
+  font-size: 1.1rem !important;
+}
 .menu.file{
   min-width: 70px;
 }

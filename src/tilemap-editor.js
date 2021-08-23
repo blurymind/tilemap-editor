@@ -141,7 +141,21 @@
         <button id="addTileFrameBtn" title="add">+</button>
         <button id="removeTileFrameBtn" title="remove">-</button>
         frames: <input id="tileFrameCount" value="1" type="number" min="1">
+        
+        <div title="Object parameters" class="menu parameters" id="objectParametersEditor">
+            ⚙
+            <div class="dropdown">
+                <div class="item nohover">Object parameters</div>
+                <div class="item">
+                    coming soon...
+<!--                    <label for="toggleFlipX" class="">Flip tile on x</label>-->
+<!--                    <input type="checkbox" id="toggleFlipX" style="display: none"> -->
+<!--                    <label class="toggleFlipX"></label>-->
+                </div>
+            </div>
+        ️</div>
         </div>
+        
       <div class="tileset-container">
         <img id="tileset-source" crossorigin />
         <div id="tilesetGridContainer" class="tileset_grid_container"></div>
@@ -195,7 +209,7 @@
     let tilesetImage, canvas, tilesetContainer, tilesetSelection, cropSize,
         confirmBtn, tilesetGridContainer,
         layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,tileFrameSel,
-        tilesetDataSel, mapsDataSel;
+        tilesetDataSel, mapsDataSel, objectParametersEditor;
 
     let TILESET_ELEMENTS = [];
     let IMAGES = [''];
@@ -210,8 +224,9 @@
 
     const getEmptyTilesetTag = (name, code, tiles ={}) =>({name,code,tiles});
 
-    const getEmptyTileSet = (src, name="tileset",gridWidth, gridHeight, tileData = {},symbolStartIdx,tileSize=SIZE_OF_CROP, tags={}, frames= {}) => {
-        return { src, name, gridWidth, gridHeight, tileCount: gridWidth * gridHeight, tileData, symbolStartIdx,tileSize, tags, frames}
+    const getEmptyTileSet = (src, name="tileset",gridWidth, gridHeight, tileData = {},
+                             symbolStartIdx,tileSize=SIZE_OF_CROP, tags={}, frames= {}, description="n/a") => {
+        return { src, name, gridWidth, gridHeight, tileCount: gridWidth * gridHeight, tileData, symbolStartIdx,tileSize, tags, frames, description}
     }
 
     const getSnappedPos = (pos) => Math.round(pos / SIZE_OF_CROP) * SIZE_OF_CROP;
@@ -225,6 +240,8 @@
     let selectedTileSetLoader = {};
     let apiTileMapExporters = {};
     let apiTileMapImporters = {};
+
+    let editedEntity
 
     const getContext = () =>  canvas.getContext('2d');
 
@@ -363,6 +380,10 @@
 
         // Autoselect tool upon selecting a tile
         if(![0, 4, 5].includes(ACTIVE_TOOL)) setActiveTool(0);
+
+        // show/hide param editor
+       if(tileDataSel.value === "frames" && editedEntity) objectParametersEditor.classList.add('entity');
+       else objectParametersEditor.classList.remove('entity');
     }
 
     const randomLetters = new Array(10680).fill(1).map((_, i) => String.fromCharCode(165 + i));
@@ -481,7 +502,7 @@
                     ctx.fillText("X",positionX * SIZE_OF_CROP + 5,positionY * SIZE_OF_CROP + 10);
                     return;
                 }
-                const frameIndex = tileDataSel.value === "frames" ? Math.round(Date.now()/120) % frameCount : 1; //30fps
+                const frameIndex = tileDataSel.value === "frames" || frameCount === 1 ? Math.round(Date.now()/120) % frameCount : 1; //30fps
 
                 if(isFlippedX) {
                     ctx.save();//Special canvas crap to flip a slice, cause drawImage cant do it
@@ -494,8 +515,6 @@
                     ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
                     ctx.rect(positionXFlipped, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
                     ctx.stroke();
-                    ctx.fillStyle = 'white';
-                    ctx.fillText("O",positionXFlipped + 5,positionY * SIZE_OF_CROP + 10);
 
                     ctx.drawImage(
                         TILESET_ELEMENTS[tilesetIdx],
@@ -508,6 +527,9 @@
                         SIZE_OF_CROP * width, // target width
                         SIZE_OF_CROP * height // target height
                     );
+                    ctx.fillStyle = 'white';
+                    ctx.fillText("🔛",positionXFlipped + 5,positionY * SIZE_OF_CROP + 10);
+
                     ctx.restore();
                 }else {
                     ctx.beginPath();
@@ -515,8 +537,6 @@
                     ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
                     ctx.rect(positionX * SIZE_OF_CROP, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
                     ctx.stroke();
-                    ctx.fillStyle = 'white';
-                    ctx.fillText("O",positionX * SIZE_OF_CROP + 5,positionY * SIZE_OF_CROP + 10);
 
                     ctx.drawImage(
                         TILESET_ELEMENTS[tilesetIdx],
@@ -529,6 +549,8 @@
                         SIZE_OF_CROP * width, // target width
                         SIZE_OF_CROP * height // target height
                     );
+                    ctx.fillStyle = 'white';
+                    ctx.fillText("⭕",positionX * SIZE_OF_CROP + 5,positionY * SIZE_OF_CROP + 10);
                 }
 
             });
@@ -628,18 +650,18 @@
     const selectMode = (mode = null) => {
         if (mode !== null) tileDataSel.value = mode;
         document.getElementById("tileFrameSelContainer").style.display = tileDataSel.value ===  "frames" ?
-            "block":"none"
+            "flex":"none"
         // tilesetContainer.style.top = tileDataSel.value ===  "frames" ? "45px" : "0";
         updateTilesetGridContainer();
     }
     const getTile =(key, allLayers = false)=> {
         const layers = maps[ACTIVE_MAP].layers;
-        let animatedTileFound
+        editedEntity = undefined;
         const clicked = allLayers ?
             [...layers].reverse().find((layer,index)=> {
                 if(layer.animatedTiles && key in layer.animatedTiles) {
                     setLayer(layers.length - index - 1);
-                    animatedTileFound = layer.animatedTiles[key];
+                    editedEntity = layer.animatedTiles[key];
                 }
                 if(key in layer.tiles){
                     setLayer(layers.length - index - 1);
@@ -649,10 +671,10 @@
             :
             layers[currentLayer].tiles[key];
 
-        if (clicked && !animatedTileFound) {
+        if (clicked && !editedEntity) {
             selection = [clicked];
 
-            console.log("clicked", clicked, "entity data",animatedTileFound)
+            console.log("clicked", clicked, "entity data",editedEntity)
             document.getElementById("toggleFlipX").checked = !!clicked?.isFlippedX;
             // TODO switch to different tileset if its from a different one
             // if(clicked.tilesetIdx !== tilesetDataSel.value) {
@@ -663,11 +685,12 @@
             selectMode("");
             updateSelection();
             return true;
-        } else if (animatedTileFound){
-            console.log("Animated tile found", animatedTileFound)
-            selection = animatedTileFound.tiles;
-            document.getElementById("toggleFlipX").checked = animatedTileFound.isFlippedX;
-            setLayer(animatedTileFound.layer);
+        } else if (editedEntity){
+            console.log("Animated tile found", editedEntity)
+            selection = editedEntity.tiles;
+            document.getElementById("toggleFlipX").checked = editedEntity.isFlippedX;
+            setLayer(editedEntity.layer);
+            tileFrameSel.value = editedEntity.name;
             updateSelection();
             selectMode("frames");
             return true;
@@ -1067,6 +1090,7 @@
         tilesetSelection = document.querySelector('.tileset-container-selection');
         tilesetGridContainer = document.getElementById("tilesetGridContainer");
         layersElement = document.getElementById("layers");
+        objectParametersEditor = document.getElementById("objectParametersEditor");
 
         tilesetContainer.addEventListener("contextmenu", e => {
             e.preventDefault();
@@ -1083,7 +1107,7 @@
         });
 
         const setFramesToSelection = (animName) =>{
-            if(animName === "") return;
+            if(animName === "" || typeof animName !== "string") return;
             tileSets[tilesetDataSel.value].frames[animName] = {
                 ...(tileSets[tilesetDataSel.value].frames[animName]||{}),
                 width: selectionSize[0], height:selectionSize[1], start: selection[0], tiles: selection,
