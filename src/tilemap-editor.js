@@ -123,7 +123,9 @@
                 <span>Tileset loader:</span>
                 <select name="tileSetLoaders" id="tileSetLoadersSel"></select>
               </div>
-              <div id="tilesetSrcLabel"></div>
+              <div class="tileset_info" id="tilesetSrcLabel"></div>
+              <div class="tileset_info" id="tilesetHomeLink"></div>
+              <div class="tileset_info" id="tilesetDescriptionLabel"></div> 
           </div>
 
         </details>
@@ -212,7 +214,7 @@
         tilesetDataSel, mapsDataSel, objectParametersEditor;
 
     let TILESET_ELEMENTS = [];
-    let IMAGES = [''];
+    let IMAGES = [{src:''}];
     let SIZE_OF_CROP = 32;
     let WIDTH = 0;
     let HEIGHT = 0;
@@ -402,7 +404,7 @@
                 tileData[tileKey]?.tileSymbol :
                 viewMode === "frames" ? tile :tags[viewMode]?.tiles[tileKey]?.mark || "-";
 
-            return `<div style="width:${SIZE_OF_CROP}px;height:${SIZE_OF_CROP}px" class="tileset_grid_tile">${innerTile}</div>`
+            return `<div style="width:${SIZE_OF_CROP}px;height:${SIZE_OF_CROP}px" class="tileset_grid_tile" title="${innerTile}">${SIZE_OF_CROP > 10 ? innerTile : ""}</div>`
         }).join("\n")
         tilesetGridContainer.innerHTML = newGrid;
 
@@ -923,7 +925,7 @@
             newOpt.value = idx;
             tilesetDataSel.appendChild(newOpt);
             const tilesetImgElement = document.createElement("img");
-            tilesetImgElement.src = tsImage;
+            tilesetImgElement.src = tsImage.src;
             tilesetImgElement.crossOrigin = "Anonymous";
             // Add tileset data for all tiles
             tilesetImgElement.addEventListener("load",()=>{
@@ -940,7 +942,7 @@
                         x, y, tilesetIdx: idx, tileSymbol
                     }
                 })
-                tileSets[idx] = getEmptyTileSet(tsImage,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, SIZE_OF_CROP, oldTilesets[idx]?.tags,oldTilesets[idx]?.frames);
+                tileSets[idx] = getEmptyTileSet(tsImage.src,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, SIZE_OF_CROP, oldTilesets[idx]?.tags,oldTilesets[idx]?.frames, tsImage.description);
 
                 symbolStartIdx += tileCount;
             })
@@ -965,8 +967,23 @@
             updateTilesetDataList();
             updateTilesetDataList(true);
             updateTilesetGridContainer();
-            document.getElementById("tilesetSrcLabel").innerText = `src: ${tilesetImage.src}`;
+            document.getElementById("tilesetSrcLabel").innerHTML = `src: <a href="${tilesetImage.src}">${tilesetImage.src}</a>`;
             document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
+            const tilesetExtraInfo = IMAGES.find(ts=>ts.src === tilesetImage.src);
+            if(tilesetExtraInfo){
+                if(tilesetExtraInfo.link){
+                    document.getElementById("tilesetHomeLink").innerHTML = `link: <a href="${tilesetExtraInfo.link}">${tilesetExtraInfo.link}</a> `;
+                    document.getElementById("tilesetHomeLink").title = tilesetExtraInfo.link;
+                } else {
+                    document.getElementById("tilesetHomeLink").innerHTML = "";
+                }
+                if(tilesetExtraInfo.description){
+                    document.getElementById("tilesetDescriptionLabel").innerText = tilesetExtraInfo.description;
+                    document.getElementById("tilesetDescriptionLabel").title = tilesetExtraInfo.description;
+                } else {
+                    document.getElementById("tilesetDescriptionLabel").innerText = "";
+                }
+            }
             document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
 
             if (undoStepPosition === -1) addToUndoStack();//initial undo stack entry
@@ -1271,12 +1288,12 @@
 
         const replaceSelectedTileSet = (src) => {
             addToUndoStack();
-            IMAGES[Number(tilesetDataSel.value)] = src;
+            IMAGES[Number(tilesetDataSel.value)].src = src;
             updateTilesets();
         }
         const addNewTileSet = (src) => {
             addToUndoStack();
-            IMAGES.push(src);
+            IMAGES.push({src});
             updateTilesets();
         }
         // replace tileset
@@ -1451,7 +1468,7 @@
         })
         document.getElementById("undoBtn").addEventListener("click", undo);
         document.getElementById("redoBtn").addEventListener("click", redo);
-        if (tileMapData) loadData(tileMapData);
+        loadData(tileMapData); // loads even if tileMapData is not present
 
         // Animated tiles when on frames mode
         const animateTiles = () => {

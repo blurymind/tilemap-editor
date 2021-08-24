@@ -300,20 +300,25 @@ cursor: pointer;
   padding: 0 3px;
   border-bottom: 1px solid #80808045;
 }
-
-#tilesetSrcLabel{
+.tileset_info{
   margin-left: 3px;
   color: #ececcd;
   font-size: 0.8em;
+  -webkit-line-clamp: 3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
 }
-#tilesetSrcLabel,
+.tileset_info,
 #activeLayerLabel,
 .select_layer{
   flex:1;
   /*max-width: 200px;*/
-  white-space: nowrap;
+  /*white-space: nowrap;*/
   overflow: hidden;
   text-overflow: ellipsis;
+}
+#tilesetDescriptionLabel{
+  color: #91b2ff;
 }
 .layer:hover{
   background-color: rgba(255, 255, 0, 0.05);
@@ -489,4 +494,17 @@ input[name='tool']:checked+label{
 }
 .tool_wrapper >label {
   padding: 2px;
+}
+
+a:link {
+  color: #ffc300;
+}
+a:visited {
+  color: #98ff98;
+}
+a:hover {
+  color: hotpink;
+}
+a:active {
+  color: #ffae00;
 }
