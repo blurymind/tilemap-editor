@@ -297,14 +297,21 @@
           console.log("ALBUM", data.images)
           // const images = data.images //description and link
           tileSetImages = data.images.map(image=> {
+            let extractedSourceMatch
             if(image.description && image.description.includes("tileSize:")){
-              const extractedMatch = image.description.match(/tileSize\:\s*([0-9]+)/);
-              if(extractedMatch && extractedMatch[1]){
-                tileSize = parseInt(extractedMatch[1],10)
+              const extractedTileSizeMatch = image.description.match(/tileSize\:\s*([0-9]+)/);
+              if(extractedTileSizeMatch && extractedTileSizeMatch.length > 1){
+                tileSize = parseInt(extractedTileSizeMatch[1],10)
                 console.info("set tileSize from description", tileSize)
               }
+              extractedSourceMatch = image.description.match(/source\:\s*(.*)/);
+              console.log("Source:", extractedSourceMatch)
             }
-            return {src: image.link, description: image.description, link: `https://imgur.com/a/${imgur}`}
+            return {
+              src: image.link,
+              description: image.description,
+              link: extractedSourceMatch && extractedSourceMatch.length > 1 ? `https://${extractedSourceMatch[1]}` : `https://imgur.com/a/${imgur}`
+            }
           })
           // const tileSetImages = data.images.map(image=> )
           initTilemapEditor()
