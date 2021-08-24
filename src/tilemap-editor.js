@@ -217,7 +217,7 @@
 
     let TILESET_ELEMENTS = [];
     let IMAGES = [{src:''}];
-    let ZOOM = 2;
+    let ZOOM = 1;
     let SIZE_OF_CROP = 32;
     let WIDTH = 0;
     let HEIGHT = 0;
