@@ -431,6 +431,10 @@ cursor: pointer;
   top: 30px;
   z-index: 1;
 }
+.sticky_left {
+  position: sticky;
+  left: 0;
+}
 .sticky_settings{
   background-color: #17171fc7 !important;
   border-radius: 2px;

@@ -92,8 +92,10 @@
         </div>
 
         <div class="tool_wrapper">
-            <label id="undoBtn">↩️️</label>
-            <label id="redoBtn">🔁️</label>
+            <label id="undoBtn" title="Undo">↩️️</label>
+            <label id="redoBtn" title="Redo">🔁️</label>
+            <label id="zoomIn" title="Zoom in">🔎️</label>
+            <label id="zoomOut" title="Zoom out">🔍</label>
         </div>
             
         <div>
@@ -103,7 +105,7 @@
       </div>
       <div class="card_body">
         <div class="card_left_column">
-        <details class="details_container" id="tilesetDataDetails" open="true">
+        <details class="details_container sticky_left" id="tilesetDataDetails" open="true">
           <summary >
             <span  id="mapSelectContainer">
             | <select name="tileSetSelectData" id="tilesetDataSel" class="limited_select"></select>
@@ -129,14 +131,14 @@
           </div>
 
         </details>
-        <div class="select_container layer sticky_top" id="tilesetSelectContainer">
+        <div class="select_container layer sticky_top sticky_left" id="tilesetSelectContainer">
             <select name="tileData" id="tileDataSel">
                 <option value="">Symbols</option>
             </select>
             <button id="addTileTagBtn" title="add">+</button>
             <button id="removeTileTagBtn" title="remove">-</button>
         </div>
-        <div class="select_container layer sticky_top2 tileset_opt_field sticky_settings" style="display: none" id="tileFrameSelContainer">
+        <div class="select_container layer sticky_top2 tileset_opt_field sticky_settings  sticky_left" style="display: none" id="tileFrameSelContainer">
             <select name="tileFrameData" id="tileFrameSel">
 <!--            <option value="anim1">anim1rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr</option>-->
         </select>
@@ -215,6 +217,7 @@
 
     let TILESET_ELEMENTS = [];
     let IMAGES = [{src:''}];
+    let ZOOM = 2;
     let SIZE_OF_CROP = 32;
     let WIDTH = 0;
     let HEIGHT = 0;
@@ -231,7 +234,7 @@
         return { src, name, gridWidth, gridHeight, tileCount: gridWidth * gridHeight, tileData, symbolStartIdx,tileSize, tags, frames, description}
     }
 
-    const getSnappedPos = (pos) => Math.round(pos / SIZE_OF_CROP) * SIZE_OF_CROP;
+    const getSnappedPos = (pos) => Math.round((pos / SIZE_OF_CROP) * ZOOM) * SIZE_OF_CROP * ZOOM;
     let selection = [{}];
     let currentLayer = 2;
     let isMouseDown = false;
@@ -375,10 +378,10 @@
         selectionSize = [selWidth, selHeight]
 
         const tileSize = tileSets[tilesetDataSel.value].tileSize;
-        tilesetSelection.style.left = `${x * tileSize}px`;
-        tilesetSelection.style.top = `${y * tileSize}px`;
-        tilesetSelection.style.width = `${selWidth * tileSize}px`;
-        tilesetSelection.style.height = `${selHeight * tileSize}px`;
+        tilesetSelection.style.left = `${x * tileSize * ZOOM}px`;
+        tilesetSelection.style.top = `${y * tileSize * ZOOM}px`;
+        tilesetSelection.style.width = `${selWidth * tileSize * ZOOM}px`;
+        tilesetSelection.style.height = `${selHeight * tileSize * ZOOM}px`;
 
         // Autoselect tool upon selecting a tile
         if(![0, 4, 5].includes(ACTIVE_TOOL)) setActiveTool(0);
@@ -396,6 +399,7 @@
         if(!tilesetData) return;
 
         const {tileCount, gridWidth, tileData, tags} = tilesetData;
+        console.log("COUNT", tileCount)
         const newGrid = Array.from({length: tileCount}, (x, i) => i).map(tile=>{
             const x = tile % gridWidth;
             const y = Math.floor(tile / gridWidth);
@@ -404,7 +408,7 @@
                 tileData[tileKey]?.tileSymbol :
                 viewMode === "frames" ? tile :tags[viewMode]?.tiles[tileKey]?.mark || "-";
 
-            return `<div style="width:${SIZE_OF_CROP}px;height:${SIZE_OF_CROP}px" class="tileset_grid_tile" title="${innerTile}">${SIZE_OF_CROP > 10 ? innerTile : ""}</div>`
+            return `<div style="width:${SIZE_OF_CROP * ZOOM}px;height:${SIZE_OF_CROP * ZOOM}px" class="tileset_grid_tile" title="${innerTile}">${SIZE_OF_CROP > 10 ? innerTile : ""}</div>`
         }).join("\n")
         tilesetGridContainer.innerHTML = newGrid;
 
@@ -415,16 +419,16 @@
             const {width, height, start, tiles,frameCount} = frameData;
             selection = [...tiles];
             updateSelection();
-            console.log(">>",start.x,start.y, SIZE_OF_CROP * start.y)
-            tilesetGridContainer.innerHTML += `<div style="width:${SIZE_OF_CROP * (width * (frameCount - 1))}px;height:${SIZE_OF_CROP * height}px;
-            border: 1px solid red; position: absolute; left: ${SIZE_OF_CROP * (start.x + width)}px;top: ${SIZE_OF_CROP * start.y}px;"></div>`
+            console.log(">>",start.x,start.y, SIZE_OF_CROP * ZOOM * start.y)
+            tilesetGridContainer.innerHTML += `<div style="width:${SIZE_OF_CROP * ZOOM * (width * (frameCount - 1))}px;height:${SIZE_OF_CROP * ZOOM * height}px;
+            border: 1px solid red; position: absolute; left: ${SIZE_OF_CROP * ZOOM * (start.x + width)}px;top: ${SIZE_OF_CROP * ZOOM * start.y}px;"></div>`
         }
     }
 
     let tileSelectStart = null;
     const getSelectedTile = (event) => {
         const { x, y } = event.target.getBoundingClientRect();
-        const tileSize = tileSets[tilesetDataSel.value].tileSize;
+        const tileSize = tileSets[tilesetDataSel.value].tileSize * ZOOM;
         const tx = Math.floor(Math.max(event.clientX - x, 0) / tileSize);
         const ty = Math.floor(Math.max(event.clientY - y, 0) / tileSize);
         // add start tile, add end tile, add all tiles inbetween
@@ -446,12 +450,17 @@
     const draw = (shouldDrawGrid = true) =>{
         const ctx = getContext();
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
-        if(shouldDrawGrid)drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP);
+        if(shouldDrawGrid)drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP * ZOOM);
 
         maps[ACTIVE_MAP].layers.forEach((layer) => {
             if(!layer.visible) return;
             ctx.globalAlpha = layer.opacity;
-
+            if (ZOOM !== 1){
+                ctx.webkitImageSmoothingEnabled = false;
+                ctx.mozImageSmoothingEnabled = false;
+                ctx.msImageSmoothingEnabled = false;
+                ctx.imageSmoothingEnabled = false;
+            }
             //static tiles on this layer
             Object.keys(layer.tiles).forEach((key) => {
                 const [positionX, positionY] = key.split('-').map(Number);
@@ -459,7 +468,7 @@
 
                 if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
                     ctx.fillStyle = 'red';
-                    ctx.fillRect(positionX * SIZE_OF_CROP, positionY * SIZE_OF_CROP, SIZE_OF_CROP, SIZE_OF_CROP);
+                    ctx.fillRect(positionX * SIZE_OF_CROP * ZOOM, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM);
                     return;
                 }
                 if(isFlippedX){
@@ -472,10 +481,10 @@
                         y * SIZE_OF_CROP,
                         SIZE_OF_CROP,
                         SIZE_OF_CROP,
-                        ctx.canvas.width - (positionX * SIZE_OF_CROP) - SIZE_OF_CROP,
-                        positionY * SIZE_OF_CROP,
-                        SIZE_OF_CROP,
-                        SIZE_OF_CROP
+                        ctx.canvas.width - (positionX * SIZE_OF_CROP * ZOOM) - SIZE_OF_CROP * ZOOM,
+                        positionY * SIZE_OF_CROP * ZOOM,
+                        SIZE_OF_CROP * ZOOM,
+                        SIZE_OF_CROP * ZOOM
                     );
                     ctx.restore();
                 } else {
@@ -485,10 +494,10 @@
                         y * SIZE_OF_CROP,
                         SIZE_OF_CROP,
                         SIZE_OF_CROP,
-                        positionX * SIZE_OF_CROP,
-                        positionY * SIZE_OF_CROP,
-                        SIZE_OF_CROP,
-                        SIZE_OF_CROP
+                        positionX * SIZE_OF_CROP * ZOOM,
+                        positionY * SIZE_OF_CROP * ZOOM,
+                        SIZE_OF_CROP * ZOOM,
+                        SIZE_OF_CROP * ZOOM
                     );
                 }
             });
@@ -499,9 +508,9 @@
                 const {x, y, tilesetIdx} = start;
                 if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
                     ctx.fillStyle = 'yellow';
-                    ctx.fillRect(positionX * SIZE_OF_CROP, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
+                    ctx.fillRect(positionX * SIZE_OF_CROP * ZOOM, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP  * ZOOM * width, SIZE_OF_CROP  * ZOOM * height);
                     ctx.fillStyle = 'blue';
-                    ctx.fillText("X",positionX * SIZE_OF_CROP + 5,positionY * SIZE_OF_CROP + 10);
+                    ctx.fillText("X",positionX * SIZE_OF_CROP * ZOOM + 5,positionY * SIZE_OF_CROP  * ZOOM + 10);
                     return;
                 }
                 const frameIndex = tileDataSel.value === "frames" || frameCount === 1 ? Math.round(Date.now()/120) % frameCount : 1; //30fps
@@ -511,11 +520,11 @@
                     ctx.translate(ctx.canvas.width, 0);
                     ctx.scale(-1, 1);
 
-                    const positionXFlipped = ctx.canvas.width - (positionX * SIZE_OF_CROP) - SIZE_OF_CROP;
+                    const positionXFlipped = ctx.canvas.width - (positionX * SIZE_OF_CROP * ZOOM) - SIZE_OF_CROP * ZOOM;
                     ctx.beginPath();
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
-                    ctx.rect(positionXFlipped, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
+                    ctx.rect(positionXFlipped, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM * width, SIZE_OF_CROP * ZOOM * height);
                     ctx.stroke();
 
                     ctx.drawImage(
@@ -525,19 +534,19 @@
                         SIZE_OF_CROP * width,// src width
                         SIZE_OF_CROP * height, // src height
                         positionXFlipped,
-                        positionY * SIZE_OF_CROP, //target y
-                        SIZE_OF_CROP * width, // target width
-                        SIZE_OF_CROP * height // target height
+                        positionY * SIZE_OF_CROP * ZOOM, //target y
+                        SIZE_OF_CROP * ZOOM * width, // target width
+                        SIZE_OF_CROP * ZOOM * height // target height
                     );
                     ctx.fillStyle = 'white';
-                    ctx.fillText("🔛",positionXFlipped + 5,positionY * SIZE_OF_CROP + 10);
+                    ctx.fillText("🔛",positionXFlipped + 5,positionY * SIZE_OF_CROP * ZOOM + 10);
 
                     ctx.restore();
                 }else {
                     ctx.beginPath();
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
-                    ctx.rect(positionX * SIZE_OF_CROP, positionY * SIZE_OF_CROP, SIZE_OF_CROP * width, SIZE_OF_CROP * height);
+                    ctx.rect(positionX * SIZE_OF_CROP * ZOOM, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM * width, SIZE_OF_CROP * ZOOM * height);
                     ctx.stroke();
 
                     ctx.drawImage(
@@ -546,15 +555,14 @@
                         y * SIZE_OF_CROP,//src y
                         SIZE_OF_CROP * width,// src width
                         SIZE_OF_CROP * height, // src height
-                        positionX * SIZE_OF_CROP, //target x
-                        positionY * SIZE_OF_CROP, //target y
-                        SIZE_OF_CROP * width, // target width
-                        SIZE_OF_CROP * height // target height
+                        positionX * SIZE_OF_CROP * ZOOM, //target x
+                        positionY * SIZE_OF_CROP * ZOOM, //target y
+                        SIZE_OF_CROP * ZOOM * width, // target width
+                        SIZE_OF_CROP * ZOOM * height // target height
                     );
                     ctx.fillStyle = 'white';
-                    ctx.fillText("⭕",positionX * SIZE_OF_CROP + 5,positionY * SIZE_OF_CROP + 10);
+                    ctx.fillText("⭕",positionX * SIZE_OF_CROP * ZOOM + 5,positionY * SIZE_OF_CROP * ZOOM + 10);
                 }
-
             });
         });
 
@@ -806,7 +814,7 @@
     const updateMapSize = (size) =>{
         if(size?.mapWidth && size?.mapWidth > 1){
             mapTileWidth = size?.mapWidth;
-            WIDTH = mapTileWidth * SIZE_OF_CROP;
+            WIDTH = mapTileWidth * SIZE_OF_CROP * ZOOM;
             maps[ACTIVE_MAP].mapWidth = mapTileWidth;
             document.querySelector(".canvas_resizer[resizerdir='x']").style=`left:${WIDTH}px`;
             document.querySelector(".canvas_resizer[resizerdir='x'] input").value = String(mapTileWidth);
@@ -814,7 +822,7 @@
         }
         if(size?.mapHeight && size?.mapHeight > 1){
             mapTileHeight = size?.mapHeight;
-            HEIGHT = mapTileHeight * SIZE_OF_CROP;
+            HEIGHT = mapTileHeight * SIZE_OF_CROP * ZOOM;
             maps[ACTIVE_MAP].mapHeight = mapTileHeight;
             document.querySelector(".canvas_resizer[resizerdir='y']").style=`top:${HEIGHT}px`;
             document.querySelector(".canvas_resizer[resizerdir='y'] input").value = String(mapTileHeight);
@@ -890,6 +898,24 @@
         undoStepPosition += 1;
         restoreFromUndoStackData();
     }
+    const updateZoom = () => {
+        tilesetImage.style = `transform: scale(${ZOOM});transform-origin: left top;image-rendering: auto;image-rendering: crisp-edges;image-rendering: pixelated;`;
+        tilesetContainer.style.width = `${tilesetImage.width * ZOOM}px`;
+        tilesetContainer.style.height = `${tilesetImage.height * ZOOM}px`;
+        updateTilesetGridContainer();
+        updateMapSize({mapWidth: mapTileWidth, mapHeight: mapTileHeight});
+    }
+    const zoomIn = () => {
+        if (ZOOM > 4) return;
+        ZOOM += 1;
+        updateZoom();
+    }
+    const zoomOut = () => {
+        if (ZOOM < 1) return;
+        ZOOM -= 1;
+        updateZoom();
+    }
+
 
     const updateTilesetDataList = (populateFrames = false) => {
         const populateWithOptions = (selectEl, options, newContent)=>{
@@ -945,6 +971,7 @@
                 tileSets[idx] = getEmptyTileSet(tsImage.src,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, SIZE_OF_CROP, oldTilesets[idx]?.tags,oldTilesets[idx]?.frames, tsImage.description);
 
                 symbolStartIdx += tileCount;
+                updateZoom();
             })
 
             TILESET_ELEMENTS.push(tilesetImgElement);
@@ -970,6 +997,7 @@
             document.getElementById("tilesetSrcLabel").innerHTML = `src: <a href="${tilesetImage.src}">${tilesetImage.src}</a>`;
             document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
             const tilesetExtraInfo = IMAGES.find(ts=>ts.src === tilesetImage.src);
+            updateZoom()
             if(tilesetExtraInfo){
                 if(tilesetExtraInfo.link){
                     document.getElementById("tilesetHomeLink").innerHTML = `link: <a href="${tilesetExtraInfo.link}">${tilesetExtraInfo.link}</a> `;
@@ -1016,8 +1044,8 @@
     const loadData = (data) =>{
         try {
             clearUndoStack();
-            WIDTH = canvas.width;
-            HEIGHT = canvas.height;
+            WIDTH = canvas.width * ZOOM;
+            HEIGHT = canvas.height * ZOOM;
             selection = [{}];
             ACTIVE_MAP = data ? Object.keys(data.maps)[0] : "Map_1";
             maps = data ? {...data.maps} : {[ACTIVE_MAP]: getEmptyMap("Map 1")};
@@ -1087,8 +1115,8 @@
         SIZE_OF_CROP = tileSize || 32;
         mapTileWidth = mapWidth || 12;
         mapTileHeight = mapHeight || 12;
-        const canvasWidth = mapTileWidth * tileSize;
-        const canvasHeight = mapTileHeight * tileSize;
+        const canvasWidth = mapTileWidth * tileSize * ZOOM;
+        const canvasHeight = mapTileHeight * tileSize * ZOOM;
 
         // Attach elements
         attachTo.innerHTML = getHtml(canvasWidth, canvasHeight);
@@ -1468,6 +1496,8 @@
         })
         document.getElementById("undoBtn").addEventListener("click", undo);
         document.getElementById("redoBtn").addEventListener("click", redo);
+        document.getElementById("zoomIn").addEventListener("click", zoomIn);
+        document.getElementById("zoomOut").addEventListener("click", zoomOut);
         loadData(tileMapData); // loads even if tileMapData is not present
 
         // Animated tiles when on frames mode
