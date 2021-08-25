@@ -905,6 +905,7 @@
         tilesetContainer.style.height = `${tilesetImage.height * ZOOM}px`;
         document.getElementById("zoomLabel").innerText = `${ZOOM}x`;
         updateTilesetGridContainer();
+        updateSelection();
         updateMapSize({mapWidth: mapTileWidth, mapHeight: mapTileHeight});
     }
     const zoomIn = () => {
@@ -949,16 +950,17 @@
         // Generate tileset data for each of the loaded images
         IMAGES.forEach((tsImage, idx)=>{
             const newOpt = document.createElement("option");
-            newOpt.innerText = `tileset ${idx}`;
+            newOpt.innerText = tsImage.name || `tileset ${idx}`;
             newOpt.value = idx;
             tilesetDataSel.appendChild(newOpt);
             const tilesetImgElement = document.createElement("img");
             tilesetImgElement.src = tsImage.src;
             tilesetImgElement.crossOrigin = "Anonymous";
             // Add tileset data for all tiles
-            tilesetImgElement.addEventListener("load",()=>{
-                const gridWidth = tilesetImgElement.width / SIZE_OF_CROP;
-                const gridHeight = Math.ceil(tilesetImgElement.height / SIZE_OF_CROP);
+            tilesetImgElement.addEventListener("load",()=> {
+                const tileSize = tsImage.tileSize || SIZE_OF_CROP;
+                const gridWidth = tilesetImgElement.width / tileSize;
+                const gridHeight = Math.ceil(tilesetImgElement.height / tileSize);
                 const tileCount = gridWidth * gridHeight;
                 const tilesetTileData = {};
                 Array.from({length: tileCount}, (x, i) => i).map(tile=>{
@@ -970,7 +972,7 @@
                         x, y, tilesetIdx: idx, tileSymbol
                     }
                 })
-                tileSets[idx] = getEmptyTileSet(tsImage.src,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, SIZE_OF_CROP, oldTilesets[idx]?.tags,oldTilesets[idx]?.frames, tsImage.description);
+                tileSets[idx] = getEmptyTileSet(tsImage.src,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, tileSize, oldTilesets[idx]?.tags,oldTilesets[idx]?.frames, tsImage.description);
 
                 symbolStartIdx += tileCount;
                 updateZoom();
@@ -999,32 +1001,38 @@
             document.getElementById("tilesetSrcLabel").innerHTML = `src: <a href="${tilesetImage.src}">${tilesetImage.src}</a>`;
             document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
             const tilesetExtraInfo = IMAGES.find(ts=>ts.src === tilesetImage.src);
-            updateZoom()
-            if(tilesetExtraInfo){
-                if(tilesetExtraInfo.link){
+
+            if(tilesetExtraInfo) {
+                if (tilesetExtraInfo.link) {
                     document.getElementById("tilesetHomeLink").innerHTML = `link: <a href="${tilesetExtraInfo.link}">${tilesetExtraInfo.link}</a> `;
                     document.getElementById("tilesetHomeLink").title = tilesetExtraInfo.link;
                 } else {
                     document.getElementById("tilesetHomeLink").innerHTML = "";
                 }
-                if(tilesetExtraInfo.description){
+                if (tilesetExtraInfo.description) {
                     document.getElementById("tilesetDescriptionLabel").innerText = tilesetExtraInfo.description;
                     document.getElementById("tilesetDescriptionLabel").title = tilesetExtraInfo.description;
                 } else {
                     document.getElementById("tilesetDescriptionLabel").innerText = "";
                 }
+                if (tilesetExtraInfo.tileSize) {
+                    setCropSize(tilesetExtraInfo.tileSize);
+                }
             }
+            updateZoom();
             document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
 
             if (undoStepPosition === -1) addToUndoStack();//initial undo stack entry
         });
     }
 
-    const setCropSize = (newSize) =>{
+    const setCropSize = (newSize) => {
+        if(newSize === SIZE_OF_CROP) return;
         maps[ACTIVE_MAP].tileSize = newSize;
         SIZE_OF_CROP = newSize;
         cropSize.value = SIZE_OF_CROP;
-        updateTilesets();
+        // updateTilesets(); //NO
+        updateZoom()
         updateTilesetGridContainer();
         draw();
     }
@@ -1437,7 +1445,6 @@
 
         cropSize.addEventListener('change', e=>{
             setCropSize(Number(e.target.value));
-            draw();
         })
 
         document.getElementById("clearCanvasBtn").addEventListener('click', clearCanvas);

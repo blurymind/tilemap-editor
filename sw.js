@@ -18,11 +18,11 @@ self.addEventListener('message',  (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  console.log(e.request.url);
     if (e.request.url.match( /^.*(imgur=).*$/) ) {
         return false;
     }
-  e.respondWith(
-    caches.match(e.request).then((response) => response || fetch(e.request)),
-  );
+    console.log(e.request.url);
+    e.respondWith(
+        caches.match(e.request).then((response) => response || fetch(e.request)),
+    );
 });

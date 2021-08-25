@@ -191,6 +191,7 @@
     let tileSetImages = [
       {
         src:"https://i.imgur.com/ztwPZOI.png",
+        name: "demo tileset",
         link: "https://google.com",
         description: `Demo tileset with a very very very very long description that can't barely fit there.
                 Still the author decided he has lots to say about the thing and even include a link`
@@ -294,7 +295,7 @@
       const imgur =  urlParams.get("imgur")
       console.log("PARAMS", window.location.href, urlParams.get("imgur"))
       if(imgur){
-        getImgurGallery(imgur, data =>{
+        getImgurGallery(imgur, data => {
           console.log("ALBUM", data.images)
           // const images = data.images //description and link
           tileSetImages = data.images.map(image=> {
@@ -306,15 +307,19 @@
                 console.info("set tileSize from description", tileSize)
               }
               extractedSourceMatch = image.description.match(/source\:\s*(.*)/);
-              console.log("Source:", extractedSourceMatch)
+            }
+            let extractedTilesetName
+            if(image.description && image.description.includes("name:")){
+              extractedTilesetName = image.description.match(/name\:\s*(.*)/);
             }
             return {
               src: image.link,
+              tileSize,
+              name: extractedTilesetName.length > 1 ? extractedTilesetName[1]: "",
               description: image.description,
               link: extractedSourceMatch && extractedSourceMatch.length > 1 ? `https://${extractedSourceMatch[1]}` : `https://imgur.com/a/${imgur}`
             }
           })
-          // const tileSetImages = data.images.map(image=> )
           initTilemapEditor()
         })
       }
