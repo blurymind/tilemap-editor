@@ -96,6 +96,7 @@
             <label id="redoBtn" title="Redo">🔁️</label>
             <label id="zoomIn" title="Zoom in">🔎️</label>
             <label id="zoomOut" title="Zoom out">🔍</label>
+            <label id="zoomLabel">️</label>
         </div>
             
         <div>
@@ -902,6 +903,7 @@
         tilesetImage.style = `transform: scale(${ZOOM});transform-origin: left top;image-rendering: auto;image-rendering: crisp-edges;image-rendering: pixelated;`;
         tilesetContainer.style.width = `${tilesetImage.width * ZOOM}px`;
         tilesetContainer.style.height = `${tilesetImage.height * ZOOM}px`;
+        document.getElementById("zoomLabel").innerText = `${ZOOM}x`;
         updateTilesetGridContainer();
         updateMapSize({mapWidth: mapTileWidth, mapHeight: mapTileHeight});
     }
@@ -1090,7 +1092,7 @@
         }
         apiTileMapExporters = tileMapExporters;
         apiTileMapExporters.exportAsImage = {
-            name: "Export as image",
+            name: "Export Map as image",
             transformer: exportImage
         }
         apiTileMapExporters.saveData = {
