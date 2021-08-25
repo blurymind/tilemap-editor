@@ -237,7 +237,7 @@
 
     const getSnappedPos = (pos) => Math.round((pos / SIZE_OF_CROP) * ZOOM) * SIZE_OF_CROP * ZOOM;
     let selection = [{}];
-    let currentLayer = 2;
+    let currentLayer = 0;
     let isMouseDown = false;
     let maps = {};
     let tileSets = {};
