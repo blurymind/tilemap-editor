@@ -420,7 +420,7 @@
         const selWidth = endX - x + 1;
         const selHeight = endY - y + 1;
         selectionSize = [selWidth, selHeight]
-
+        console.log(tileSets[tilesetDataSel.value].tileSize)
         const tileSize = tileSets[tilesetDataSel.value].tileSize;
         tilesetSelection.style.left = `${x * tileSize * ZOOM}px`;
         tilesetSelection.style.top = `${y * tileSize * ZOOM}px`;
@@ -1055,6 +1055,8 @@
             document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
             const tilesetExtraInfo = IMAGES.find(ts=>ts.src === tilesetImage.src);
 
+            cropSize.value = tileSets[tilesetDataSel.value].tileSize;
+
             if(tilesetExtraInfo) {
                 if (tilesetExtraInfo.link) {
                     document.getElementById("tilesetHomeLink").innerHTML = `link: <a href="${tilesetExtraInfo.link}">${tilesetExtraInfo.link}</a> `;
@@ -1081,9 +1083,10 @@
 
     const setCropSize = (newSize) => {
         if(newSize === SIZE_OF_CROP) return;
-        maps[ACTIVE_MAP].tileSize = newSize;
+        tileSets[tilesetDataSel.value].tileSize = newSize;
         SIZE_OF_CROP = newSize;
         cropSize.value = SIZE_OF_CROP;
+        console.log("NEW SIZE", newSize,ACTIVE_MAP, maps)
         // updateTilesets(); //NO
         updateZoom()
         updateTilesetGridContainer();
@@ -1115,7 +1118,7 @@
             tileSets = data ? {...data.tileSets} : {};
             updateTilesets();
             tilesetDataSel.value = "0";
-            cropSize.value = data ? maps[ACTIVE_MAP].tileSize : SIZE_OF_CROP;
+            cropSize.value = data ? tileSets[tilesetDataSel.value].tileSize || maps[ACTIVE_MAP].tileSize : SIZE_OF_CROP;
             updateMaps();
             updateMapSize({mapWidth: maps[ACTIVE_MAP].mapWidth, mapHeight: maps[ACTIVE_MAP].mapHeight})
         }
