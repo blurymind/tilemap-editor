@@ -133,6 +133,8 @@
 
         </details>
         <div class="select_container layer sticky_top sticky_left" id="tilesetSelectContainer">
+            <span id="setSymbolsVisBtn">👁️</span>
+
             <select name="tileData" id="tileDataSel">
                 <option value="">Symbols</option>
             </select>
@@ -224,7 +226,8 @@
     let HEIGHT = 0;
     let ACTIVE_TOOL = 0;
     let ACTIVE_MAP = "";
-    const getEmptyMap = (name="map", mapWidth =10, mapHeight=10, tileSize = 32) =>
+    let DISPLAY_SYMBOLS = true;
+    const getEmptyMap = (name="map", mapWidth =20, mapHeight=20, tileSize = 32) =>
         ({layers: [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")], name,
             mapWidth, mapHeight, tileSize, width: mapWidth * SIZE_OF_CROP,height: mapHeight * SIZE_OF_CROP });
 
@@ -394,6 +397,7 @@
 
     const randomLetters = new Array(10680).fill(1).map((_, i) => String.fromCharCode(165 + i));
 
+    const shouldHideSymbols = () => SIZE_OF_CROP < 10 && ZOOM < 2;
     const updateTilesetGridContainer = () =>{
         const viewMode = tileDataSel.value;
         const tilesetData = tileSets[tilesetDataSel.value];
@@ -401,6 +405,7 @@
 
         const {tileCount, gridWidth, tileData, tags} = tilesetData;
         console.log("COUNT", tileCount)
+        const hideSymbols = !DISPLAY_SYMBOLS || shouldHideSymbols();
         const newGrid = Array.from({length: tileCount}, (x, i) => i).map(tile=>{
             const x = tile % gridWidth;
             const y = Math.floor(tile / gridWidth);
@@ -409,7 +414,7 @@
                 tileData[tileKey]?.tileSymbol :
                 viewMode === "frames" ? tile :tags[viewMode]?.tiles[tileKey]?.mark || "-";
 
-            return `<div style="width:${SIZE_OF_CROP * ZOOM}px;height:${SIZE_OF_CROP * ZOOM}px" class="tileset_grid_tile" title="${innerTile}">${SIZE_OF_CROP > 10 ? innerTile : ""}</div>`
+            return `<div style="width:${SIZE_OF_CROP * ZOOM}px;height:${SIZE_OF_CROP * ZOOM}px" class="tileset_grid_tile" title="${innerTile}">${!hideSymbols ? innerTile : ""}</div>`
         }).join("\n")
         tilesetGridContainer.innerHTML = newGrid;
 
@@ -419,7 +424,7 @@
 
             const {width, height, start, tiles,frameCount} = frameData;
             selection = [...tiles];
-            updateSelection();
+            // updateSelection();
             console.log(">>",start.x,start.y, SIZE_OF_CROP * ZOOM * start.y)
             tilesetGridContainer.innerHTML += `<div style="width:${SIZE_OF_CROP * ZOOM * (width * (frameCount - 1))}px;height:${SIZE_OF_CROP * ZOOM * height}px;
             border: 1px solid red; position: absolute; left: ${SIZE_OF_CROP * ZOOM * (start.x + width)}px;top: ${SIZE_OF_CROP * ZOOM * start.y}px;"></div>`
@@ -466,10 +471,11 @@
             Object.keys(layer.tiles).forEach((key) => {
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {x, y, tilesetIdx, isFlippedX} = layer.tiles[key];
+                const tileSize =  tileSets[tilesetIdx].tileSize || SIZE_OF_CROP;
 
                 if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
                     ctx.fillStyle = 'red';
-                    ctx.fillRect(positionX * SIZE_OF_CROP * ZOOM, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM);
+                    ctx.fillRect(positionX * tileSize * ZOOM, positionY * tileSize * ZOOM, tileSize * ZOOM, tileSize * ZOOM);
                     return;
                 }
                 if(isFlippedX){
@@ -478,10 +484,10 @@
                     ctx.scale(-1, 1);
                     ctx.drawImage(
                         TILESET_ELEMENTS[tilesetIdx],
-                        x * SIZE_OF_CROP,
-                        y * SIZE_OF_CROP,
-                        SIZE_OF_CROP,
-                        SIZE_OF_CROP,
+                        x * tileSize,
+                        y * tileSize,
+                        tileSize,
+                        tileSize,
                         ctx.canvas.width - (positionX * SIZE_OF_CROP * ZOOM) - SIZE_OF_CROP * ZOOM,
                         positionY * SIZE_OF_CROP * ZOOM,
                         SIZE_OF_CROP * ZOOM,
@@ -491,10 +497,10 @@
                 } else {
                     ctx.drawImage(
                         TILESET_ELEMENTS[tilesetIdx],
-                        x * SIZE_OF_CROP,
-                        y * SIZE_OF_CROP,
-                        SIZE_OF_CROP,
-                        SIZE_OF_CROP,
+                        x * tileSize,
+                        y * tileSize,
+                        tileSize,
+                        tileSize,
                         positionX * SIZE_OF_CROP * ZOOM,
                         positionY * SIZE_OF_CROP * ZOOM,
                         SIZE_OF_CROP * ZOOM,
@@ -507,11 +513,13 @@
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {start, width, height, frameCount, isFlippedX} = layer.animatedTiles[key];
                 const {x, y, tilesetIdx} = start;
+                const tileSize =  tileSets[tilesetIdx].tileSize || SIZE_OF_CROP;
+
                 if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
                     ctx.fillStyle = 'yellow';
-                    ctx.fillRect(positionX * SIZE_OF_CROP * ZOOM, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP  * ZOOM * width, SIZE_OF_CROP  * ZOOM * height);
+                    ctx.fillRect(positionX * tileSize * ZOOM, positionY * tileSize * ZOOM, tileSize  * ZOOM * width, tileSize  * ZOOM * height);
                     ctx.fillStyle = 'blue';
-                    ctx.fillText("X",positionX * SIZE_OF_CROP * ZOOM + 5,positionY * SIZE_OF_CROP  * ZOOM + 10);
+                    ctx.fillText("X",positionX * tileSize * ZOOM + 5,positionY * tileSize  * ZOOM + 10);
                     return;
                 }
                 const frameIndex = tileDataSel.value === "frames" || frameCount === 1 ? Math.round(Date.now()/120) % frameCount : 1; //30fps
@@ -521,48 +529,48 @@
                     ctx.translate(ctx.canvas.width, 0);
                     ctx.scale(-1, 1);
 
-                    const positionXFlipped = ctx.canvas.width - (positionX * SIZE_OF_CROP * ZOOM) - SIZE_OF_CROP * ZOOM;
+                    const positionXFlipped = ctx.canvas.width - (positionX * tileSize * ZOOM) - tileSize * ZOOM;
                     ctx.beginPath();
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
-                    ctx.rect(positionXFlipped, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM * width, SIZE_OF_CROP * ZOOM * height);
+                    ctx.rect(positionXFlipped, positionY * tileSize * ZOOM, tileSize * ZOOM * width, tileSize * ZOOM * height);
                     ctx.stroke();
 
                     ctx.drawImage(
                         TILESET_ELEMENTS[tilesetIdx],
-                        x * SIZE_OF_CROP + (frameIndex * SIZE_OF_CROP * width),
-                        y * SIZE_OF_CROP,
-                        SIZE_OF_CROP * width,// src width
-                        SIZE_OF_CROP * height, // src height
+                        x * tileSize + (frameIndex * tileSize * width),
+                        y * tileSize,
+                        tileSize * width,// src width
+                        tileSize * height, // src height
                         positionXFlipped,
-                        positionY * SIZE_OF_CROP * ZOOM, //target y
-                        SIZE_OF_CROP * ZOOM * width, // target width
-                        SIZE_OF_CROP * ZOOM * height // target height
+                        positionY * tileSize * ZOOM, //target y
+                        tileSize * ZOOM * width, // target width
+                        tileSize * ZOOM * height // target height
                     );
                     ctx.fillStyle = 'white';
-                    ctx.fillText("🔛",positionXFlipped + 5,positionY * SIZE_OF_CROP * ZOOM + 10);
+                    ctx.fillText("🔛",positionXFlipped + 5,positionY * tileSize * ZOOM + 10);
 
                     ctx.restore();
                 }else {
                     ctx.beginPath();
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
-                    ctx.rect(positionX * SIZE_OF_CROP * ZOOM, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM * width, SIZE_OF_CROP * ZOOM * height);
+                    ctx.rect(positionX * tileSize * ZOOM, positionY * tileSize * ZOOM, tileSize * ZOOM * width, tileSize * ZOOM * height);
                     ctx.stroke();
 
                     ctx.drawImage(
                         TILESET_ELEMENTS[tilesetIdx],
-                        x * SIZE_OF_CROP + (frameIndex * SIZE_OF_CROP * width),//src x
-                        y * SIZE_OF_CROP,//src y
-                        SIZE_OF_CROP * width,// src width
-                        SIZE_OF_CROP * height, // src height
-                        positionX * SIZE_OF_CROP * ZOOM, //target x
-                        positionY * SIZE_OF_CROP * ZOOM, //target y
-                        SIZE_OF_CROP * ZOOM * width, // target width
-                        SIZE_OF_CROP * ZOOM * height // target height
+                        x * tileSize + (frameIndex * tileSize * width),//src x
+                        y * tileSize,//src y
+                        tileSize * width,// src width
+                        tileSize * height, // src height
+                        positionX * tileSize * ZOOM, //target x
+                        positionY * tileSize * ZOOM, //target y
+                        tileSize * ZOOM * width, // target width
+                        tileSize * ZOOM * height // target height
                     );
                     ctx.fillStyle = 'white';
-                    ctx.fillText("⭕",positionX * SIZE_OF_CROP * ZOOM + 5,positionY * SIZE_OF_CROP * ZOOM + 10);
+                    ctx.fillText("⭕",positionX * tileSize * ZOOM + 5,positionY * tileSize * ZOOM + 10);
                 }
             });
         });
@@ -919,6 +927,11 @@
         updateZoom();
     }
 
+    const toggleSymbolsVisible = (override=null) => {
+        if(override === null) DISPLAY_SYMBOLS = !DISPLAY_SYMBOLS;
+        document.getElementById("setSymbolsVisBtn").innerHTML = DISPLAY_SYMBOLS ? "👁️": "👓";
+        updateTilesetGridContainer();
+    }
 
     const updateTilesetDataList = (populateFrames = false) => {
         const populateWithOptions = (selectEl, options, newContent)=>{
@@ -1122,12 +1135,13 @@
         }
 
         IMAGES = tileSetImages;
-        SIZE_OF_CROP = tileSize || 32;
+        SIZE_OF_CROP = tileSetImages?.[0]?.tileSize || tileSize || 32;//to the best of your ability, predict the init tileSize
         mapTileWidth = mapWidth || 12;
         mapTileHeight = mapHeight || 12;
         const canvasWidth = mapTileWidth * tileSize * ZOOM;
         const canvasHeight = mapTileHeight * tileSize * ZOOM;
 
+        if (SIZE_OF_CROP < 12) ZOOM = 2;// Automatically start with zoom 2 when the tilesize is tiny
         // Attach elements
         attachTo.innerHTML = getHtml(canvasWidth, canvasHeight);
         attachTo.className = "tilemap_editor_root";
@@ -1507,6 +1521,7 @@
         document.getElementById("redoBtn").addEventListener("click", redo);
         document.getElementById("zoomIn").addEventListener("click", zoomIn);
         document.getElementById("zoomOut").addEventListener("click", zoomOut);
+        document.getElementById("setSymbolsVisBtn").addEventListener("click", ()=>toggleSymbolsVisible())
         loadData(tileMapData); // loads even if tileMapData is not present
 
         // Animated tiles when on frames mode
