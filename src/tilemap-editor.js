@@ -1087,7 +1087,7 @@
         SIZE_OF_CROP = newSize;
         cropSize.value = SIZE_OF_CROP;
         console.log("NEW SIZE", newSize,ACTIVE_MAP, maps)
-        // updateTilesets(); //NO
+        updateTilesets(); //fixes mysterious bug with init of tileset from imgur, TODO remove it
         updateZoom()
         updateTilesetGridContainer();
         draw();
