@@ -10,6 +10,40 @@
         factory((root.TilemapEditor = {}));
     }
 })(typeof self !== 'undefined' ? self : this, function (exports) {
+    // Call once on element to add behavior, toggle on/off isDraggable attr to enable
+    function draggable({element, isDrag = false, onDrag = null, limitX = false, limitY = false}) {
+        element.setAttribute("isDraggable", isDrag);
+        let isMouseDown = false;
+        let mouseX;
+        let mouseY;
+        let elementX = 0;
+        let elementY = 0;
+        const onMouseMove = (event) => {
+            if (!isMouseDown || element.getAttribute("isDraggable") === "false") return;
+            const deltaX = event.clientX - mouseX;
+            const deltaY = event.clientY - mouseY;
+            element.style.position = "relative"
+            if(!limitX) element.style.left = elementX + deltaX + 'px';
+            if(!limitY) element.style.top = elementY + deltaY + 'px';
+            // console.log("DRAGGING", {deltaX, deltaY, x: elementX + deltaX, y:elementY + deltaY})
+            if(onDrag) onDrag({deltaX, deltaY, x: elementX + deltaX, y:elementY + deltaY});
+        }
+        const onMouseDown = (event) => {
+            if(element.getAttribute("isDraggable") === "false") return;
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+            isMouseDown = true;
+        }
+        const onMouseUp = () => {
+            if(!element.getAttribute("isDraggable") === "false") return;
+            isMouseDown = false;
+            elementX = parseInt(element.style.left) || 0;
+            elementY = parseInt(element.style.top) || 0;
+        }
+        element.addEventListener('pointerdown', onMouseDown);
+        element.addEventListener('pointerup', onMouseUp);
+        document.addEventListener('pointermove', onMouseMove);
+    }
      const drawGrid = (w, h, step = 16) => {
         const ctx = getContext();
         ctx.canvas.width = w;
@@ -169,7 +203,7 @@
         <div class="tileset-container-selection"></div>
       </div>
         </div>
-        <div class="card_right-column" style="position:relative">
+        <div class="card_right-column" style="position:relative" id="canvas_drag_area">
         <div class="canvas_wrapper" id="canvas_wrapper">
           <canvas id="mapCanvas" width="${width}" height="${height}"></canvas>
           <div class="canvas_resizer" resizerdir="y"><input value="1" type="number" min="1" resizerdir="y"><span>-y-</span></div>
@@ -369,6 +403,7 @@
         ACTIVE_TOOL = toolIdx;
         const actTool = document.getElementById("toolButtonsWrapper").querySelector(`input[id="tool${toolIdx}"]`);
         if (actTool) actTool.checked = true;
+        document.getElementById("canvas_wrapper").setAttribute("isDraggable", ACTIVE_TOOL === 2 ? true:false);
     }
 
     let selectionSize = [1,1];
@@ -1408,16 +1443,9 @@
         canvas.addEventListener('pointerleave', setMouseIsFalse);
         canvas.addEventListener('pointerdown', toggleTile);
         canvas.addEventListener("contextmenu", e => e.preventDefault());
+        draggable({ element: document.getElementById("canvas_wrapper")});
         canvas.addEventListener('pointermove', (e) => {
-            if (isMouseDown) {
-                if (ACTIVE_TOOL === 2){
-                    const rect = e.target.getBoundingClientRect();
-                    document.getElementById("canvas_wrapper").style = `transform: translate(${e.clientX-rect.width/2}px,${e.clientY - rect.height}px)`
-                } else {
-                    toggleTile(e);
-                }
-
-            }
+            if (isMouseDown && ACTIVE_TOOL !== 2) toggleTile(e)
         });
         // Canvas Resizer ===================
         document.getElementById("canvasWidthInp").addEventListener("change", e=>{
@@ -1426,34 +1454,21 @@
         document.getElementById("canvasHeightInp").addEventListener("change", e=>{
             updateMapSize({mapHeight: Number(e.target.value)})
         })
-        // document.querySelector(".canvas_resizer[resizerdir='y'] span").addEventListener("pointerdown", e=>{
-        //     resizingCanvas = e.target.parentNode;
-        // })
-        // document.querySelector(".canvas_resizer[resizerdir='x'] span").addEventListener("pointerdown", e=>{
-        //     resizingCanvas = e.target.parentNode;
-        // })
+        // draggable({
+        //     element: document.querySelector(".canvas_resizer[resizerdir='y']"),
+        //     isDrag: true, limitX: true,
+        //     onDrag: ({y}) => {
+        //         const snappedY = getSnappedPos(y);
+        //         console.log("SNAPPED GRID", y, snappedY)
+        //     },
+        // });
+
         document.querySelector(".canvas_resizer[resizerdir='y'] input").addEventListener("change", e=>{
             updateMapSize({mapHeight: Number(e.target.value)})
         })
         document.querySelector(".canvas_resizer[resizerdir='x'] input").addEventListener("change", e=>{
             updateMapSize({mapWidth: Number(e.target.value) })
         })
-        document.addEventListener("pointermove", e=>{
-            if(resizingCanvas){
-                const isVertical = resizingCanvas.getAttribute("resizerdir") === "y";
-                const snappedPos = getSnappedPos(isVertical? (e.y - 40): (e.x - tilesetImage.width));
-                if(isVertical){
-                    updateMapSize({mapHeight: snappedPos / SIZE_OF_CROP})
-                } else {
-                    updateMapSize({mapWidth: snappedPos / SIZE_OF_CROP})
-                }
-                draw();
-            }
-        })
-        document.addEventListener("pointerup", ()=>{
-            resizingCanvas = false;
-        })
-
         document.getElementById("toolButtonsWrapper").addEventListener("click",e=>{
             if(e.target.getAttribute("name") === "tool") setActiveTool(Number(e.target.value));
         })

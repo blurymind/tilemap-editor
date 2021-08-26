@@ -156,7 +156,7 @@
 }
 .canvas_resizer{
   user-select: none;
-  cursor: row-resize;
+  /*cursor: row-resize;*/
   touch-action: none;
   background: #ffffff42;
   color: white;
@@ -177,7 +177,7 @@
 .canvas_resizer.vertical{
   position: absolute;
   transform-origin: left;
-  cursor: col-resize;
+  /*cursor: col-resize;*/
   bottom: 0;
 }
 .canvas_wrapper{
