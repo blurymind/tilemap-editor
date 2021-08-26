@@ -922,7 +922,7 @@
         updateZoom();
     }
     const zoomOut = () => {
-        if (ZOOM < 1) return;
+        if (ZOOM < 2) return;
         ZOOM -= 1;
         updateZoom();
     }
