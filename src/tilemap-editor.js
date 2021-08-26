@@ -11,7 +11,8 @@
     }
 })(typeof self !== 'undefined' ? self : this, function (exports) {
     // Call once on element to add behavior, toggle on/off isDraggable attr to enable
-    function draggable({element, isDrag = false, onDrag = null, limitX = false, limitY = false}) {
+    const draggable = ({element, onElement = null, isDrag = false, onDrag = null,
+                           limitX = false, limitY = false, onRelease = null}) => {
         element.setAttribute("isDraggable", isDrag);
         let isMouseDown = false;
         let mouseX;
@@ -22,16 +23,18 @@
             if (!isMouseDown || element.getAttribute("isDraggable") === "false") return;
             const deltaX = event.clientX - mouseX;
             const deltaY = event.clientY - mouseY;
-            element.style.position = "relative"
+            // element.style.position = "relative"
             if(!limitX) element.style.left = elementX + deltaX + 'px';
             if(!limitY) element.style.top = elementY + deltaY + 'px';
-            // console.log("DRAGGING", {deltaX, deltaY, x: elementX + deltaX, y:elementY + deltaY})
-            if(onDrag) onDrag({deltaX, deltaY, x: elementX + deltaX, y:elementY + deltaY});
+            console.log("DRAGGING", {deltaX, deltaY, x: elementX + deltaX, y:elementY + deltaY})
+            if(onDrag) onDrag({deltaX, deltaY, x: elementX + deltaX, y:elementY + deltaY, mouseX, mouseY});
         }
         const onMouseDown = (event) => {
             if(element.getAttribute("isDraggable") === "false") return;
+
             mouseX = event.clientX;
             mouseY = event.clientY;
+            console.log("MOUSEX", mouseX)
             isMouseDown = true;
         }
         const onMouseUp = () => {
@@ -39,9 +42,10 @@
             isMouseDown = false;
             elementX = parseInt(element.style.left) || 0;
             elementY = parseInt(element.style.top) || 0;
+            if(onRelease) onRelease({x:elementX,y:elementY})
         }
-        element.addEventListener('pointerdown', onMouseDown);
-        element.addEventListener('pointerup', onMouseUp);
+        (onElement || element).addEventListener('pointerdown', onMouseDown);
+        document.addEventListener('pointerup', onMouseUp);
         document.addEventListener('pointermove', onMouseMove);
     }
      const drawGrid = (w, h, step = 16) => {
@@ -272,7 +276,7 @@
         return { src, name, gridWidth, gridHeight, tileCount: gridWidth * gridHeight, tileData, symbolStartIdx,tileSize, tags, frames, description}
     }
 
-    const getSnappedPos = (pos) => Math.round((pos / SIZE_OF_CROP) * ZOOM) * SIZE_OF_CROP * ZOOM;
+    const getSnappedPos = (pos) => (Math.round(pos / (SIZE_OF_CROP)) * (SIZE_OF_CROP));
     let selection = [{}];
     let currentLayer = 0;
     let isMouseDown = false;
@@ -1443,7 +1447,7 @@
         canvas.addEventListener('pointerleave', setMouseIsFalse);
         canvas.addEventListener('pointerdown', toggleTile);
         canvas.addEventListener("contextmenu", e => e.preventDefault());
-        draggable({ element: document.getElementById("canvas_wrapper")});
+        draggable({ onElement: canvas, element: document.getElementById("canvas_wrapper")});
         canvas.addEventListener('pointermove', (e) => {
             if (isMouseDown && ACTIVE_TOOL !== 2) toggleTile(e)
         });
@@ -1455,11 +1459,13 @@
             updateMapSize({mapHeight: Number(e.target.value)})
         })
         // draggable({
-        //     element: document.querySelector(".canvas_resizer[resizerdir='y']"),
-        //     isDrag: true, limitX: true,
-        //     onDrag: ({y}) => {
-        //         const snappedY = getSnappedPos(y);
-        //         console.log("SNAPPED GRID", y, snappedY)
+        //     element: document.querySelector(".canvas_resizer[resizerdir='x']"),
+        //     onElement: document.querySelector(".canvas_resizer[resizerdir='x'] span"),
+        //     isDrag: true, limitY: true,
+        //     onRelease: ({x}) => {
+        //         const snappedX = getSnappedPos(x);
+        //         console.log("SNAPPED GRID", x,snappedX)
+        //         updateMapSize({mapWidth: snappedX })
         //     },
         // });
 
