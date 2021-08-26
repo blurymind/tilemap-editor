@@ -1425,12 +1425,12 @@
         document.getElementById("canvasHeightInp").addEventListener("change", e=>{
             updateMapSize({mapHeight: Number(e.target.value)})
         })
-        document.querySelector(".canvas_resizer[resizerdir='y'] span").addEventListener("pointerdown", e=>{
-            resizingCanvas = e.target.parentNode;
-        })
-        document.querySelector(".canvas_resizer[resizerdir='x'] span").addEventListener("pointerdown", e=>{
-            resizingCanvas = e.target.parentNode;
-        })
+        // document.querySelector(".canvas_resizer[resizerdir='y'] span").addEventListener("pointerdown", e=>{
+        //     resizingCanvas = e.target.parentNode;
+        // })
+        // document.querySelector(".canvas_resizer[resizerdir='x'] span").addEventListener("pointerdown", e=>{
+        //     resizingCanvas = e.target.parentNode;
+        // })
         document.querySelector(".canvas_resizer[resizerdir='y'] input").addEventListener("change", e=>{
             updateMapSize({mapHeight: Number(e.target.value)})
         })
