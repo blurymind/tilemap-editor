@@ -373,6 +373,7 @@
 
     let selectionSize = [1,1];
     const updateSelection = () => {
+        if(!tileSets[tilesetDataSel.value]) return;
         const selected = selection[0];
         if(!selected) return;
         const {x, y} = selected;
