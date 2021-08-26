@@ -1071,7 +1071,7 @@
             HEIGHT = canvas.height * ZOOM;
             selection = [{}];
             ACTIVE_MAP = data ? Object.keys(data.maps)[0] : "Map_1";
-            maps = data ? {...data.maps} : {[ACTIVE_MAP]: getEmptyMap("Map 1")};
+            maps = data ? {...data.maps} : {[ACTIVE_MAP]: getEmptyMap("Map 1", mapTileWidth, mapTileHeight)};
             tileSets = data ? {...data.tileSets} : {};
             updateTilesets();
             tilesetDataSel.value = "0";

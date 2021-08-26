@@ -201,6 +201,8 @@
       }
     ];
     let tileSize = 32;
+    let mapWidth = 10;
+    let mapHeight = 10;
     const initTilemapEditor = () => {
       console.log("INIT with", {tileSetImages, tileSize})
       // TODO move this under after parsing url params and get everything from there
@@ -213,9 +215,9 @@
         // tileSize is used to slice the tileset and give the tilemap the right sized grid
         tileSize,
         // How many tiles is the initial map wide
-        mapWidth: 20,
+        mapWidth,
         // How many tiles is the initial map tall
-        mapHeight: 20,
+        mapHeight,
         // tileset images [{src (required), description (optional)}]
         tileSetImages,
         // You can write your own custom load image function here and use it for the tileset src. If you dont, the base64 string will be used instead
@@ -305,6 +307,10 @@
               if(extractedTileSizeMatch && extractedTileSizeMatch.length > 1){
                 tileSize = parseInt(extractedTileSizeMatch[1],10)
                 console.info("set tileSize from description", tileSize)
+                if(tileSize === 8){
+                  mapWidth = 20; // Detect map size for a gameboy room
+                  mapHeight = 18;
+                }
               }
               extractedSourceMatch = image.description.match(/source\:\s*(.*)/);
             }
