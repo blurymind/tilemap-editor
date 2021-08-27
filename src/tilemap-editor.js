@@ -511,7 +511,7 @@
             Object.keys(layer.tiles).forEach((key) => {
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {x, y, tilesetIdx, isFlippedX} = layer.tiles[key];
-                const tileSize =  tileSets[tilesetIdx].tileSize || SIZE_OF_CROP;
+                const tileSize = tileSets[tilesetIdx]?.tileSize || SIZE_OF_CROP;
 
                 if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
                     ctx.fillStyle = 'red';
@@ -553,7 +553,7 @@
                 const [positionX, positionY] = key.split('-').map(Number);
                 const {start, width, height, frameCount, isFlippedX} = layer.animatedTiles[key];
                 const {x, y, tilesetIdx} = start;
-                const tileSize =  tileSets[tilesetIdx].tileSize || SIZE_OF_CROP;
+                const tileSize = tileSets[tilesetIdx]?.tileSize || SIZE_OF_CROP;
 
                 if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
                     ctx.fillStyle = 'yellow';
@@ -1213,7 +1213,7 @@
             tileSets = data ? {...data.tileSets} : {};
             updateTilesets();
             tilesetDataSel.value = "0";
-            cropSize.value = data ? tileSets[tilesetDataSel.value].tileSize || maps[ACTIVE_MAP].tileSize : SIZE_OF_CROP;
+            cropSize.value = data ? tileSets[tilesetDataSel.value]?.tileSize || maps[ACTIVE_MAP].tileSize : SIZE_OF_CROP;
             updateMaps();
             updateMapSize({mapWidth: maps[ACTIVE_MAP].mapWidth, mapHeight: maps[ACTIVE_MAP].mapHeight})
         }
