@@ -872,7 +872,6 @@
     }
     const exportUniqueTiles = () => {
         const ctx = getContext();
-
         const prevZoom = ZOOM;
         ZOOM = 1;// needed for correct eval
         updateZoom();
@@ -1184,7 +1183,6 @@
         SIZE_OF_CROP = newSize;
         cropSize.value = SIZE_OF_CROP;
         console.log("NEW SIZE", newSize,ACTIVE_MAP, maps)
-        updateTilesets(); //fixes mysterious bug with init of tileset from imgur, TODO remove it
         updateZoom()
         updateTilesetGridContainer();
         draw();
