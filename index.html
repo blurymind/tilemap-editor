@@ -242,35 +242,35 @@
         },
         // You can write your own tilemap exporters here. Whatever they return will get added to the export data you get out when you trigger onAppy
         tileMapExporters: {
-          kaboomJs: { // the exporter's key is later used by the onApply option
-            name: "Download KaboomJs boilerplate code", // name of menu entry
-            description: "Exports boilerplate js code for KaboomJs",
-            transformer: ({flattenedData, maps, tileSets, activeMap, downloadAsTextFile})=> {
-              const text = kaboomJsExport({flattenedData, maps, tileSets, activeMap});
-              downloadAsTextFile(text, "KaboomJsMapData.js");// you can use this util method to get your text as a file
-            }
-          },
+          // kaboomJs: { // the exporter's key is later used by the onApply option
+          //   name: "Download KaboomJs boilerplate code", // name of menu entry
+          //   description: "Exports boilerplate js code for KaboomJs",
+          //   transformer: ({flattenedData, maps, tileSets, activeMap, downloadAsTextFile})=> {
+          //     const text = kaboomJsExport({flattenedData, maps, tileSets, activeMap});
+          //     downloadAsTextFile(text, "KaboomJsMapData.js");// you can use this util method to get your text as a file
+          //   }
+          // },
         },
         tileMapImporters: {
           //similar to the exporters, you can write your own data importer, which will then be added to the file menu
-          tiledImport: {
-            name: "Import Tiled json file (TODO)", // name of menu entry
-            onSelectFiles: (setData, files) => { // callback that is triggered when file(s) are selected.
-              const readFile = new FileReader();
-              readFile.onload = (e) => {
-                const json = JSON.parse(e.target.result);
-                // At this point we got the json data from the tiled file. We need to convert it into
-                // a data struct that tiled-editor can read (an object with maps and tileSets):
-                // { maps : {...}, tileSets: {...}}
-                alert("Not implemented yet... pr welcome ;)");
-                return;// TODO tiled json file parser
-
-                setData(json); // Finally pass that to the setData function, which will load it into tiled-editor
-              };
-              readFile.readAsText(files[0]);
-            },
-            acceptFile: "application/JSON" // You can control what files are accepted
-          }
+          // tiledImport: {
+          //   name: "Import Tiled json file (TODO)", // name of menu entry
+          //   onSelectFiles: (setData, files) => { // callback that is triggered when file(s) are selected.
+          //     const readFile = new FileReader();
+          //     readFile.onload = (e) => {
+          //       const json = JSON.parse(e.target.result);
+          //       // At this point we got the json data from the tiled file. We need to convert it into
+          //       // a data struct that tiled-editor can read (an object with maps and tileSets):
+          //       // { maps : {...}, tileSets: {...}}
+          //       alert("Not implemented yet... pr welcome ;)");
+          //       return;// TODO tiled json file parser
+          //
+          //       setData(json); // Finally pass that to the setData function, which will load it into tiled-editor
+          //     };
+          //     readFile.readAsText(files[0]);
+          //   },
+          //   acceptFile: "application/JSON" // You can control what files are accepted
+          // }
         },
         // If passed, a new button gets added to the header, upon being clicked, you can get data from the tilemap editor and trigger events
         onApply: {
