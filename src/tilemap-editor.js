@@ -48,22 +48,20 @@
         document.addEventListener('pointerup', onMouseUp);
         document.addEventListener('pointermove', onMouseMove);
     }
-     const drawGrid = (w, h, step = 16) => {
+     const drawGrid = (w, h, step = 16, color='rgba(0,255,217,0.5)') => {
         const ctx = getContext();
-        ctx.canvas.width = w;
-        ctx.canvas.height = h;
-        ctx.strokeStyle = 'rgba(255, 165, 0, 0.5)';
-        ctx.lineWidth = 1;
-        for (x = step; x <= w; x += step) {
-            ctx.moveTo(x, 0.5);
-            ctx.lineTo(x, h + 0.5);
-            for (y = step; y <= h; y += step) {
-                ctx.moveTo(0, y + 0.5);
-                ctx.lineTo(w, y + 0.5);
-
-            }
-        }
-        ctx.stroke();
+         ctx.strokeStyle = color;
+         ctx.lineWidth = 0.5;
+         ctx.beginPath();
+         for (let x = 0; x < w; x += step) {
+             ctx.moveTo(x,  0.5);
+             ctx.lineTo(x, h + 0.5);
+         }
+         for (let y = 0; y < h; y += step) {
+             ctx.moveTo(0, y + 0.5);
+             ctx.lineTo(w, y + 0.5);
+         }
+         ctx.stroke();
     }
     const toBase64 = file => new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -496,6 +494,8 @@
     const draw = (shouldDrawGrid = true) =>{
         const ctx = getContext();
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        ctx.canvas.width = WIDTH;
+        ctx.canvas.height = HEIGHT;
         if(shouldDrawGrid)drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP * ZOOM);
 
         maps[ACTIVE_MAP].layers.forEach((layer) => {
@@ -614,7 +614,6 @@
                 }
             });
         });
-
     }
 
     const setMouseIsTrue=(e)=> {
@@ -816,6 +815,62 @@
         draw();
     }
 
+    const getTilesAnalisis = (ctx, width, height, sizeOfTile) =>{
+        const analizedTiles = {};
+        let uuid = 0;
+        for (let y = 0; y < height; y += sizeOfTile) {
+            for (let x = 0; x < width; x += sizeOfTile) {
+                console.log(x, y);
+                const tileData = ctx.getImageData(x, y, sizeOfTile, sizeOfTile);
+                const index = tileData.data.toString();
+                if (analizedTiles[index]) {
+                    analizedTiles[index].coords.push({ x: x, y: y });
+                    analizedTiles[index].times++;
+                } else {
+                    analizedTiles[index] = {
+                        uuid: uuid++,
+                        coords: [{ x: x, y: y }],
+                        times: 1,
+                        tileData: tileData
+                    };
+                }
+            }
+        }
+        const uniqueTiles = Object.values(analizedTiles).length - 1;
+        console.log("TILES:", {analizedTiles, uniqueTiles})
+        return {analizedTiles, uniqueTiles};
+    }
+    const drawAnaliticsReport = () => {
+        const prevZoom = ZOOM;
+        ZOOM = 1;// needed for correct eval
+        updateZoom();
+        draw(false);
+        const {analizedTiles, uniqueTiles} = getTilesAnalisis(getContext(), WIDTH, HEIGHT, SIZE_OF_CROP);
+        const data = canvas.toDataURL();
+        const image = new Image();
+        image.src = data;
+        const ctx = getContext();
+        ZOOM = prevZoom;
+        updateZoom();
+        draw(false);
+        Object.values(analizedTiles).map((t) => {
+            // Fill the heatmap
+            t.coords.forEach((c, i) => {
+                const fillStyle = `rgba(255, 0, 0, ${(1/t.times) - 0.35})`;
+                ctx.fillStyle = fillStyle;
+                ctx.fillRect(c.x  * ZOOM, c.y  * ZOOM, SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM);
+            });
+        })
+        drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP * ZOOM,'rgba(255,213,0,0.5)')
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 17px arial';
+        ctx.shadowColor="black";
+        ctx.shadowBlur=5;
+        ctx.lineWidth=3;
+        ctx.fillText(`Unique tiles: ${uniqueTiles}`,4,HEIGHT - 30);
+        ctx.fillText(`Map size: ${mapTileWidth}x${mapTileHeight}`,4,HEIGHT - 10);
+    }
+
     exports.getLayers = ()=> {
         return maps[ACTIVE_MAP].layers;
     }
@@ -955,6 +1010,8 @@
         updateTilesetGridContainer();
         updateSelection();
         updateMapSize({mapWidth: mapTileWidth, mapHeight: mapTileHeight});
+        WIDTH = mapTileWidth * SIZE_OF_CROP * ZOOM;// needed when setting zoom?
+        HEIGHT = mapTileHeight * SIZE_OF_CROP * ZOOM;
     }
     const zoomIn = () => {
         if (ZOOM > 4) return;
@@ -1162,6 +1219,10 @@
         apiTileMapExporters.saveData = {
             name: "Download Json file",
             transformer: exportJson
+        }
+        apiTileMapExporters.analizeTilemap = {
+            name: "Analize tilemap",
+            transformer: drawAnaliticsReport
         }
         apiTileMapImporters = tileMapImporters;
         apiTileMapImporters.openData = {
