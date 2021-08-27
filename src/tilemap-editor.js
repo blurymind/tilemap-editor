@@ -870,6 +870,46 @@
         ctx.fillText(`Unique tiles: ${uniqueTiles}`,4,HEIGHT - 30);
         ctx.fillText(`Map size: ${mapTileWidth}x${mapTileHeight}`,4,HEIGHT - 10);
     }
+    const exportUniqueTiles = () => {
+        const ctx = getContext();
+
+        const prevZoom = ZOOM;
+        ZOOM = 1;// needed for correct eval
+        updateZoom();
+        draw(false);
+        const {analizedTiles} = getTilesAnalisis(getContext(), WIDTH, HEIGHT, SIZE_OF_CROP);
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        const gridWidth = tilesetImage.width / SIZE_OF_CROP;
+        Object.values(analizedTiles).map((t, i) => {
+            const positionX = i % gridWidth;
+            const positionY = Math.floor(i / gridWidth);
+            const tileCanvas = document.createElement("canvas");
+            tileCanvas.width = SIZE_OF_CROP;
+            tileCanvas.height = SIZE_OF_CROP;
+            const tileCtx = tileCanvas.getContext("2d");
+            tileCtx.putImageData(t.tileData, 0, 0);
+            ctx.drawImage(
+                tileCanvas,
+                0,
+                0,
+                SIZE_OF_CROP,
+                SIZE_OF_CROP,
+                positionX * SIZE_OF_CROP,
+                positionY * SIZE_OF_CROP,
+                SIZE_OF_CROP,
+                SIZE_OF_CROP
+            );
+        });
+        const data = canvas.toDataURL();
+        const image = new Image();
+        image.src = data;
+        image.crossOrigin = "anonymous";
+        const w = window.open('');
+        w.document.write(image.outerHTML);
+        ZOOM = prevZoom;
+        updateZoom();
+        draw();
+    }
 
     exports.getLayers = ()=> {
         return maps[ACTIVE_MAP].layers;
@@ -1223,6 +1263,10 @@
         apiTileMapExporters.analizeTilemap = {
             name: "Analize tilemap",
             transformer: drawAnaliticsReport
+        }
+        apiTileMapExporters.exportTilesFromMap = {
+            name: "Extract tileset from map",
+            transformer: exportUniqueTiles
         }
         apiTileMapImporters = tileMapImporters;
         apiTileMapImporters.openData = {
