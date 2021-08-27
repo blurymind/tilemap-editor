@@ -1083,7 +1083,7 @@
             if (value in options || (["","frames"].includes(value) && !populateFrames)) selectEl.value = value;
         }
 
-        if (!populateFrames) populateWithOptions(tileDataSel, tileSets[tilesetDataSel.value]?.tags, '<option value="">Symbols</option><option value="frames">Frames</option>');
+        if (!populateFrames) populateWithOptions(tileDataSel, tileSets[tilesetDataSel.value]?.tags, `<option value="">Symbols (${tileSets[tilesetDataSel.value]?.tileCount || "?"})</option><option value="frames">Frames</option>`);
         else populateWithOptions(tileFrameSel, tileSets[tilesetDataSel.value]?.frames, '');
 
         document.getElementById("tileFrameCount").value = getCurrentFrames()?.frameCount || 1;
