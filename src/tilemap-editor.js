@@ -516,7 +516,7 @@
 
                 if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
                     ctx.fillStyle = 'red';
-                    ctx.fillRect(positionX * tileSize * ZOOM, positionY * tileSize * ZOOM, tileSize * ZOOM, tileSize * ZOOM);
+                    ctx.fillRect(positionX * SIZE_OF_CROP * ZOOM, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM);
                     return;
                 }
                 if(isFlippedX){
@@ -558,9 +558,9 @@
 
                 if(!(tilesetIdx in TILESET_ELEMENTS)) { //texture not found
                     ctx.fillStyle = 'yellow';
-                    ctx.fillRect(positionX * tileSize * ZOOM, positionY * tileSize * ZOOM, tileSize  * ZOOM * width, tileSize  * ZOOM * height);
+                    ctx.fillRect(positionX * SIZE_OF_CROP * ZOOM, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP  * ZOOM * width, SIZE_OF_CROP  * ZOOM * height);
                     ctx.fillStyle = 'blue';
-                    ctx.fillText("X",positionX * tileSize * ZOOM + 5,positionY * tileSize  * ZOOM + 10);
+                    ctx.fillText("X",positionX * SIZE_OF_CROP * ZOOM + 5,positionY * SIZE_OF_CROP  * ZOOM + 10);
                     return;
                 }
                 const frameIndex = tileDataSel.value === "frames" || frameCount === 1 ? Math.round(Date.now()/120) % frameCount : 1; //30fps
