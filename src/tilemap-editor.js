@@ -1431,6 +1431,7 @@
             tsLoaderOption.innerText = loader.name;
             tileSetLoadersSel.appendChild(tsLoaderOption);
         });
+        tileSetLoadersSel.value = "base64";
         selectedTileSetLoader = apiTileSetLoaders[tileSetLoadersSel.value];
         tileSetLoadersSel.addEventListener("change", e=>{
             selectedTileSetLoader = apiTileSetLoaders[e.target.value];
