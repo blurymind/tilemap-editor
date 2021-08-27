@@ -497,6 +497,7 @@
         ctx.canvas.width = WIDTH;
         ctx.canvas.height = HEIGHT;
         if(shouldDrawGrid)drawGrid(WIDTH, HEIGHT, SIZE_OF_CROP * ZOOM);
+        const shouldHideHud = shouldHideSymbols();
 
         maps[ACTIVE_MAP].layers.forEach((layer) => {
             if(!layer.visible) return;
@@ -569,12 +570,12 @@
                     ctx.translate(ctx.canvas.width, 0);
                     ctx.scale(-1, 1);
 
-                    const positionXFlipped = ctx.canvas.width - (positionX * tileSize * ZOOM) - tileSize * ZOOM;
-                    if(shouldDrawGrid) {
+                    const positionXFlipped = ctx.canvas.width - (positionX * SIZE_OF_CROP * ZOOM) - SIZE_OF_CROP * ZOOM;
+                    if(shouldDrawGrid && !shouldHideHud) {
                         ctx.beginPath();
                         ctx.lineWidth = 1;
                         ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
-                        ctx.rect(positionXFlipped, positionY * tileSize * ZOOM, tileSize * ZOOM * width, tileSize * ZOOM * height);
+                        ctx.rect(positionXFlipped, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM * width, SIZE_OF_CROP * ZOOM * height);
                         ctx.stroke();
                     }
                     ctx.drawImage(
@@ -584,21 +585,21 @@
                         tileSize * width,// src width
                         tileSize * height, // src height
                         positionXFlipped,
-                        positionY * tileSize * ZOOM, //target y
-                        tileSize * ZOOM * width, // target width
-                        tileSize * ZOOM * height // target height
+                        positionY * SIZE_OF_CROP * ZOOM, //target y
+                        SIZE_OF_CROP * ZOOM * width, // target width
+                        SIZE_OF_CROP * ZOOM * height // target height
                     );
-                    if(shouldDrawGrid) {
+                    if(shouldDrawGrid && !shouldHideHud) {
                         ctx.fillStyle = 'white';
-                        ctx.fillText("🔛",positionXFlipped + 5,positionY * tileSize * ZOOM + 10);
+                        ctx.fillText("🔛",positionXFlipped + 5,positionY * SIZE_OF_CROP * ZOOM + 10);
                     }
                     ctx.restore();
                 }else {
-                    if(shouldDrawGrid) {
+                    if(shouldDrawGrid && !shouldHideHud) {
                         ctx.beginPath();
                         ctx.lineWidth = 1;
                         ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
-                        ctx.rect(positionX * tileSize * ZOOM, positionY * tileSize * ZOOM, tileSize * ZOOM * width, tileSize * ZOOM * height);
+                        ctx.rect(positionX * SIZE_OF_CROP * ZOOM, positionY * SIZE_OF_CROP * ZOOM, SIZE_OF_CROP * ZOOM * width, SIZE_OF_CROP * ZOOM * height);
                         ctx.stroke();
                     }
                     ctx.drawImage(
@@ -607,14 +608,14 @@
                         y * tileSize,//src y
                         tileSize * width,// src width
                         tileSize * height, // src height
-                        positionX * tileSize * ZOOM, //target x
-                        positionY * tileSize * ZOOM, //target y
-                        tileSize * ZOOM * width, // target width
-                        tileSize * ZOOM * height // target height
+                        positionX * SIZE_OF_CROP * ZOOM, //target x
+                        positionY * SIZE_OF_CROP * ZOOM, //target y
+                        SIZE_OF_CROP * ZOOM * width, // target width
+                        SIZE_OF_CROP * ZOOM * height // target height
                     );
-                    if(shouldDrawGrid) {
+                    if(shouldDrawGrid && !shouldHideHud) {
                         ctx.fillStyle = 'white';
-                        ctx.fillText("⭕",positionX * tileSize * ZOOM + 5,positionY * tileSize * ZOOM + 10);
+                        ctx.fillText("⭕",positionX * SIZE_OF_CROP * ZOOM + 5,positionY * SIZE_OF_CROP * ZOOM + 10);
                     }
                 }
             })
