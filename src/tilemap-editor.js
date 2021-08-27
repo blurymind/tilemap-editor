@@ -570,12 +570,13 @@
                     ctx.scale(-1, 1);
 
                     const positionXFlipped = ctx.canvas.width - (positionX * tileSize * ZOOM) - tileSize * ZOOM;
-                    ctx.beginPath();
-                    ctx.lineWidth = 1;
-                    ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
-                    ctx.rect(positionXFlipped, positionY * tileSize * ZOOM, tileSize * ZOOM * width, tileSize * ZOOM * height);
-                    ctx.stroke();
-
+                    if(shouldDrawGrid) {
+                        ctx.beginPath();
+                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
+                        ctx.rect(positionXFlipped, positionY * tileSize * ZOOM, tileSize * ZOOM * width, tileSize * ZOOM * height);
+                        ctx.stroke();
+                    }
                     ctx.drawImage(
                         TILESET_ELEMENTS[tilesetIdx],
                         x * tileSize + (frameIndex * tileSize * width),
@@ -587,17 +588,19 @@
                         tileSize * ZOOM * width, // target width
                         tileSize * ZOOM * height // target height
                     );
-                    ctx.fillStyle = 'white';
-                    ctx.fillText("🔛",positionXFlipped + 5,positionY * tileSize * ZOOM + 10);
-
+                    if(shouldDrawGrid) {
+                        ctx.fillStyle = 'white';
+                        ctx.fillText("🔛",positionXFlipped + 5,positionY * tileSize * ZOOM + 10);
+                    }
                     ctx.restore();
                 }else {
-                    ctx.beginPath();
-                    ctx.lineWidth = 1;
-                    ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
-                    ctx.rect(positionX * tileSize * ZOOM, positionY * tileSize * ZOOM, tileSize * ZOOM * width, tileSize * ZOOM * height);
-                    ctx.stroke();
-
+                    if(shouldDrawGrid) {
+                        ctx.beginPath();
+                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = 'rgba(250,240,255, 0.7)';
+                        ctx.rect(positionX * tileSize * ZOOM, positionY * tileSize * ZOOM, tileSize * ZOOM * width, tileSize * ZOOM * height);
+                        ctx.stroke();
+                    }
                     ctx.drawImage(
                         TILESET_ELEMENTS[tilesetIdx],
                         x * tileSize + (frameIndex * tileSize * width),//src x
@@ -609,10 +612,12 @@
                         tileSize * ZOOM * width, // target width
                         tileSize * ZOOM * height // target height
                     );
-                    ctx.fillStyle = 'white';
-                    ctx.fillText("⭕",positionX * tileSize * ZOOM + 5,positionY * tileSize * ZOOM + 10);
+                    if(shouldDrawGrid) {
+                        ctx.fillStyle = 'white';
+                        ctx.fillText("⭕",positionX * tileSize * ZOOM + 5,positionY * tileSize * ZOOM + 10);
+                    }
                 }
-            });
+            })
         });
     }
 
