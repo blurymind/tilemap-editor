@@ -217,6 +217,7 @@
             <select name="mapsData" id="mapsDataSel"></select>
             <button id="addMapBtn" title="Add tilemap">+</button>
             <button id="removeMapBtn" title="Remove tilemap">-</button>        
+            <button id="duplicateMapBtn" title="Duplicate tilemap">📑</button>     
             <a class="button" href="#popup1">🎚️</a>
             <div id="popup1" class="overlay">
             <div class="popup">
@@ -309,16 +310,6 @@
                       <output for="layerOpacitySlider" id="layerOpacitySliderValue">${maps[ACTIVE_MAP].layers[newLayer]?.opacity}</output>
                     </div>
                 </div>
-                <div class="item nohover">------------</div>
-                <div class="item">
-                    <div id="duplicateMapBtn">📑 Duplicate tilemap</div>  
-                </div>
-                <div class="item">
-                    <div id="copyMapToClipBtn">✂️ Copy tilemap to clip</div>  
-                </div>
-                <div class="item">
-                    <div id="pasteMapFromClipBtn">📋 Paste tilemap from clip</div>  
-                </div>
             </div>
         `;
         document.getElementById("layerOpacitySlider").value = maps[ACTIVE_MAP].layers[newLayer]?.opacity;
@@ -328,27 +319,6 @@
             maps[ACTIVE_MAP].layers[currentLayer].opacity = Number(e.target.value);
             draw();
             updateLayers();
-        })
-        document.getElementById("copyMapToClipBtn").addEventListener("click",()=>{
-            const mapAsJson = JSON.stringify(maps[ACTIVE_MAP]);
-            console.log(maps[ACTIVE_MAP])
-            alert(`Copied tilemap ${ACTIVE_MAP} with length ${mapAsJson.length} characters.
-            Url limit is 1980
-            `)
-        })
-        document.getElementById("duplicateMapBtn").addEventListener("click",()=>{
-            const makeNewKey = (key) => {
-                const suggestedNew = `${key}_copy`;
-                if (suggestedNew in maps){
-                    return makeNewKey(suggestedNew)
-                }
-                return suggestedNew;
-            }
-            addToUndoStack();
-            const newMapKey = makeNewKey(ACTIVE_MAP);
-            maps[newMapKey] = {...JSON.parse(JSON.stringify(maps[ACTIVE_MAP])), name: newMapKey};// todo prompt to ask for name
-            updateMaps();
-            addToUndoStack();
         })
     }
 
@@ -474,13 +444,12 @@
         const {tileCount, gridWidth, tileData, tags} = tilesetData;
         console.log("COUNT", tileCount)
         const hideSymbols = !DISPLAY_SYMBOLS || shouldHideSymbols();
-        //TODO replace this expensive thing with a simple canvas grid
         const newGrid = Array.from({length: tileCount}, (x, i) => i).map(tile=>{
             const x = tile % gridWidth;
             const y = Math.floor(tile / gridWidth);
             const tileKey = `${x}-${y}`;
             const innerTile = viewMode === "" ?
-                tileData[tileKey]?.symbol :
+                tileData[tileKey]?.tileSymbol :
                 viewMode === "frames" ? tile :tags[viewMode]?.tiles[tileKey]?.mark || "-";
 
             return `<div style="width:${SIZE_OF_CROP * ZOOM}px;height:${SIZE_OF_CROP * ZOOM}px" class="tileset_grid_tile" title="${innerTile}">${!hideSymbols ? innerTile : ""}</div>`
@@ -683,9 +652,10 @@
             for (let iy = 0; iy < selHeight; iy++) {
                 const tileX = isFlippedX ? Number(x)-ix : Number(x)+ix;//placed in reverse when flipped on x
                 const coordKey = `${tileX}-${Number(y)+iy}`;
-                const tileData = tilesPatch.find(tile => tile.x === startX + ix && tile.y === startY + iy)
                 maps[ACTIVE_MAP].layers[currentLayer].tiles[coordKey] = {
-                    tilesetIdx: tileData.tilesetIdx,x: tileData.x, y:tileData.y, isFlippedX
+                    ...tilesPatch
+                    .find(tile => tile.x === startX + ix && tile.y === startY + iy),
+                    isFlippedX
                 };
             }
         }
@@ -951,10 +921,10 @@
     }
 
     const renameCurrentTileSymbol = ()=>{
-            const {x, y, symbol} = selection[0];
-            const newSymbol = window.prompt("Enter tile symbol", symbol || "*");
+            const {x, y, tileSymbol} = selection[0];
+            const newSymbol = window.prompt("Enter tile symbol", tileSymbol || "*");
             if(newSymbol !== null) {
-                setTileData(x,y,newSymbol, "symbol");
+                setTileData(x,y,newSymbol, "tileSymbol");
                 updateSelection();
                 updateTilesetGridContainer();
                 addToUndoStack();
@@ -968,7 +938,7 @@
                 return Array(map.mapHeight).fill([]).map(row=>{
                     return Array(map.mapWidth).fill([]).map(column => ({
                         tile: null,
-                        symbol: " "// a space is an empty tile
+                        tileSymbol: " "// a space is an empty tile
                     }))
                 })
             });
@@ -976,7 +946,7 @@
                 Object.entries(layerObj.tiles).forEach(([key,tile])=>{
                     const [x,y] = key.split("-");
                     if(Number(y) < map.mapHeight && Number(x) < map.mapWidth) {
-                        flattenedData[lrIndex][Number(y)][Number(x)] = {tile, symbol: tile.symbol || "*"};
+                        flattenedData[lrIndex][Number(y)][Number(x)] = {tile, tileSymbol: tile.tileSymbol || "*"};
                     }
                 })
             });
@@ -1152,9 +1122,9 @@
                     const x = tile % gridWidth;
                     const y = Math.floor(tile / gridWidth);
                     const oldTileData = oldTilesets[idx]?.[`${x}-${y}`]?.tileData;
-                    const symbol = oldTileData?.symbol || randomLetters[Math.floor(symbolStartIdx + tile)] || tile
+                    const tileSymbol = oldTileData?.tileSymbol || randomLetters[Math.floor(symbolStartIdx + tile)] || tile
                     tilesetTileData[`${x}-${y}`] = {
-                        x, y, tilesetIdx: idx, symbol
+                        x, y, tilesetIdx: idx, tileSymbol
                     }
                 })
                 tileSets[idx] = getEmptyTileSet(tsImage.src,`tileset ${idx}`,gridWidth, gridHeight,tilesetTileData,symbolStartIdx, tileSize, oldTilesets[idx]?.tags,oldTilesets[idx]?.frames, tsImage.description);
@@ -1434,6 +1404,20 @@
                 addToUndoStack();
                 updateMaps();
             }
+        })
+        document.getElementById("duplicateMapBtn").addEventListener("click",()=>{
+            const makeNewKey = (key) => {
+                const suggestedNew = `${key}_copy`;
+                if (suggestedNew in maps){
+                    return makeNewKey(suggestedNew)
+                }
+                return suggestedNew;
+            }
+            addToUndoStack();
+            const newMapKey = makeNewKey(ACTIVE_MAP);
+            maps[newMapKey] = {...JSON.parse(JSON.stringify(maps[ACTIVE_MAP])), name: newMapKey};// todo prompt to ask for name
+            updateMaps();
+            addToUndoStack();
         })
         document.getElementById("removeMapBtn").addEventListener("click",()=>{
             addToUndoStack();
