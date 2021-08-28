@@ -188,10 +188,28 @@
               }).then(response=>response.json())
     };
 
+    const getMapFromGist = (gistId, cb) => {
+      console.log("Trying to get gist", `https://api.github.com/gists/=${gistId}`)
+      fetch(`https://api.github.com/gists/${gistId}`).then(blob => blob.json())
+      .then(data => {
+        let mapFound
+        Object.entries(data.files).forEach(([key,val])=>{
+          if(!mapFound && key.endsWith(".json")){
+            fetch(val.raw_url).then(blob => blob.json()).then(jsonData=>{
+              mapFound = jsonData;
+              console.log("Got map!", mapFound)
+              cb(mapFound)
+            })
+          }
+        })
+      });
+    }
+
     let tileSetImages = [
       {
         src:"https://i.imgur.com/ztwPZOI.png",
         name: "demo tileset",
+        tileSize: 32,
         link: "https://google.com",
         description: `Demo tileset with a very very very very long description that can't barely fit there.
                 Still the author decided he has lots to say about the thing and even include a link`
@@ -203,6 +221,7 @@
     let tileSize = 32;
     let mapWidth = 10;
     let mapHeight = 10;
+    let tileMapData //= ioJsonData;
     const initTilemapEditor = () => {
       console.log("INIT with", {tileSetImages, tileSize})
       // TODO move this under after parsing url params and get everything from there
@@ -210,8 +229,7 @@
         // loads tilemap data which was saved before. undefined will start you with an empty map.
         // Takes a parsed json object with a data struct that tiled-editor can read (an object with maps and tileSets):
         // { maps : {...}, tileSets: {...}}
-        //tileMapData: ioJsonData,//TODO this needs to work without tilemapData (new file)
-
+        tileMapData,//TODO this needs to work without tilemapData (new file)
         // tileSize is used to slice the tileset and give the tilemap the right sized grid
         tileSize,
         // How many tiles is the initial map wide
@@ -294,8 +312,7 @@
 
     if(window.location.href.includes("?")) {
       const urlParams = new URLSearchParams(window.location.href.split("?")[1]);
-      const imgur =  urlParams.get("imgur")
-      console.log("PARAMS", window.location.href, urlParams.get("imgur"))
+      const imgur =  urlParams.get("imgur");
       if(imgur){
         getImgurGallery(imgur, data => {
           console.log("ALBUM", data.images)
@@ -327,6 +344,13 @@
             }
           })
           initTilemapEditor()
+        })
+      }
+      const gist = urlParams.get("gist")
+      if(gist){
+        getMapFromGist(gist, mapData => {
+          tileMapData = mapData;
+          initTilemapEditor();
         })
       }
       const tileSizeParam = urlParams.get("tileSize");

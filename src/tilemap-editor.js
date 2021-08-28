@@ -1286,8 +1286,9 @@
             acceptFile: "application/JSON"
         }
 
-        IMAGES = tileSetImages;
-        SIZE_OF_CROP = tileSetImages?.[0]?.tileSize || tileSize || 32;//to the best of your ability, predict the init tileSize
+        const importedTilesetImages =  Object.values(tileMapData?.tileSets) || tileSetImages;
+        IMAGES = importedTilesetImages;
+        SIZE_OF_CROP = importedTilesetImages?.[0]?.tileSize || tileSize || 32;//to the best of your ability, predict the init tileSize
         mapTileWidth = mapWidth || 12;
         mapTileHeight = mapHeight || 12;
         const canvasWidth = mapTileWidth * tileSize * ZOOM;
