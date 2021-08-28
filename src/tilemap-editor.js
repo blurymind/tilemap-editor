@@ -1286,7 +1286,7 @@
             acceptFile: "application/JSON"
         }
 
-        const importedTilesetImages =  Object.values(tileMapData?.tileSets) || tileSetImages;
+        const importedTilesetImages =  (tileMapData?.tileSets && Object.values(tileMapData?.tileSets)) || tileSetImages;
         IMAGES = importedTilesetImages;
         SIZE_OF_CROP = importedTilesetImages?.[0]?.tileSize || tileSize || 32;//to the best of your ability, predict the init tileSize
         mapTileWidth = mapWidth || 12;
