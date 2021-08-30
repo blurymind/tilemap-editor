@@ -487,6 +487,9 @@ cursor: pointer;
 .hidden {
   display: none;
 }
+input[name='tool']+label{
+  background: unset;
+}
 .tool_wrapper>*:hover,
 input[name='tool']:checked+label{
   background-color: #2d2906;
