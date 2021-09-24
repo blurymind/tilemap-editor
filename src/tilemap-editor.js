@@ -227,6 +227,7 @@
                 <span class="flex">Width: </span><input id="canvasWidthInp" value="1" type="number" min="1">
                 <span class="flex">Height: </span><input id="canvasHeightInp" value="1" type="number" min="1">
                 <br/><br/>
+                <span class="flex">Grid tile size: </span><input type="number" id="gridCropSize" name="crop" placeholder="32" min="1" max="128">
                 <span class="flex">Grid color: </span><input type="color" value="#ff0000" id="gridColorSel">
                 <span class="flex">Show grid above: </span> <input type="checkbox" id="showGrid">
                 <br/><br/>
@@ -1187,6 +1188,7 @@
         });
         SIZE_OF_CROP = newSize;
         cropSize.value = SIZE_OF_CROP;
+        document.getElementById("gridCropSize").value = SIZE_OF_CROP;
         console.log("NEW SIZE", tilesetDataSel.value,tileSets[tilesetDataSel.value], newSize,ACTIVE_MAP, maps)
         updateZoom()
         updateTilesetGridContainer();
@@ -1302,6 +1304,7 @@
             reloadTilesets();
             tilesetDataSel.value = "0";
             cropSize.value = data ? tileSets[tilesetDataSel.value]?.tileSize || maps[ACTIVE_MAP].tileSize : SIZE_OF_CROP;
+            document.getElementById("gridCropSize").value = cropSize.value;
             updateMaps();
             updateMapSize({mapWidth: maps[ACTIVE_MAP].mapWidth, mapHeight: maps[ACTIVE_MAP].mapHeight})
         }
@@ -1675,7 +1678,9 @@
             console.log("ACTIVE_TOOL", e.target.value)
             if(e.target.getAttribute("name") === "tool") setActiveTool(Number(e.target.value));
         })
-
+        document.getElementById("gridCropSize").addEventListener('change', e=>{
+            setCropSize(Number(e.target.value));
+        })
         cropSize.addEventListener('change', e=>{
             setCropSize(Number(e.target.value));
         })
