@@ -268,6 +268,7 @@
         RAND: 4,
         FILL: 5
     }
+    let PREV_ACTIVE_TOOL = 0;
     let ACTIVE_TOOL = 0;
     let ACTIVE_MAP = "";
     let DISPLAY_SYMBOLS = false;
@@ -666,11 +667,18 @@
         if(e.button === 0) {
             isMouseDown = true;
         }
+        else if(e.button === 1){
+            PREV_ACTIVE_TOOL = ACTIVE_TOOL;
+            setActiveTool(TOOLS.PAN)
+        }
     }
 
     const setMouseIsFalse=(e)=> {
         if(e.button === 0) {
             isMouseDown = false;
+        }
+        else if(e.button === 1 && ACTIVE_TOOL === TOOLS.PAN){
+            setActiveTool(PREV_ACTIVE_TOOL)
         }
     }
 
@@ -809,7 +817,8 @@
         const {x,y} = getSelectedTile(event)[0];
         const key = `${x}-${y}`;
 
-        if (event.shiftKey || event.button === 1) {
+        console.log(event.button)
+        if (event.shiftKey) {
             removeTile(key);
         } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === TOOLS.PICK) {
             const pickedTile = getTile(key, true);
