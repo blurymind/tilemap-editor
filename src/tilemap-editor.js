@@ -224,13 +224,16 @@
             <h4>TileMap settings</h4>
             <a class="close" href="#">&times;</a>
             <div class="content">
-                <span class="flex">width: </span><input id="canvasWidthInp" value="1" type="number" min="1">
-                <span class="flex">height: </span><input id="canvasHeightInp" value="1" type="number" min="1">
-                
+                <span class="flex">Width: </span><input id="canvasWidthInp" value="1" type="number" min="1">
+                <span class="flex">Height: </span><input id="canvasHeightInp" value="1" type="number" min="1">
+                <br/><br/>
+                <span class="flex">Grid color: </span><input type="color" value="#ff0000" id="gridColorSel">
+                <span class="flex">Show grid above: </span> <input type="checkbox" id="showGrid"> 
+                <br/><br/>
                 <div class="tileset_opt_field">
-                <button id="renameMapBtn" title="Rename map">Rename</button>
-                <button id="clearCanvasBtn" title="Clear map">Clear</button>
-              </div>
+                    <button id="renameMapBtn" title="Rename map">Rename</button>
+                    <button id="clearCanvasBtn" title="Clear map">Clear</button>
+                </div>
             </div>
             </div>
             </div>
@@ -272,9 +275,10 @@
     let ACTIVE_TOOL = 0;
     let ACTIVE_MAP = "";
     let DISPLAY_SYMBOLS = false;
-    const getEmptyMap = (name="map", mapWidth =20, mapHeight=20, tileSize = 32) =>
+    let SHOW_GRID = false;
+    const getEmptyMap = (name="map", mapWidth =20, mapHeight=20, tileSize = 32, gridColor="#00FFFF") =>
         ({layers: [getEmptyLayer("bottom"), getEmptyLayer("middle"), getEmptyLayer("top")], name,
-            mapWidth, mapHeight, tileSize, width: mapWidth * SIZE_OF_CROP,height: mapHeight * SIZE_OF_CROP });
+            mapWidth, mapHeight, tileSize, width: mapWidth * SIZE_OF_CROP,height: mapHeight * SIZE_OF_CROP, gridColor });
 
     const getEmptyTilesetTag = (name, code, tiles ={}) =>({name,code,tiles});
 
@@ -426,7 +430,7 @@
         ACTIVE_TOOL = toolIdx;
         const actTool = document.getElementById("toolButtonsWrapper").querySelector(`input[id="tool${toolIdx}"]`);
         if (actTool) actTool.checked = true;
-        document.getElementById("canvas_wrapper").setAttribute("isDraggable", ACTIVE_TOOL === TOOLS.PAN ? true:false);
+        document.getElementById("canvas_wrapper").setAttribute("isDraggable", ACTIVE_TOOL === TOOLS.PAN);
         draw();
     }
 
@@ -538,7 +542,7 @@
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
         ctx.canvas.width = WIDTH;
         ctx.canvas.height = HEIGHT;
-        if(shouldDrawGrid)drawGrid(WIDTH, HEIGHT, ctx,SIZE_OF_CROP * ZOOM);
+        if(shouldDrawGrid && !SHOW_GRID)drawGrid(WIDTH, HEIGHT, ctx,SIZE_OF_CROP * ZOOM, maps[ACTIVE_MAP].gridColor);
         const shouldHideHud = shouldHideSymbols();
 
         maps[ACTIVE_MAP].layers.forEach((layer) => {
@@ -662,7 +666,7 @@
                 }
             })
         });
-        if([TOOLS.BRUSH,TOOLS.ERASE,TOOLS.RAND].includes(ACTIVE_TOOL))drawGrid(WIDTH, HEIGHT, ctx,SIZE_OF_CROP * ZOOM);
+        if(SHOW_GRID)drawGrid(WIDTH, HEIGHT, ctx,SIZE_OF_CROP * ZOOM, maps[ACTIVE_MAP].gridColor);
     }
 
     const setMouseIsTrue=(e)=> {
@@ -1033,6 +1037,7 @@
 
     const setActiveMap =(id) =>{
         ACTIVE_MAP = id;
+        document.getElementById("gridColorSel").value = maps[ACTIVE_MAP].gridColor;
         draw();
         updateMapSize({mapWidth: maps[ACTIVE_MAP].mapWidth, mapHeight: maps[ACTIVE_MAP].mapHeight})
         updateLayers();
@@ -1727,6 +1732,16 @@
                 if(e.code === "KeyY") redo();
             }
         })
+        document.getElementById("gridColorSel").addEventListener("change", e=>{
+            console.log("grid col",e.target.value)
+            maps[ACTIVE_MAP].gridColor = e.target.value;
+            draw();
+        })
+        document.getElementById("showGrid").addEventListener("change", e => {
+            SHOW_GRID = e.target.checked;
+            draw();
+        })
+
         document.getElementById("undoBtn").addEventListener("click", undo);
         document.getElementById("redoBtn").addEventListener("click", redo);
         document.getElementById("zoomIn").addEventListener("click", zoomIn);
