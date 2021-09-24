@@ -1182,8 +1182,8 @@
     const setCropSize = (newSize) => {
         if(newSize === SIZE_OF_CROP && cropSize.value === newSize) return;
         tileSets[tilesetDataSel.value].tileSize = newSize;
-        IMAGES.forEach(ts=> {
-            if (ts.src === tilesetImage.src) ts.tileSize = newSize;
+        IMAGES.forEach((ts,idx)=> {
+            if (ts.src === tilesetImage.src) IMAGES[idx].tileSize = newSize;
         });
         SIZE_OF_CROP = newSize;
         cropSize.value = SIZE_OF_CROP;
