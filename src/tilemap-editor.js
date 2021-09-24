@@ -1037,7 +1037,7 @@
 
     const setActiveMap =(id) =>{
         ACTIVE_MAP = id;
-        document.getElementById("gridColorSel").value = maps[ACTIVE_MAP].gridColor;
+        document.getElementById("gridColorSel").value = maps[ACTIVE_MAP].gridColor || "#00FFFF";
         draw();
         updateMapSize({mapWidth: maps[ACTIVE_MAP].mapWidth, mapHeight: maps[ACTIVE_MAP].mapHeight})
         updateLayers();
