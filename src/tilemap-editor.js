@@ -427,6 +427,7 @@
         const actTool = document.getElementById("toolButtonsWrapper").querySelector(`input[id="tool${toolIdx}"]`);
         if (actTool) actTool.checked = true;
         document.getElementById("canvas_wrapper").setAttribute("isDraggable", ACTIVE_TOOL === TOOLS.PAN ? true:false);
+        draw();
     }
 
     let selectionSize = [1,1];
@@ -661,6 +662,7 @@
                 }
             })
         });
+        if([TOOLS.BRUSH,TOOLS.ERASE,TOOLS.RAND].includes(ACTIVE_TOOL))drawGrid(WIDTH, HEIGHT, ctx,SIZE_OF_CROP * ZOOM);
     }
 
     const setMouseIsTrue=(e)=> {
