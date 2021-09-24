@@ -260,6 +260,14 @@
     let SIZE_OF_CROP = 32;
     let WIDTH = 0;
     let HEIGHT = 0;
+    const TOOLS = {
+        BRUSH: 0,
+        ERASE: 1,
+        PAN: 2,
+        PICK: 3,
+        RAND: 4,
+        FILL: 5
+    }
     let ACTIVE_TOOL = 0;
     let ACTIVE_MAP = "";
     let DISPLAY_SYMBOLS = false;
@@ -417,7 +425,7 @@
         ACTIVE_TOOL = toolIdx;
         const actTool = document.getElementById("toolButtonsWrapper").querySelector(`input[id="tool${toolIdx}"]`);
         if (actTool) actTool.checked = true;
-        document.getElementById("canvas_wrapper").setAttribute("isDraggable", ACTIVE_TOOL === 2 ? true:false);
+        document.getElementById("canvas_wrapper").setAttribute("isDraggable", ACTIVE_TOOL === TOOLS.PAN ? true:false);
     }
 
     let selectionSize = [1,1];
@@ -796,25 +804,25 @@
     }
 
     const toggleTile=(event)=> {
-        if(ACTIVE_TOOL === 2 || !maps[ACTIVE_MAP].layers[currentLayer].visible) return;
+        if(ACTIVE_TOOL === TOOLS.PAN || !maps[ACTIVE_MAP].layers[currentLayer].visible) return;
 
         const {x,y} = getSelectedTile(event)[0];
         const key = `${x}-${y}`;
 
         if (event.shiftKey || event.button === 1) {
             removeTile(key);
-        } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === 3) {
+        } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === TOOLS.PICK) {
             const pickedTile = getTile(key, true);
-            if(ACTIVE_TOOL === 0 && !pickedTile) setActiveTool(1); //picking empty tile, sets tool to eraser
-            else if(ACTIVE_TOOL === 5 || ACTIVE_TOOL === 4) setActiveTool(0); //
+            if(ACTIVE_TOOL === TOOLS.BRUSH && !pickedTile) setActiveTool(1); //picking empty tile, sets tool to eraser
+            else if(ACTIVE_TOOL === TOOLS.FILL || ACTIVE_TOOL === TOOLS.RAND) setActiveTool(TOOLS.BRUSH); //
         } else {
-            if(ACTIVE_TOOL === 0){
+            if(ACTIVE_TOOL === TOOLS.BRUSH){
                 addTile(key);// also works with animated
-            } else if(ACTIVE_TOOL === 1) {
+            } else if(ACTIVE_TOOL === TOOLS.ERASE) {
                 removeTile(key);// also works with animated
-            } else if (ACTIVE_TOOL === 4){
+            } else if (ACTIVE_TOOL === TOOLS.RAND){
                 addRandomTile(key);
-            } else if (ACTIVE_TOOL === 5){
+            } else if (ACTIVE_TOOL === TOOLS.FILL){
                 fillEmptyOrSameTiles(key);
             }
         }
@@ -1644,6 +1652,7 @@
             updateMapSize({mapWidth: Number(e.target.value) })
         })
         document.getElementById("toolButtonsWrapper").addEventListener("click",e=>{
+            console.log("ACTIVE_TOOL", e.target.value)
             if(e.target.getAttribute("name") === "tool") setActiveTool(Number(e.target.value));
         })
 
