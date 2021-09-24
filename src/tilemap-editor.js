@@ -446,7 +446,7 @@
         tilesetSelection.style.height = `${selHeight * tileSize * ZOOM}px`;
 
         // Autoselect tool upon selecting a tile
-        if(![0, 4, 5].includes(ACTIVE_TOOL)) setActiveTool(0);
+        if(![TOOLS.BRUSH, TOOLS.RAND, TOOLS.FILL].includes(ACTIVE_TOOL)) setActiveTool(TOOLS.BRUSH);
 
         // show/hide param editor
        if(tileDataSel.value === "frames" && editedEntity) objectParametersEditor.classList.add('entity');
@@ -813,7 +813,7 @@
             removeTile(key);
         } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === TOOLS.PICK) {
             const pickedTile = getTile(key, true);
-            if(ACTIVE_TOOL === TOOLS.BRUSH && !pickedTile) setActiveTool(1); //picking empty tile, sets tool to eraser
+            if(ACTIVE_TOOL === TOOLS.BRUSH && !pickedTile) setActiveTool(TOOLS.ERASE); //picking empty tile, sets tool to eraser
             else if(ACTIVE_TOOL === TOOLS.FILL || ACTIVE_TOOL === TOOLS.RAND) setActiveTool(TOOLS.BRUSH); //
         } else {
             if(ACTIVE_TOOL === TOOLS.BRUSH){
