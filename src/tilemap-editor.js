@@ -228,7 +228,7 @@
                 <span class="flex">Height: </span><input id="canvasHeightInp" value="1" type="number" min="1">
                 <br/><br/>
                 <span class="flex">Grid color: </span><input type="color" value="#ff0000" id="gridColorSel">
-                <span class="flex">Show grid above: </span> <input type="checkbox" id="showGrid"> 
+                <span class="flex">Show grid above: </span> <input type="checkbox" id="showGrid">
                 <br/><br/>
                 <div class="tileset_opt_field">
                     <button id="renameMapBtn" title="Rename map">Rename</button>
@@ -1180,8 +1180,11 @@
         console.log("UPDATED TSETS", tileSets)
     }
     const setCropSize = (newSize) => {
-        if(newSize === SIZE_OF_CROP) return;
+        if(newSize === SIZE_OF_CROP && cropSize.value === newSize) return;
         tileSets[tilesetDataSel.value].tileSize = newSize;
+        IMAGES.forEach(ts=> {
+            if (ts.src === tilesetImage.src) ts.tileSize = newSize;
+        });
         SIZE_OF_CROP = newSize;
         cropSize.value = SIZE_OF_CROP;
         console.log("NEW SIZE", tilesetDataSel.value,tileSets[tilesetDataSel.value], newSize,ACTIVE_MAP, maps)
@@ -1246,7 +1249,8 @@
             document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
             const tilesetExtraInfo = IMAGES.find(ts=>ts.src === tilesetImage.src);
 
-            console.log("CHANGED TILESET", tilesetExtraInfo)
+            console.log("CHANGED TILESET", tilesetExtraInfo, IMAGES)
+
             if(tilesetExtraInfo) {
                 if (tilesetExtraInfo.link) {
                     document.getElementById("tilesetHomeLink").innerHTML = `link: <a href="${tilesetExtraInfo.link}">${tilesetExtraInfo.link}</a> `;
@@ -1260,7 +1264,7 @@
                 } else {
                     document.getElementById("tilesetDescriptionLabel").innerText = "";
                 }
-                if (tilesetExtraInfo.tileSize && !tileSets[tilesetDataSel.value].tileSize) {
+                if (tilesetExtraInfo.tileSize ) {
                     setCropSize(tilesetExtraInfo.tileSize);
                 }
             }
