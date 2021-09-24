@@ -1239,8 +1239,7 @@
             document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
             const tilesetExtraInfo = IMAGES.find(ts=>ts.src === tilesetImage.src);
 
-
-
+            console.log("CHANGED TILESET", tilesetExtraInfo)
             if(tilesetExtraInfo) {
                 if (tilesetExtraInfo.link) {
                     document.getElementById("tilesetHomeLink").innerHTML = `link: <a href="${tilesetExtraInfo.link}">${tilesetExtraInfo.link}</a> `;
@@ -1254,10 +1253,11 @@
                 } else {
                     document.getElementById("tilesetDescriptionLabel").innerText = "";
                 }
-                if (tilesetExtraInfo.tileSize) {
+                if (tilesetExtraInfo.tileSize && !tileSets[tilesetDataSel.value].tileSize) {
                     setCropSize(tilesetExtraInfo.tileSize);
                 }
-            }else setCropSize(tileSets[tilesetDataSel.value].tileSize);
+            }
+            setCropSize(tileSets[tilesetDataSel.value].tileSize);
             updateZoom();
             document.querySelector('.canvas_resizer[resizerdir="x"]').style = `left:${WIDTH}px;`;
 
