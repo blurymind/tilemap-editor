@@ -1756,6 +1756,11 @@
         document.getElementById("zoomIn").addEventListener("click", zoomIn);
         document.getElementById("zoomOut").addEventListener("click", zoomOut);
         document.getElementById("setSymbolsVisBtn").addEventListener("click", ()=>toggleSymbolsVisible())
+        // Scroll
+        canvas.addEventListener('wheel', e=> {
+            if (e.deltaY < 0) zoomIn();
+            else zoomOut();
+        });
         loadData(tileMapData); // loads even if tileMapData is not present
 
         // Animated tiles when on frames mode
