@@ -485,7 +485,7 @@
         ctx.drawImage(img,0,0,canvas.width ,canvas.height);
         console.log("WIDTH EXCEEDS?", canvas.width % SIZE_OF_CROP)
         const tileSizeSeemsIncorrect = canvas.width % SIZE_OF_CROP !== 0;
-        drawGrid(canvas.width * ZOOM, canvas.height * ZOOM, ctx,SIZE_OF_CROP * ZOOM, tileSizeSeemsIncorrect ? "red":"cyan");
+        drawGrid(ctx.canvas.width, ctx.canvas.height, ctx,SIZE_OF_CROP * ZOOM, tileSizeSeemsIncorrect ? "red":"cyan");
         Array.from({length: tileCount}, (x, i) => i).map(tile=>{
             if (viewMode === "frames") {
                 const frameData = getCurrentFrames();
@@ -1104,6 +1104,8 @@
         undoStepPosition += 1;
         restoreFromUndoStackData();
     }
+    const zoomLevels = [0.25, 0.5, 1, 2, 3, 4];
+    let zoomIndex = 1
     const updateZoom = () => {
         tilesetImage.style = `transform: scale(${ZOOM});transform-origin: left top;image-rendering: auto;image-rendering: crisp-edges;image-rendering: pixelated;`;
         tilesetContainer.style.width = `${tilesetImage.width * ZOOM}px`;
@@ -1114,15 +1116,18 @@
         updateMapSize({mapWidth: mapTileWidth, mapHeight: mapTileHeight});
         WIDTH = mapTileWidth * SIZE_OF_CROP * ZOOM;// needed when setting zoom?
         HEIGHT = mapTileHeight * SIZE_OF_CROP * ZOOM;
+        zoomIndex = zoomLevels.indexOf(ZOOM) === -1 ? 0: zoomLevels.indexOf(ZOOM);
     }
     const zoomIn = () => {
-        if (ZOOM > 4) return;
-        ZOOM += 1;
+        if(zoomIndex >= zoomLevels.length - 1) return;
+        zoomIndex += 1;
+        ZOOM = zoomLevels[zoomIndex];
         updateZoom();
     }
     const zoomOut = () => {
-        if (ZOOM < 2) return;
-        ZOOM -= 1;
+        if(zoomIndex === 0) return;
+        zoomIndex -= 1;
+        ZOOM = zoomLevels[zoomIndex];
         updateZoom();
     }
 
@@ -1756,7 +1761,7 @@
         document.getElementById("zoomIn").addEventListener("click", zoomIn);
         document.getElementById("zoomOut").addEventListener("click", zoomOut);
         document.getElementById("setSymbolsVisBtn").addEventListener("click", ()=>toggleSymbolsVisible())
-        // Scroll
+        // Scroll zoom in/out - use wheel instead of scroll event since theres no scrollbar on the map
         canvas.addEventListener('wheel', e=> {
             if (e.deltaY < 0) zoomIn();
             else zoomOut();
