@@ -1146,7 +1146,7 @@
             if (value in options || (["","frames"].includes(value) && !populateFrames)) selectEl.value = value;
         }
 
-        if (!populateFrames) populateWithOptions(tileDataSel, tileSets[tilesetDataSel.value]?.tags, `<option value="">Symbols (${tileSets[tilesetDataSel.value]?.tileCount || "?"})</option><option value="frames">Frames</option>`);
+        if (!populateFrames) populateWithOptions(tileDataSel, tileSets[tilesetDataSel.value]?.tags, `<option value="">Symbols (${tileSets[tilesetDataSel.value]?.tileCount || "?"})</option><option value="frames">Objects</option>`);
         else populateWithOptions(tileFrameSel, tileSets[tilesetDataSel.value]?.frames, '');
 
         document.getElementById("tileFrameCount").value = getCurrentFrames()?.frameCount || 1;
@@ -1543,10 +1543,10 @@
             updateTilesetGridContainer();
         });
         document.getElementById("addTileFrameBtn").addEventListener("click",()=>{
-            const result = window.prompt("Name your frame", `anim${Object.keys(tileSets[tilesetDataSel.value]?.frames||{}).length}`);
+            const result = window.prompt("Name your object", `obj${Object.keys(tileSets[tilesetDataSel.value]?.frames||{}).length}`);
             if(result !== null){
                 if (result in tileSets[tilesetDataSel.value].frames) {
-                    alert("Frame already exists");
+                    alert("Object already exists");
                     return;
                 }
                 tileSets[tilesetDataSel.value].frames[result] = {frameCount: Number(document.getElementById("tileFrameCount").value)}
