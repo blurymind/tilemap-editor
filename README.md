@@ -209,7 +209,11 @@ TilemapEditor.init("tileMapEditor",{ // The id of the element that will become t
         },
         buttonText: "Copy Kb to clip", // controls the apply button's text
     },
+    onUpdate(ev) { // callback for when the app updates its state (loaded data, tool, etc)
+    // console.log("-->>", ev)
+    }
 })
+console.log("Got App State:",TilemapEditor.getState())
 </script>
    ```
    

@@ -301,7 +301,7 @@
     }
 
     const getSnappedPos = (pos) => (Math.round(pos / (SIZE_OF_CROP)) * (SIZE_OF_CROP));
-    let selection = [{}];
+    let selection = [];
     let currentLayer = 0;
     let isMouseDown = false;
     let maps = {};
@@ -311,6 +311,7 @@
     let selectedTileSetLoader = {};
     let apiTileMapExporters = {};
     let apiTileMapImporters = {};
+    let apiOnUpdateCallback = () => {};
 
     let editedEntity
 
@@ -436,7 +437,7 @@
     }
 
     let selectionSize = [1,1];
-    const updateSelection = () => {
+    const updateSelection = (autoSelectTool = true) => {
         if(!tileSets[tilesetDataSel.value]) return;
         const selected = selection[0];
         if(!selected) return;
@@ -453,11 +454,12 @@
         tilesetSelection.style.height = `${selHeight * tileSize * ZOOM}px`;
 
         // Autoselect tool upon selecting a tile
-        if(![TOOLS.BRUSH, TOOLS.RAND, TOOLS.FILL].includes(ACTIVE_TOOL)) setActiveTool(TOOLS.BRUSH);
+        if(autoSelectTool && ![TOOLS.BRUSH, TOOLS.RAND, TOOLS.FILL].includes(ACTIVE_TOOL)) setActiveTool(TOOLS.BRUSH);
 
         // show/hide param editor
        if(tileDataSel.value === "frames" && editedEntity) objectParametersEditor.classList.add('entity');
        else objectParametersEditor.classList.remove('entity');
+       onUpdateState();
     }
 
     const randomLetters = new Array(10680).fill(1).map((_, i) => String.fromCharCode(165 + i));
@@ -469,7 +471,7 @@
         if(!tilesetData) return;
 
         const {tileCount, gridWidth, tileData, tags} = tilesetData;
-        console.log("COUNT", tileCount)
+        // console.log("COUNT", tileCount)
         const hideSymbols = !DISPLAY_SYMBOLS || shouldHideSymbols();
         const canvas = document.getElementById("tilesetCanvas");
         const img = TILESET_ELEMENTS[tilesetDataSel.value];
@@ -483,7 +485,7 @@
             ctx.imageSmoothingEnabled = false;
         }
         ctx.drawImage(img,0,0,canvas.width ,canvas.height);
-        console.log("WIDTH EXCEEDS?", canvas.width % SIZE_OF_CROP)
+        // console.log("WIDTH EXCEEDS?", canvas.width % SIZE_OF_CROP)
         const tileSizeSeemsIncorrect = canvas.width % SIZE_OF_CROP !== 0;
         drawGrid(ctx.canvas.width, ctx.canvas.height, ctx,SIZE_OF_CROP * ZOOM, tileSizeSeemsIncorrect ? "red":"cyan");
         Array.from({length: tileCount}, (x, i) => i).map(tile=>{
@@ -668,6 +670,7 @@
             })
         });
         if(SHOW_GRID)drawGrid(WIDTH, HEIGHT, ctx,SIZE_OF_CROP * ZOOM, maps[ACTIVE_MAP].gridColor);
+        onUpdateState();
     }
 
     const setMouseIsTrue=(e)=> {
@@ -793,7 +796,7 @@
         if (clicked && !editedEntity) {
             selection = [clicked];
 
-            console.log("clicked", clicked, "entity data",editedEntity)
+            // console.log("clicked", clicked, "entity data",editedEntity)
             document.getElementById("toggleFlipX").checked = !!clicked?.isFlippedX;
             // TODO switch to different tileset if its from a different one
             // if(clicked.tilesetIdx !== tilesetDataSel.value) {
@@ -805,7 +808,7 @@
             updateSelection();
             return true;
         } else if (editedEntity){
-            console.log("Animated tile found", editedEntity)
+            // console.log("Animated tile found", editedEntity)
             selection = editedEntity.tiles;
             document.getElementById("toggleFlipX").checked = editedEntity.isFlippedX;
             setLayer(editedEntity.layer);
@@ -824,7 +827,7 @@
         const {x,y} = getSelectedTile(event)[0];
         const key = `${x}-${y}`;
 
-        console.log(event.button)
+        // console.log(event.button)
         if (event.shiftKey) {
             removeTile(key);
         } else if (event.ctrlKey || event.button === 2 || ACTIVE_TOOL === TOOLS.PICK) {
@@ -882,7 +885,7 @@
         let uuid = 0;
         for (let y = 0; y < height; y += sizeOfTile) {
             for (let x = 0; x < width; x += sizeOfTile) {
-                console.log(x, y);
+                // console.log(x, y);
                 const tileData = ctx.getImageData(x, y, sizeOfTile, sizeOfTile);
                 const index = tileData.data.toString();
                 if (analizedTiles[index]) {
@@ -899,7 +902,7 @@
             }
         }
         const uniqueTiles = Object.values(analizedTiles).length - 1;
-        console.log("TILES:", {analizedTiles, uniqueTiles})
+        // console.log("TILES:", {analizedTiles, uniqueTiles})
         return {analizedTiles, uniqueTiles};
     }
     const drawAnaliticsReport = () => {
@@ -1012,7 +1015,7 @@
     };
     const getExportData = () => {
         const exportData = {maps, tileSets, flattenedData: getFlattenedData(), activeMap: ACTIVE_MAP, downloadAsTextFile};
-        console.log("Exported ", exportData);
+        // console.log("Exported ", exportData);
         return exportData;
     }
 
@@ -1050,6 +1053,26 @@
     const clearUndoStack = () => {
         undoStack = [];
         undoStepPosition = -1;
+    }
+    const getAppState = () => {
+        return {
+            tileMapData: {tileSets, maps},
+            appState: {
+                undoStack,
+                    undoStepPosition,
+                    currentLayer,
+                    PREV_ACTIVE_TOOL,
+                    ACTIVE_TOOL,
+                    ACTIVE_MAP,
+                    SHOW_GRID,
+                    selection
+            }
+            //Todo tileSize and the others
+            // undo stack is lost
+        };
+    }
+    const onUpdateState = () => {
+        apiOnUpdateCallback(getAppState())
     }
     const addToUndoStack = () => {
         if(Object.keys(tileSets).length === 0 || Object.keys(maps).length === 0) return;
@@ -1112,7 +1135,7 @@
         tilesetContainer.style.height = `${tilesetImage.height * ZOOM}px`;
         document.getElementById("zoomLabel").innerText = `${ZOOM}x`;
         updateTilesetGridContainer();
-        updateSelection();
+        updateSelection(false);
         updateMapSize({mapWidth: mapTileWidth, mapHeight: mapTileHeight});
         WIDTH = mapTileWidth * SIZE_OF_CROP * ZOOM;// needed when setting zoom?
         HEIGHT = mapTileHeight * SIZE_OF_CROP * ZOOM;
@@ -1161,7 +1184,7 @@
         let symbolStartIdx = 0;
         Object.entries(tileSets).forEach(([key,old])=>{
             const tileData = {};
-            console.log("OLD DATA",old)
+            // console.log("OLD DATA",old)
             const tileSize = old.tileSize || SIZE_OF_CROP;
             const gridWidth = Math.ceil(old.width / tileSize);
             const gridHeight = Math.ceil(old.height / tileSize);
@@ -1178,12 +1201,12 @@
                 tileSets[key] = {...old, tileSize, gridWidth, gridHeight, tileCount, symbolStartIdx, tileData};
             })
             if(key === 0){
-                console.log({gridWidth,gridHeight,tileCount, tileSize})
+                // console.log({gridWidth,gridHeight,tileCount, tileSize})
             }
             symbolStartIdx += tileCount;
 
         })
-        console.log("UPDATED TSETS", tileSets)
+        // console.log("UPDATED TSETS", tileSets)
     }
     const setCropSize = (newSize) => {
         if(newSize === SIZE_OF_CROP && cropSize.value === newSize) return;
@@ -1194,10 +1217,10 @@
         SIZE_OF_CROP = newSize;
         cropSize.value = SIZE_OF_CROP;
         document.getElementById("gridCropSize").value = SIZE_OF_CROP;
-        console.log("NEW SIZE", tilesetDataSel.value,tileSets[tilesetDataSel.value], newSize,ACTIVE_MAP, maps)
+        // console.log("NEW SIZE", tilesetDataSel.value,tileSets[tilesetDataSel.value], newSize,ACTIVE_MAP, maps)
         updateZoom()
         updateTilesetGridContainer();
-        console.log(tileSets, IMAGES)
+        // console.log(tileSets, IMAGES)
         reevaluateTilesetsData()
         updateTilesetDataList()
         draw();
@@ -1226,7 +1249,7 @@
         Promise.all(Array.from(TILESET_ELEMENTS).filter(img => !img.complete)
             .map(img => new Promise(resolve => { img.onload = img.onerror = resolve; })))
             .then(() => {
-                console.log("TILESET ELEMENTS", TILESET_ELEMENTS)
+                // console.log("TILESET ELEMENTS", TILESET_ELEMENTS)
                 TILESET_ELEMENTS.forEach((tsImage,idx)  => {
                     const tileSize = tsImage.tileSize || SIZE_OF_CROP;
                     tileSets[idx] = getEmptyTileSet(
@@ -1236,19 +1259,19 @@
                         }
                     );
                 })
-                console.log("POPULATED", tileSets)
+                // console.log("POPULATED", tileSets)
                 reevaluateTilesetsData();
                 tilesetImage.src = TILESET_ELEMENTS[0].src;
                 tilesetImage.crossOrigin = "Anonymous";
-                updateSelection();
+                updateSelection(false);
                 updateTilesetGridContainer();
             });
         // finally current tileset loaded
         tilesetImage.addEventListener('load', () => {
             draw();
             updateLayers();
-            selection = [getTileData(0, 0)];
-            updateSelection();
+            if (selection.length === 0) selection = [getTileData(0, 0)];
+            updateSelection(false);
             updateTilesetDataList();
             updateTilesetDataList(true);
             updateTilesetGridContainer();
@@ -1256,7 +1279,7 @@
             document.getElementById("tilesetSrcLabel").title = tilesetImage.src;
             const tilesetExtraInfo = IMAGES.find(ts=>ts.src === tilesetImage.src);
 
-            console.log("CHANGED TILESET", tilesetExtraInfo, IMAGES)
+            // console.log("CHANGED TILESET", tilesetExtraInfo, IMAGES)
 
             if(tilesetExtraInfo) {
                 if (tilesetExtraInfo.link) {
@@ -1322,7 +1345,7 @@
     exports.init = (
         attachToId,
         {
-            tileMapData,
+            tileMapData, // the main data
             tileSize,
             mapWidth,
             mapHeight,
@@ -1331,7 +1354,9 @@
             onApply,
             tileSetLoaders,
             tileMapExporters,
-            tileMapImporters
+            tileMapImporters,
+            onUpdate,
+            appState
         }
     ) => {
         // Attach
@@ -1375,6 +1400,7 @@
             },
             acceptFile: "application/JSON"
         }
+        apiOnUpdateCallback = onUpdate;
 
         const importedTilesetImages =  (tileMapData?.tileSets && Object.values(tileMapData?.tileSets)) || tileSetImages;
         IMAGES = importedTilesetImages;
@@ -1766,7 +1792,20 @@
             if (e.deltaY < 0) zoomIn();
             else zoomOut();
         });
-        loadData(tileMapData); // loads even if tileMapData is not present
+
+        loadData(tileMapData)
+        if (appState) {
+            ACTIVE_MAP = appState.ACTIVE_MAP;
+            mapsDataSel.value = ACTIVE_MAP;
+            setActiveMap(appState.ACTIVE_MAP)
+            PREV_ACTIVE_TOOL = appState.PREV_ACTIVE_TOOL;
+            ACTIVE_TOOL = appState.ACTIVE_TOOL;
+            setActiveTool(appState.ACTIVE_TOOL)
+            setLayer(appState.currentLayer)
+            selection = appState.selection;
+            updateSelection(false);
+            SHOW_GRID = appState.SHOW_GRID;
+        }
 
         // Animated tiles when on frames mode
         const animateTiles = () => {
@@ -1775,4 +1814,8 @@
         }
         requestAnimationFrame(animateTiles);
     };
+
+    exports.getState = () => {
+        return getAppState();
+    }
 });
