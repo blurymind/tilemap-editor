@@ -1355,7 +1355,7 @@
             tileSetLoaders,
             tileMapExporters,
             tileMapImporters,
-            onUpdate,
+            onUpdate = () => {},
             appState
         }
     ) => {
