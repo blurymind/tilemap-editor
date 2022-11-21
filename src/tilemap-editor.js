@@ -1747,7 +1747,10 @@
             makeMenuItem(exporter.name, key,exporter.description).onclick = () => {
                 exporter.transformer(getExportData());
             }
+            apiTileMapExporters[key].getData = () => exporter.transformer(getExportData());
         })
+        exports.exporters = apiTileMapExporters;
+
         Object.entries(apiTileMapImporters).forEach(([key, importer])=>{
             makeMenuItem(importer.name, key,importer.description).onclick = () => {
                 if(importer.onSelectFiles) {
