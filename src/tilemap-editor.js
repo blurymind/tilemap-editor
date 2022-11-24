@@ -312,6 +312,7 @@
     let apiTileMapExporters = {};
     let apiTileMapImporters = {};
     let apiOnUpdateCallback = () => {};
+    let apiOnMouseUp = () => {};
 
     let editedEntity
 
@@ -1356,6 +1357,7 @@
             tileMapExporters,
             tileMapImporters,
             onUpdate = () => {},
+            onMouseUp = null,
             appState
         }
     ) => {
@@ -1401,6 +1403,13 @@
             acceptFile: "application/JSON"
         }
         apiOnUpdateCallback = onUpdate;
+
+        if(onMouseUp){
+            apiOnMouseUp = onMouseUp;
+            document.getElementById('tileMapEditor').addEventListener('pointerup', ()=>{
+                apiOnMouseUp(getAppState())
+            })
+        }
 
         const importedTilesetImages =  (tileMapData?.tileSets && Object.values(tileMapData?.tileSets)) || tileSetImages;
         IMAGES = importedTilesetImages;
@@ -1821,4 +1830,7 @@
     exports.getState = () => {
         return getAppState();
     }
+
+    exports.onUpdate = apiOnUpdateCallback;
+    exports.onMouseUp = apiOnMouseUp;
 });
