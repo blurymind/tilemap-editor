@@ -993,6 +993,7 @@
 
     const getFlattenedData = () => {
         const result = Object.entries(maps).map(([key, map])=>{
+            console.log({map})
             const layers = map.layers;
             const flattenedData = Array(layers.length).fill([]).map(()=>{
                 return Array(map.mapHeight).fill([]).map(row=>{
@@ -1010,7 +1011,7 @@
                     }
                 })
             });
-            return {map:key,flattenedData};
+            return {map:key, tileSet: map.tileSet,flattenedData};
         });
         return result;
     };
@@ -1059,7 +1060,7 @@
         return {
             tileMapData: {tileSets, maps},
             appState: {
-                undoStack,
+                    undoStack,
                     undoStepPosition,
                     currentLayer,
                     PREV_ACTIVE_TOOL,
@@ -1406,8 +1407,8 @@
 
         if(onMouseUp){
             apiOnMouseUp = onMouseUp;
-            document.getElementById('tileMapEditor').addEventListener('pointerup', ()=>{
-                apiOnMouseUp(getAppState())
+            document.getElementById('tileMapEditor').addEventListener('pointerup', function(){
+                apiOnMouseUp(getAppState(), apiTileMapExporters)
             })
         }
 
