@@ -206,8 +206,16 @@
                 <select name="tileAnimData" id="tileAnimSel">
         <!--          <option value="anim1">anim1</option>-->
                 </select>
-                <input id="animStart" value="1" type="number" min="1"> to 
-                <input id="animEnd" value="1" type="number" min="1">
+                <input id="animStart" value="1" type="number" min="1" title="animation start"> to 
+                <input id="animEnd" value="1" type="number" min="1" title="animation end">
+                
+
+                <span title="animation speed">⏱</span>
+                <input id="animSpeed" value="1" type="number" min="1" title="animation speed">
+                <span class="item" title="loop animation">
+                    <input type="checkbox" id="animLoop" style="display: none" checked>
+                    <label for="animLoop" class="animLoop">️</label>
+                </span>
                 <button id="renameTileAnimBtn" title="rename animation">r</button>
                 <button id="addTileAnimBtn" title="add new animation">+</button>
                 <button id="removeTileAnimBtn" title="remove animation">-</button>
@@ -274,7 +282,7 @@
         layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,tileFrameSel,tileAnimSel,
         tilesetDataSel, mapsDataSel, objectParametersEditor;
 
-    const el = {tileFrameCount:"", animStart:"", animEnd:"",renameTileFrameBtn:"",renameTileAnimBtn:""};
+    const el = {tileFrameCount:"", animStart:"", animEnd:"",renameTileFrameBtn:"",renameTileAnimBtn:"", animSpeed: "", animLoop:""};
      Object.keys(el).forEach(key=>{
          el[key] = () => document.getElementById(key);
      })
@@ -1205,12 +1213,14 @@
 
         document.getElementById("tileFrameCount").value = getCurrentFrames()?.frameCount || 1;
         const currentAnim = getCurrentAnimation();
-        console.log({currentAnim})
         el.animStart().max = el.tileFrameCount().value;
         el.animEnd().max = el.tileFrameCount().value;
         if(currentAnim){
+            console.log({currentAnim})
             el.animStart().value = currentAnim.start || 1
             el.animEnd().value = currentAnim.end || 1
+            el.animLoop().checked = currentAnim.loop || false
+            el.animSpeed().value = currentAnim.speed || 1
         }
     }
 
@@ -1638,7 +1648,9 @@
                         a1: {
                             start: 1,
                             end: Number(el.tileFrameCount().value) || 1,//todo move in here
-                            name: "a1"
+                            name: "a1",
+                            loop: el.animLoop().checked,
+                            speed: Number(el.animSpeed().value),
                         }
                     }
                 }
@@ -1687,6 +1699,8 @@
             console.log("anim select", e, tileAnimSel.value)
             el.animStart().value = getCurrentAnimation()?.start || 1;
             el.animEnd().value = getCurrentAnimation()?.end || 1;
+            el.animLoop().checked = getCurrentAnimation()?.loop || false;
+            el.animSpeed().value = getCurrentAnimation()?.speed || 1;
             updateTilesetGridContainer();
         });
         document.getElementById("addTileAnimBtn").addEventListener("click",()=>{
@@ -1702,6 +1716,8 @@
                 tileSets[tilesetDataSel.value].frames[tileFrameSel.value].animations[result] = {
                     start: 1,
                     end: Number(el.tileFrameCount().value || 1),
+                    loop: el.animLoop().checked,
+                    speed: Number(el.animSpeed().value || 1),
                     name: result
                 }
                 // setFramesToSelection(tileFrameSel.value, result);
@@ -1724,6 +1740,13 @@
         el.renameTileAnimBtn().addEventListener("click", ()=>{
             renameKeyInObjectForSelectElement(tileAnimSel, tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.animations, "animation");
         });
+
+        el.animLoop().addEventListener("change", ()=>{
+            getCurrentAnimation().loop = el.animLoop().checked;
+        })
+        el.animSpeed().addEventListener("change", e=>{
+            getCurrentAnimation().speed = el.animSpeed().value;
+        })
         // Tileset SELECT callbacks
         tilesetDataSel = document.getElementById("tilesetDataSel");
         tilesetDataSel.addEventListener("change",e=>{

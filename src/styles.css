@@ -484,6 +484,15 @@ cursor: pointer;
   content: "🔛";
 }
 
+
+#animLoop ~ .animLoop::after {
+  content: "🌀";
+  opacity: 0.4;
+}
+#animLoop:checked ~ .animLoop::after {
+  opacity: 1;
+}
+
 .hidden {
   display: none;
 }
