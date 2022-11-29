@@ -1754,6 +1754,10 @@
             tilesetImage.crossOrigin = "Anonymous";
             updateTilesetDataList();
         })
+        el.tileFrameCount().addEventListener("change",()=>{
+            el.animStart().max = el.tileFrameCount().value;
+            el.animEnd().max = el.tileFrameCount().value;
+        })
 
         const replaceSelectedTileSet = (src) => {
             addToUndoStack();
