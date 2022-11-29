@@ -176,28 +176,44 @@
             <button id="addTileTagBtn" title="add">+</button>
             <button id="removeTileTagBtn" title="remove">-</button>
         </div>
-        <div class="select_container layer sticky_top2 tileset_opt_field sticky_settings  sticky_left" style="display: none" id="tileFrameSelContainer">
-            <select name="tileFrameData" id="tileFrameSel">
-<!--            <option value="anim1">anim1rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr</option>-->
-        </select>
-        <button id="addTileFrameBtn" title="add">+</button>
-        <button id="removeTileFrameBtn" title="remove">-</button>
-        frames: <input id="tileFrameCount" value="1" type="number" min="1">
         
-        <div title="Object parameters" class="menu parameters" id="objectParametersEditor">
-            ⚙
-            <div class="dropdown">
-                <div class="item nohover">Object parameters</div>
-                <div class="item">
-                    coming soon...
-<!--                    <label for="toggleFlipX" class="">Flip tile on x</label>-->
-<!--                    <input type="checkbox" id="toggleFlipX" style="display: none"> -->
-<!--                    <label class="toggleFlipX"></label>-->
-                </div>
+         
+        <div class="select_container sticky_top2 sticky_settings sticky_left" style="display: none;flex-direction:column;" id="tileFrameSelContainer">
+            <div class="item nohover layer tileset_opt_field">
+                <div title="Object parameters" class="menu parameters" id="objectParametersEditor">
+                    ⚙
+                    <div class="dropdown">
+                        TODO: add more parameters in the future
+    <!--                <div class="item nohover">Object parameters</div>-->
+    <!--                <div class="item"> -->
+    <!--                    <button id="removeTileFrameBtn" title="remove">delete object</button>-->
+    <!--                    <button id="removeTileAnimBtn" title="remove">delete animation</button>-->
+    <!--                </div>-->
+    
+        
+                    </div>
+                ️</div>
+                <select name="tileFrameData" id="tileFrameSel">
+    <!--            <option value="anim1">anim1rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr</option>-->
+                </select>
+                frames: <input id="tileFrameCount" value="1" type="number" min="1">
+                <button id="renameTileFrameBtn" title="rename object">r</button>
+                <button id="addTileFrameBtn" title="add new object">+</button>
+                <button id="removeTileFrameBtn" title="remove object">-</button>
+                
             </div>
-        ️</div>
+            <div class="item nohover layer tileset_opt_field"> 
+                <select name="tileAnimData" id="tileAnimSel">
+        <!--          <option value="anim1">anim1</option>-->
+                </select>
+                <input id="animStart" value="1" type="number" min="1"> to 
+                <input id="animEnd" value="1" type="number" min="1">
+                <button id="renameTileAnimBtn" title="rename animation">r</button>
+                <button id="addTileAnimBtn" title="add new animation">+</button>
+                <button id="removeTileAnimBtn" title="remove animation">-</button>
+           </div>     
         </div>
-        
+
       <div class="tileset-container">
         <div class="tileset-container-selection"></div>
         <canvas id="tilesetCanvas" />
@@ -255,8 +271,13 @@
     const getEmptyLayer = (name="layer")=> ({tiles:{}, visible: true, name, animatedTiles: {}, opacity: 1});
     let tilesetImage, canvas, tilesetContainer, tilesetSelection, cropSize,
         confirmBtn, tilesetGridContainer,
-        layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,tileFrameSel,
+        layersElement, resizingCanvas, mapTileHeight, mapTileWidth, tileDataSel,tileFrameSel,tileAnimSel,
         tilesetDataSel, mapsDataSel, objectParametersEditor;
+
+    const el = {tileFrameCount:"", animStart:"", animEnd:"",renameTileFrameBtn:"",renameTileAnimBtn:""};
+     Object.keys(el).forEach(key=>{
+         el[key] = () => document.getElementById(key);
+     })
 
     let TILESET_ELEMENTS = [];
     let IMAGES = [{src:''}];
@@ -349,7 +370,6 @@
             updateLayers();
         })
     }
-
 
     const setLayerIsVisible = (layer, override = null) => {
         const layerNumber = Number(layer);
@@ -1017,7 +1037,7 @@
     };
     const getExportData = () => {
         const exportData = {maps, tileSets, flattenedData: getFlattenedData(), activeMap: ACTIVE_MAP, downloadAsTextFile};
-        // console.log("Exported ", exportData);
+        console.log("Exported ", exportData);
         return exportData;
     }
 
@@ -1162,6 +1182,7 @@
         updateTilesetGridContainer();
     }
 
+    const getCurrentAnimation = (getAnim) => tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.animations?.[getAnim || tileAnimSel.value];
     const updateTilesetDataList = (populateFrames = false) => {
         const populateWithOptions = (selectEl, options, newContent)=>{
             if(!options) return;
@@ -1173,13 +1194,24 @@
                 newOption.value = opt;
                 selectEl.appendChild(newOption)
             })
-            if (value in options || (["","frames"].includes(value) && !populateFrames)) selectEl.value = value;
+            if (value in options || (["","frames","animations"].includes(value) && !populateFrames)) selectEl.value = value;
         }
 
         if (!populateFrames) populateWithOptions(tileDataSel, tileSets[tilesetDataSel.value]?.tags, `<option value="">Symbols (${tileSets[tilesetDataSel.value]?.tileCount || "?"})</option><option value="frames">Objects</option>`);
-        else populateWithOptions(tileFrameSel, tileSets[tilesetDataSel.value]?.frames, '');
+        else {
+            populateWithOptions(tileFrameSel, tileSets[tilesetDataSel.value]?.frames, '');
+            populateWithOptions(tileAnimSel, tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.animations, '')
+        }
 
         document.getElementById("tileFrameCount").value = getCurrentFrames()?.frameCount || 1;
+        const currentAnim = getCurrentAnimation();
+        console.log({currentAnim})
+        el.animStart().max = el.tileFrameCount().value;
+        el.animEnd().max = el.tileFrameCount().value;
+        if(currentAnim){
+            el.animStart().value = currentAnim.start || 1
+            el.animEnd().value = currentAnim.end || 1
+        }
     }
 
     const reevaluateTilesetsData = () =>{
@@ -1257,6 +1289,7 @@
                     tileSets[idx] = getEmptyTileSet(
                         {
                             tags: oldTilesets[idx]?.tags, frames: oldTilesets[idx]?.frames, tileSize,
+                            animations: oldTilesets[idx]?.animations,
                             src: tsImage.src, name: `tileset ${idx}`, width: tsImage.width, height: tsImage.height
                         }
                     );
@@ -1454,12 +1487,14 @@
             }
         });
 
-        const setFramesToSelection = (animName) =>{
-            if(animName === "" || typeof animName !== "string") return;
-            tileSets[tilesetDataSel.value].frames[animName] = {
-                ...(tileSets[tilesetDataSel.value].frames[animName]||{}),
+        const setFramesToSelection = (objectName, animName = "") =>{
+            console.log({animName, objectName})
+            if(objectName === "" || typeof objectName !== "string") return;
+            tileSets[tilesetDataSel.value].frames[objectName] = {
+                ...(tileSets[tilesetDataSel.value].frames[objectName]||{}),
                 width: selectionSize[0], height:selectionSize[1], start: selection[0], tiles: selection,
-                name: animName,
+                name: objectName,
+                animations: {},//todo
                 //To be set when placing tile
                 layer: undefined, isFlippedX: false, xPos: 0, yPos: 0//TODO free position
             }
@@ -1480,7 +1515,7 @@
                 return;
             }
             if (e.button === 0) {
-                if(viewMode !== "" && viewMode !== "frames"){
+                if(DISPLAY_SYMBOLS && viewMode !== "" && viewMode !== "frames"){
                     selection.forEach(selected=>{
                         addToUndoStack();
                         const {x, y} = selected;
@@ -1580,8 +1615,15 @@
         // Tileset frames
         tileFrameSel = document.getElementById("tileFrameSel");
         tileFrameSel.addEventListener("change", e =>{
-            document.getElementById("tileFrameCount").value = getCurrentFrames()?.frameCount || 1;
+            el.tileFrameCount().value = getCurrentFrames()?.frameCount || 1;
+            updateTilesetDataList(true);
             updateTilesetGridContainer();
+        });
+        el.animStart().addEventListener("change", e =>{
+            getCurrentAnimation().start = Number(el.animStart().value);
+        });
+        el.animEnd().addEventListener("change", e =>{
+            getCurrentAnimation().end = Number(el.animEnd().value);
         });
         document.getElementById("addTileFrameBtn").addEventListener("click",()=>{
             const result = window.prompt("Name your object", `obj${Object.keys(tileSets[tilesetDataSel.value]?.frames||{}).length}`);
@@ -1590,7 +1632,16 @@
                     alert("Object already exists");
                     return;
                 }
-                tileSets[tilesetDataSel.value].frames[result] = {frameCount: Number(document.getElementById("tileFrameCount").value)}
+                tileSets[tilesetDataSel.value].frames[result] = {
+                    frameCount: Number(el.tileFrameCount().value),
+                    animations: {
+                        a1: {
+                            start: 1,
+                            end: Number(el.tileFrameCount().value) || 1,//todo move in here
+                            name: "a1"
+                        }
+                    }
+                }
                 setFramesToSelection(result);
                 updateTilesetDataList(true);
                 tileFrameSel.value = result;
@@ -1598,17 +1649,81 @@
             }
         });
         document.getElementById("removeTileFrameBtn").addEventListener("click",()=>{
-            if (tileFrameSel.value && tileFrameSel.value in tileSets[tilesetDataSel.value].frames) {
+            if (tileFrameSel.value && tileFrameSel.value in tileSets[tilesetDataSel.value].frames && confirm(`Are you sure you want to delete ${tileFrameSel.value}`)) {
                 delete tileSets[tilesetDataSel.value].frames[tileFrameSel.value];
                 updateTilesetDataList(true);
                 updateTilesetGridContainer();
             }
         });
-        document.getElementById("tileFrameCount").addEventListener("change", e=>{
+        const renameKeyInObjectForSelectElement = (selectElement, objectPath, typeLabel) =>{
+            const oldValue = selectElement.value;
+            const result = window.prompt("Rename your animation", `${oldValue}`);
+            if(result && result !== oldValue){
+                if (!objectPath) return;
+                if(result in objectPath){
+                    alert(`${typeLabel} with the ${result} name already exists. Aborted`);
+                    return;
+                }
+                Object.defineProperty(objectPath, result,
+                    Object.getOwnPropertyDescriptor(objectPath, oldValue));
+                delete objectPath[oldValue];
+                updateTilesetDataList(true);
+                selectElement.value = result;
+                updateTilesetDataList(true);
+            }
+        }
+        el.renameTileFrameBtn().addEventListener("click", ()=>{ // could be a generic function
+            renameKeyInObjectForSelectElement(tileFrameSel, tileSets[tilesetDataSel.value]?.frames, "object");
+        });
+        el.tileFrameCount().addEventListener("change", e=>{
             if(tileFrameSel.value === "") return;
             getCurrentFrames().frameCount = Number(e.target.value);
             updateTilesetGridContainer();
         })
+
+        // animations
+        tileAnimSel = document.getElementById("tileAnimSel");
+        tileAnimSel.addEventListener("change", e =>{//swap with tileAnimSel
+            console.log("anim select", e, tileAnimSel.value)
+            el.animStart().value = getCurrentAnimation()?.start || 1;
+            el.animEnd().value = getCurrentAnimation()?.end || 1;
+            updateTilesetGridContainer();
+        });
+        document.getElementById("addTileAnimBtn").addEventListener("click",()=>{
+            const result = window.prompt("Name your animation", `anim${Object.keys(tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.animations || {}).length}`);
+            if(result !== null){
+                if(!tileSets[tilesetDataSel.value].frames[tileFrameSel.value]?.animations){
+                    tileSets[tilesetDataSel.value].frames[tileFrameSel.value].animations = {}
+                }
+                if (result in tileSets[tilesetDataSel.value].frames[tileFrameSel.value]?.animations) {
+                    alert("Animation already exists");
+                    return;
+                }
+                tileSets[tilesetDataSel.value].frames[tileFrameSel.value].animations[result] = {
+                    start: 1,
+                    end: Number(el.tileFrameCount().value || 1),
+                    name: result
+                }
+                // setFramesToSelection(tileFrameSel.value, result);
+                updateTilesetDataList(true);
+                tileAnimSel.value = result;
+                updateTilesetGridContainer();
+            }
+        });
+        document.getElementById("removeTileAnimBtn").addEventListener("click",()=>{
+            console.log("delete", tileAnimSel.value, tileSets[tilesetDataSel.value].frames[tileFrameSel.value].animations)
+            if (tileAnimSel.value && tileSets[tilesetDataSel.value].frames[tileFrameSel.value]?.animations
+                && tileAnimSel.value in tileSets[tilesetDataSel.value].frames[tileFrameSel.value]?.animations
+                && confirm(`Are you sure you want to delete ${tileAnimSel.value}`)
+            ) {
+                delete tileSets[tilesetDataSel.value].frames[tileFrameSel.value].animations[tileAnimSel.value];
+                updateTilesetDataList(true);
+                updateTilesetGridContainer();
+            }
+        });
+        el.renameTileAnimBtn().addEventListener("click", ()=>{
+            renameKeyInObjectForSelectElement(tileAnimSel, tileSets[tilesetDataSel.value]?.frames[tileFrameSel.value]?.animations, "animation");
+        });
         // Tileset SELECT callbacks
         tilesetDataSel = document.getElementById("tilesetDataSel");
         tilesetDataSel.addEventListener("change",e=>{
