@@ -525,3 +525,7 @@ a:hover {
 a:active {
   color: #ffae00;
 }
+
+.two-digit-width{
+  max-width: 38px !important;
+}

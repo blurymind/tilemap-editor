@@ -176,49 +176,60 @@
             <button id="addTileTagBtn" title="add">+</button>
             <button id="removeTileTagBtn" title="remove">-</button>
         </div>
-        
-         
+
         <div class="select_container sticky_top2 sticky_settings sticky_left" style="display: none;flex-direction:column;" id="tileFrameSelContainer">
             <div class="item nohover layer tileset_opt_field">
                 <div title="Object parameters" class="menu parameters" id="objectParametersEditor">
                     ⚙
-                    <div class="dropdown">
-                        TODO: add more parameters in the future
-    <!--                <div class="item nohover">Object parameters</div>-->
-    <!--                <div class="item"> -->
-    <!--                    <button id="removeTileFrameBtn" title="remove">delete object</button>-->
-    <!--                    <button id="removeTileAnimBtn" title="remove">delete animation</button>-->
-    <!--                </div>-->
-    
-        
+                    <div class="dropdown">        
+                        <div class="item"> 
+                            💡 object:
+                            <button id="renameTileFrameBtn" title="rename object">📝</button>
+                            <button id="removeTileFrameBtn" title="remove">🗑️</button>
+                             <button id="addTileFrameBtn" title="add new object">+ new</button>
+                        </div>
+<!--                        <div class="item nohover">Object parameters:</div>-->
                     </div>
                 ️</div>
-                <select name="tileFrameData" id="tileFrameSel">
+                <select name="tileFrameData" id="tileFrameSel" style="max-width: 150px;">
     <!--            <option value="anim1">anim1rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr</option>-->
                 </select>
                 frames: <input id="tileFrameCount" value="1" type="number" min="1">
-                <button id="renameTileFrameBtn" title="rename object">r</button>
-                <button id="addTileFrameBtn" title="add new object">+</button>
-                <button id="removeTileFrameBtn" title="remove object">-</button>
-                
+<!--                <button id="renameTileFrameBtn" title="rename object">r</button>-->
+<!--                <button id="addTileFrameBtn" title="add new object">+</button>-->
+<!--                <button id="removeTileFrameBtn" title="remove object">-</button>-->
+
             </div>
             <div class="item nohover layer tileset_opt_field"> 
-                <select name="tileAnimData" id="tileAnimSel">
+              <div title="Animation parameters" class="menu parameters" id="objectParametersEditor">
+                    ⚙
+                    <div class="dropdown">        
+                        <div class="item"> 
+                            🎞️ animation:
+                            <button id="renameTileAnimBtn" title="rename animation">📝</button>
+                            <button id="removeTileAnimBtn" title="remove">🗑️</button>
+                            <button id="addTileAnimBtn" title="add new animation">+ new</button>
+                        </div>
+<!--                        <div class="item nohover">Object parameters:</div>-->
+                    </div>
+                ️</div>
+                <select name="tileAnimData" id="tileAnimSel" style="max-width: 72px">
         <!--          <option value="anim1">anim1</option>-->
                 </select>
-                <input id="animStart" value="1" type="number" min="1" title="animation start"> to 
-                <input id="animEnd" value="1" type="number" min="1" title="animation end">
-                
+                <input id="animStart" value="1" type="number" min="1" title="animation start" class="two-digit-width"> to 
+                <input id="animEnd" value="1" type="number" min="1" title="animation end" class="two-digit-width">
 
                 <span title="animation speed">⏱</span>
-                <input id="animSpeed" value="1" type="number" min="1" title="animation speed">
+                <input id="animSpeed" value="1" type="number" min="1" title="animation speed" class="two-digit-width">
                 <span class="item" title="loop animation">
                     <input type="checkbox" id="animLoop" style="display: none" checked>
                     <label for="animLoop" class="animLoop">️</label>
                 </span>
-                <button id="renameTileAnimBtn" title="rename animation">r</button>
-                <button id="addTileAnimBtn" title="add new animation">+</button>
-                <button id="removeTileAnimBtn" title="remove animation">-</button>
+<!--                <button id="renameTileAnimBtn" title="rename animation">r</button>-->
+<!--                <button id="addTileAnimBtn" title="add new animation">+</button>-->
+<!--                <button id="removeTileAnimBtn" title="remove animation">-</button>-->
+
+
            </div>     
         </div>
 
@@ -1504,7 +1515,6 @@
                 ...(tileSets[tilesetDataSel.value].frames[objectName]||{}),
                 width: selectionSize[0], height:selectionSize[1], start: selection[0], tiles: selection,
                 name: objectName,
-                animations: {},//todo
                 //To be set when placing tile
                 layer: undefined, isFlippedX: false, xPos: 0, yPos: 0//TODO free position
             }
@@ -1674,6 +1684,10 @@
                 if (!objectPath) return;
                 if(result in objectPath){
                     alert(`${typeLabel} with the ${result} name already exists. Aborted`);
+                    return;
+                }
+                if(result.length < 2) {
+                    alert(`${typeLabel} name needs to be longer than one character. Aborted`); //so animations and objects never overlap with symbols
                     return;
                 }
                 Object.defineProperty(objectPath, result,
