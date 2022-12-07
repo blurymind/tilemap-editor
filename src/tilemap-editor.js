@@ -68,6 +68,8 @@
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
+    exports.toBase64 = toBase64;
+
     const decoupleReferenceFromObj = (obj) => JSON.parse(JSON.stringify(obj));
     const getHtml = (width, height) =>{
         return `
@@ -1096,6 +1098,8 @@
         undoStepPosition = -1;
     }
     const getAppState = () => {
+        // TODO we need for tilesets to load - rapidly refreshing the browser may return empty tilesets object!
+        if(Object.keys(tileSets).length === 0 && tileSets.constructor === Object) return null;
         return {
             tileMapData: {tileSets, maps},
             appState: {
@@ -1779,10 +1783,12 @@
             reloadTilesets();
         }
         const addNewTileSet = (src) => {
+            console.log("add new tileset"+ src)
             addToUndoStack();
             IMAGES.push({src});
             reloadTilesets();
         }
+        exports.addNewTileSet = addNewTileSet;
         // replace tileset
         document.getElementById("tilesetReplaceInput").addEventListener("change",e=>{
             toBase64(e.target.files[0]).then(base64Src=>{
@@ -1822,18 +1828,30 @@
             tsLoaderOption.value = key;
             tsLoaderOption.innerText = loader.name;
             tileSetLoadersSel.appendChild(tsLoaderOption);
+            // apiTileSetLoaders[key].load = () => tileSetLoaders
         });
+
         tileSetLoadersSel.value = "base64";
         selectedTileSetLoader = apiTileSetLoaders[tileSetLoadersSel.value];
         tileSetLoadersSel.addEventListener("change", e=>{
             selectedTileSetLoader = apiTileSetLoaders[e.target.value];
         })
+        exports.tilesetLoaders = apiTileSetLoaders;
+
+        const deleteTilesetWithIndex = (index, cb = null) => {
+            if(confirm(`Are you sure you want to delete this image?`)){
+                addToUndoStack();
+                IMAGES.splice(index,1);
+                reloadTilesets();
+                if(cb) cb()
+            }
+        }
+        exports.IMAGES = IMAGES;
+        exports.deleteTilesetWithIndex = deleteTilesetWithIndex;
         document.getElementById("removeTilesetBtn").addEventListener("click",()=>{
             //Remove current tileset
             if (tilesetDataSel.value !== "0") {
-                addToUndoStack();
-                IMAGES.splice(Number(tilesetDataSel.value),1);
-                reloadTilesets();
+                deleteTilesetWithIndex(Number(tilesetDataSel.value));
             }
         });
 
@@ -1931,6 +1949,7 @@
                     input.click();
                 }
             }
+            // apiTileMapImporters[key].setData = (files) => importer.onSelectFiles(loadData, files);
         })
         document.getElementById("toggleFlipX").addEventListener("change",(e)=>{
             document.getElementById("flipBrushIndicator").style.transform = e.target.checked ? "scale(-1, 1)": "scale(1, 1)"
