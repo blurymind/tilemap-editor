@@ -1,0 +1,33 @@
+{
+  "name": "tilemap-editor",
+  "version": "0.7.8",
+  "description": "A fat-free tilemap editor with zero dependencies and a scalable, mobile-friendly interface!",
+  "main": "src/tilemap-editor.js",
+  "scripts": {
+    "start": "serve",
+    "predeploy": "node updatePwa.js",
+    "deploy": "gh-pages -d ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blurymind/tilemap-editor.git"
+  },
+  "keywords": [
+    "tilemap",
+    "level",
+    "editor",
+    "gamedev",
+    "editor",
+    "kaboomjs"
+  ],
+  "author": "Todor Imreorov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/blurymind/tilemap-editor/issues"
+  },
+  "homepage": "https://github.com/blurymind/tilemap-editor#readme",
+  "devDependencies": {
+    "gh-pages": "^3.2.2",
+    "serve": "^12.0.0"
+  }
+}

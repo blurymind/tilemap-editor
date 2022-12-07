@@ -1,0 +1,531 @@
+/* Minimal dropdown */
+.menu:hover .dropdown {
+  max-height: 700px;
+}
+.menu {
+  position: relative;
+  display: flex;
+  background: #00000033;
+  padding: 3px;
+  border-radius: 3px;
+  z-index: 400;
+}
+.menu.parameters{
+  display: contents;
+  font-size: 1.1rem !important;
+}
+.menu.file{
+  min-width: 70px;
+}
+.menu .dropdown {
+  clear: left;
+  overflow: auto;
+  max-height: 0px;
+  transition: max-height 0.5s;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  position: absolute;
+  background: #000000e0;
+  color: white;
+  min-width: 245px;
+  border-radius: 5px;
+  top: 25px;
+  left: 3px;
+}
+.menu .dropdown.left {
+  right: 0;
+  top: unset;
+  left: unset;
+  position: fixed;
+}
+.menu:hover {
+  background: rgba(0, 0, 0, 0.88);
+}
+.menu .dropdown .item{
+  display: flex;
+  gap: 3px;
+  box-sizing: border-box;
+  padding: 7px;
+}
+.menu .dropdown .item:not(.nohover):hover {
+  color: black;
+  background: rgba(219, 198, 198, 0.88);
+}
+
+/*POPUP*/
+.overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  transition: opacity 500ms;
+  visibility: hidden;
+  opacity: 0;
+  z-index: 100;
+}
+.overlay:target {
+  visibility: visible;
+  opacity: 1;
+}
+.popup {
+  margin: 30% auto;
+  padding: 10px;
+  background: #000000;
+  border: 1px solid white;
+  border-radius: 5px;
+  width: 50%;
+  position: relative;
+  transition: all 2s ease-in-out;
+}
+.popup .close {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  transition: all 200ms;
+  font-size: 30px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #b0b0b0;
+}
+.popup .content {
+  max-height: 30%;
+  overflow: auto;
+}
+
+/* Other */
+.card {
+  height: 100%;
+}
+
+.card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 3px;
+  padding: 3px;
+}
+
+.card header h1 {
+  margin: 0;
+}
+
+.card header .button-as-link {
+  margin-right: 1em;
+}
+
+.card aside {
+  flex: 1;
+}
+
+.card_body {
+  display: flex;
+  flex: 1;
+  height: 100%;
+}
+
+.card_right-column {
+  flex: 3;
+  overflow: auto;
+  padding-right: 16px;
+  padding-bottom: 50px;
+}
+.card_right-column.layers {
+  flex: 1;
+  position: absolute;
+  right: 0;
+  background: #ffffffb0;
+  height: 50vh;
+  border-radius: 3px;
+  user-select: none;
+  padding-right: 0;
+}
+.card_right-column.layers:hover{
+  background: rgba(0, 0, 0, 0.69);
+}
+#mapCanvas {
+  border:1px solid cyan;
+  border-radius: 3px;
+  touch-action: none;
+  /*touch-action: auto;*/
+}
+#tileset-source {
+  pointer-events: none;
+}
+.canvas_resizer{
+  user-select: none;
+  /*cursor: row-resize;*/
+  touch-action: none;
+  background: #ffffff42;
+  color: white;
+  padding: 3px;
+  border-radius: 3px;
+  width: 50px;
+}
+
+.tileset_opt_field input,
+.canvas_resizer input {
+  max-width: 45px;
+}
+
+
+.tileset_opt_field.header{
+  padding: 3px;
+}
+.canvas_resizer.vertical{
+  position: absolute;
+  transform-origin: left;
+  /*cursor: col-resize;*/
+  bottom: 0;
+}
+.canvas_wrapper{
+  position: relative;
+  top:0;
+  display: table;
+}
+
+.tileset-container {
+position: relative;
+display: table;
+margin-left: 1px;
+user-select: none;
+}
+
+.tileset-container-selection {
+position: absolute;
+pointer-events: none;
+outline: 1px solid cyan;
+left: 0;
+top: 0;
+width: 32px;
+height: 32px;
+color: white;
+text-shadow: 1px 1px #0a0101;
+background-color: rgba(66, 255, 222, 0.29);
+text-align: center;
+}
+
+.tilemapjs_root {
+ font-family: Arial, Helvetica, sans-serif;
+ touch-action: manipulation;
+}
+
+.layers button {
+-webkit-appearance: none;
+-moz-appearance: none;
+appearance: none;
+font-family: inherit;
+outline: 0;
+background: transparent;
+border: 0;
+padding: 2px 0;
+display: block;
+text-align: left;
+cursor: pointer;
+}
+
+.layers button.active {
+  font-weight: bold;
+  color: #0884f1;
+  background-color: rgba(255, 255, 0, 0.05);
+}
+
+.button-as-link {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-decoration: underline;
+  background: transparent;
+  color: #7f808e;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+}
+.active-tool{
+  background-color: yellow !important;
+  border-radius: 3px;
+}
+.primary-button {
+  border: 0;
+  background: #4e84fa;
+  color: #fff;
+  border-radius: 6px;
+  outline: 0;
+  cursor: pointer;
+}
+
+.tileset_opt_field{
+  font-size: 0.9em;
+  display:flex;
+  flex-direction: row;
+  height:30px;
+  gap: 3px;
+  align-items: center;
+  padding: 0 2px;
+  justify-content: space-between;
+}
+
+.tilemap_editor_root{
+  height: 100%;
+  overflow: hidden;
+}
+
+.details_container {
+  border: 1px #797979 solid;
+  padding: 2px;
+}
+.card_left_column{
+  min-width: 240px;
+  max-width: 285px;
+  overflow: auto;
+  padding-right: 3px;
+  max-height: 90vh;
+  margin: 2px;
+}
+
+.layers {
+  height: 100%;
+  width: 200px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.layer {
+  display: flex;
+  gap: 1px;
+  height: 30px;
+  align-items: center;
+  padding: 0 3px;
+  border-bottom: 1px solid #80808045;
+}
+.tileset_info{
+  margin-left: 3px;
+  color: #ececcd;
+  font-size: 0.8em;
+  -webkit-line-clamp: 3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+.tileset_info,
+#activeLayerLabel,
+.select_layer{
+  flex:1;
+  /*max-width: 200px;*/
+  /*white-space: nowrap;*/
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#tilesetDescriptionLabel{
+  color: #91b2ff;
+}
+.layer:hover{
+  background-color: rgba(255, 255, 0, 0.05);
+}
+.add_layer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 3px;
+}
+.add_layer button{
+  /*width: 110px;*/
+  margin-right: 7px;
+}
+@media only screen and (max-width: 600px) {
+  .card_body {
+    /*padding-top: 1px;*/
+    flex-direction: column;
+  }
+  .card aside {
+    overflow: hidden;
+  }
+  .card_right-column{
+    border-top: solid grey 1px;
+    padding-right: 0;
+    padding-top: 3px;
+    flex: 6;
+  }
+  .card_right-column.layers{
+    padding-bottom: 25px;
+    position: relative;
+  }
+  .card_left_column{
+    flex: 2;
+    overflow: auto;
+    padding-right: 0;
+    max-width: unset;
+    transition-duration: 500ms;
+    transition-property: flex;
+  }
+  .card_left_column:hover{
+    flex: 6;
+  }
+  .tileset_opt_field {
+    font-size: 0.7em;
+  }
+  .layers{
+    width:100%;
+  }
+  .card_right-column.layers{
+    transition-duration: 500ms;
+    transition-property: flex;
+  }
+  .card_right-column.layers:hover {
+    flex: 3;
+  }
+}
+
+.sticky {
+  background: #000000;
+  color: #ffffff;
+  position: sticky;
+  top: 0;
+}
+.tileset_grid_container {
+  position: absolute;
+  text-align: center;
+  top: 0;
+  left: 0;
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+.tileset_grid_tile{
+  box-shadow: inset 0 0 1px yellow, inset 0 0 1px yellow, inset 0 0 1px yellow;
+  pointer-events: none;
+  opacity: 0.5;
+  color: white;
+  text-shadow: 1px 1px black;
+  font-size: 0.7rem;
+}
+
+.select_container select {
+  flex: 1;
+}
+
+/*dark mode*/
+.tilemapjs_root {
+  color: #fbd5ff;
+  background-color: #0a0101;
+  background: linear-gradient(0deg, rgb(0 0 0) 0%, rgb(84 84 84) 100%);
+}
+.card_right-column.layers {
+  background: #ffffff14;
+}
+.layer.select_layer{
+  color: antiquewhite;
+}
+.layers .active {
+  color: #88c6ff;
+  background-color: rgba(255, 255, 0, 0.05);
+}
+.sticky_top{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.sticky_top2{
+  position: sticky;
+  top: 30px;
+  z-index: 1;
+}
+.sticky_left {
+  position: sticky;
+  left: 0;
+}
+.sticky_settings{
+  background-color: #17171fc7 !important;
+  border-radius: 2px;
+  padding: 2px;
+}
+.sticky_settings select{
+  max-width: 35%;
+}
+.tilemaps_selector{
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  background-color: #00000094;
+  padding: 2px;
+ }
+
+#tilemapjs_root button {
+  background-color: #6b6b6b;
+  color: white;
+  border: 1px solid #757575;
+  margin: 2px;
+}
+#tilemapjs_root button:hover{
+  background-color: #858585;
+}
+.add_layer button,
+.tilemaps_selector button {
+  min-width: 20px;
+  text-align: -webkit-center;
+}
+.tilemaps_selector > button{
+  border-radius: 10px;
+}
+
+.tilemaps_selector select{
+  width: 100%;
+}
+.limited_select {
+  width: 50%;
+}
+
+.toggleFlipX::after {
+  content: "⭕";
+}
+#toggleFlipX:checked ~ .toggleFlipX::after {
+  content: "🔛";
+}
+
+
+#animLoop ~ .animLoop::after {
+  content: "🌀";
+  opacity: 0.4;
+}
+#animLoop:checked ~ .animLoop::after {
+  opacity: 1;
+}
+
+.hidden {
+  display: none;
+}
+input[name='tool']+label{
+  background: unset;
+}
+.tool_wrapper>*:hover,
+input[name='tool']:checked+label{
+  background-color: #2d2906;
+  border-radius: 3px;
+  padding: 2px;
+}
+.tool_wrapper{
+  display: flex;
+  gap: 7px;
+}
+.tool_wrapper >label {
+  padding: 2px;
+}
+
+a:link {
+  color: #ffc300;
+}
+a:visited {
+  color: #98ff98;
+}
+a:hover {
+  color: hotpink;
+}
+a:active {
+  color: #ffae00;
+}
+
+.two-digit-width{
+  max-width: 38px !important;
+}
