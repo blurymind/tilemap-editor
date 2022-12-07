@@ -1990,4 +1990,6 @@
 
     exports.onUpdate = apiOnUpdateCallback;
     exports.onMouseUp = apiOnMouseUp;
+
+    exports.getTilesets = () => tileSets;
 });
